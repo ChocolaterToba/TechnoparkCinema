@@ -18,3 +18,4 @@ target_include_directories(socket PUBLIC
                            http_server/socket/include)
 
 target_link_libraries(server socket)
+target_link_libraries(server pthread)
