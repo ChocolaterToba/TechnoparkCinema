@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(Cinema)
+project(server)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,5 +11,10 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
 include_directories(http_server/include)
 
-
 add_executable(server http_server/src/main.cpp)
+
+add_library(socket STATIC http_server/socket/src/socket.cpp)
+target_include_directories(socket PUBLIC
+                           http_server/socket/include)
+
+target_link_libraries(server socket)
