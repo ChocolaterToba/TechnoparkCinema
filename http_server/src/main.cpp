@@ -18,9 +18,9 @@ void clientWork(std::shared_ptr<Socket> client, bool* shutdown) {
         httpclient.recvHeader(client);
         HttpRequest request(httpclient.getHeader());
         HttpResponse response(request);
-        client->send(response.GetString());
+        client->send(response.GetData());
         std::cout << "------IN-------\n" << httpclient.getHeader() << "-------------" << std::endl;
-        output << "-------OUT------\n" << response.GetString() << "-------------" << std::endl;
+        output << "-------OUT------\n" << '!' << response.GetData().size() << "-------------" << std::endl;
 //    } catch (const std::exception& e) {
 //        std::cerr << "Exception: " << e.what() << std::endl;
 //        return;

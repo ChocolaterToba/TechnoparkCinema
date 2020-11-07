@@ -39,5 +39,5 @@ private:
     void SetData(const std::string &url);
     ContentType GetContentType(const std::string &url) const;
     void SetContentType(ContentType type);
-    void FormResponseString();
+    void FormResponseData();
 };

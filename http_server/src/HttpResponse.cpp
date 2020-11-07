@@ -17,7 +17,7 @@ std::string HttpResponse::GetHTTPVersion() const {
 }
 
 std::vector<char> HttpResponse::GetData() const {
-    return data;
+    return std::move(response_data);
 }
 
 HttpResponse::HttpResponse(const HttpRequest &request): http_version("1.1") {
@@ -51,11 +51,11 @@ HttpResponse::HttpResponse(const HttpRequest &request): http_version("1.1") {
             return_code = "501 Not Implemented";
     }
 
-    FormResponseString();
+    FormResponseData();
 }
 
 
-void HttpResponse::FormResponseString() {
+void HttpResponse::FormResponseData() {
     std::string answer("");
     answer.append("HTTP/").append(http_version).append(" ");
     answer.append(return_code).append(CRLF);
@@ -64,9 +64,10 @@ void HttpResponse::FormResponseString() {
             answer.append(header.first).append(": ").append(header.second).append(CRLF);
         }
     }
+    answer.append(CRLF);
 
     response_data.assign(answer.begin(), answer.end());
-    std::copy(data.begin(), data.end(), response_data.begin());
+    response_data.insert( response_data.end(), data.begin(), data.end() );
 }
 
 ContentType HttpResponse::GetContentType(const std::string &url) const {
