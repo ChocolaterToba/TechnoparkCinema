@@ -12,4 +12,4 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 include_directories(http_server/include)
 
 
-add_executable(server http_server/src/main.cpp)
+add_executable(server http_server/src/main.cpp http_server/src/HttpRequest.cpp)
