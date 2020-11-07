@@ -156,6 +156,22 @@ void Socket::send(const std::string& str) {
     }
 }
 
+void Socket::send(const std::vector<char>& str) {
+    size_t left = str.size();
+    ssize_t sent = 0;
+    // int flags = MSG_DONTWAIT;
+    int flags = 0;
+    while (left > 0) {
+        sent = ::send(m_Sd, str.data() + sent, str.size() - sent, flags);
+        if (-1 == sent) {
+            throw std::runtime_error("write failed: " +
+                                     std::string(strerror(errno)));
+        }
+
+        left -= sent;
+    }
+}
+
 std::string Socket::recv(size_t bytes) {
     char* buf = new char[bytes];
     size_t r = 0;
