@@ -6,11 +6,9 @@
 #include <string>
 
 int main() {
-    HttpRequest request(std::string(""));
-    HttpResponse response(request);
+    HttpResponse response;
 
-    std::fstream fs("response.http", fs.out);
-    fs.write(response.GetString().c_str(), response.GetString().size());
+    response.SetData("/");
 
     return 0;
 }

@@ -27,6 +27,7 @@ typedef struct {
 class HttpResponse {
 public:
     explicit HttpResponse(const HttpRequest &request);
+//    HttpResponse() = default;  //
     std::string GetHTTPVersion() const;
     std::string GetString() const;
 

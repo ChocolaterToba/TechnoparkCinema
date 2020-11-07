@@ -21,6 +21,7 @@ std::string HttpResponse::GetString() const {
 
 HttpResponse::HttpResponse(const HttpRequest &request) {
     response_string = "";
+    http_version = "1.1";
     if (request.GetHTTPVersion().empty()) {
         http_version = "0.9";
         if (request.GetRequestMethod() == GET) {
@@ -42,12 +43,10 @@ HttpResponse::HttpResponse(const HttpRequest &request) {
             try {
                 SetData(request.GetURL());
                 return_code = "200 OK";
-                http_version = "1.1";
             }
-            catch (FileNotFoundException&) {
+            catch (HTTPResponseException&) {
                 return_code = "404 Not Found";
                 data.data_string = "";
-                http_version = "";
             }
             break;
         default:
@@ -62,7 +61,9 @@ void HttpResponse::FormResponseString() {
     response_string.append("HTTP/").append(http_version).append(" ");
     response_string.append(return_code).append(CRLF);
     for (auto &header : headers) {
-        response_string.append(header.first).append(": ").append(header.second).append(CRLF);
+        if (!header.second.empty()) {
+            response_string.append(header.first).append(": ").append(header.second).append(CRLF);
+        }
     }
     if (!data.data_string.empty())
         response_string.append(CRLF).append(data.data_string).append(CRLF);
@@ -70,6 +71,9 @@ void HttpResponse::FormResponseString() {
 
 ContentType HttpResponse::GetContentType(const std::string &url) const {
     std::string ext(url.c_str() + url.rfind('.') + 1);
+    if (ext == "/") {
+        return TXT_HTML;
+    }
     if (ext == "jpg" || ext == "jpeg" ||
         ext == "JPG" || ext == "JPEG")
         return IMG_JPG;
@@ -106,15 +110,15 @@ void HttpResponse::SetContentType(ContentType type) {
             c_t_header.second = "text/plain";
             break;
         case IMG_JPG:
-            c_t_header.second = "text/jpeg";
+            c_t_header.second = "image/jpeg";
             break;
         case IMG_PNG:
-            c_t_header.second = "text/png";
+            c_t_header.second = "image/png";
             break;
         case VID_MP4:
-            c_t_header.second = "text/mp4";
+            c_t_header.second = "video/mp4";
             break;
-        default:
+        default:;
             throw UnknownContentTypeException();
     }
 
@@ -124,13 +128,18 @@ void HttpResponse::SetContentType(ContentType type) {
 
 void HttpResponse::SetData(const std::string &url) {
     SetContentType(GetContentType(url));
-    std::string &str = data.data_string;
-    const std::string path("static" + url);
+    std::string path("../static" + url);
+    if (url == "/")
+        path += "index.html";
+
     std::ifstream source(path, std::ios::in | std::ios::binary);
     char buffer[BUF_SIZE] = {0};
     while (source) {
         source.read(buffer, BUF_SIZE);
-        str.append(buffer);
+        data.data_string.append(buffer);
         memset(buffer, '\0', BUF_SIZE);
     }
+    if (data.data_string.empty())
+        std::cout << "MAZAFAKAAAAAAA" << data.data_string << std::endl;
+
 }

@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <vector>
 #include <thread>
+#include <fstream>
 
 #include "socket.hpp"
 #include "HTTPClient.hpp"
@@ -10,16 +11,20 @@
 
 void clientWork(std::shared_ptr<Socket> client, bool* shutdown) {
     client->setRcvTimeout(/*sec*/ 120, /*microsec*/ 0);
-    try {
+    std::ofstream output("out", std::ios::out);
+//    try {
         std::cout << "Starting new recv \n";
         HTTPClient httpclient;
         httpclient.recvHeader(client);
         HttpRequest request(httpclient.getHeader());
-        client->send(HttpResponse(request).GetString());
-    } catch (const std::exception& e) {
-        std::cerr << "Exception: " << e.what() << std::endl;
-        return;
-    }
+        HttpResponse response(request);
+        client->send(response.GetString());
+        std::cout << "------IN-------\n" << httpclient.getHeader() << "-------------" << std::endl;
+        output << "-------OUT------\n" << response.GetString() << "-------------" << std::endl;
+//    } catch (const std::exception& e) {
+//        std::cerr << "Exception: " << e.what() << std::endl;
+//        return;
+//    }
 }
 
 int main(int argc, char* argv[]) {
