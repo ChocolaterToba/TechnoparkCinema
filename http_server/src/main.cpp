@@ -6,20 +6,19 @@
 
 void clientWork(std::shared_ptr<Socket> client, bool* shutdown) {
     client->setRcvTimeout(/*sec*/ 120, /*microsec*/ 0);
-    while (true) {
-        try {
-            std::cout << "Starting new recv \n";
-            std::string line = client->recv();
-            if (line == "die") {
-                client->send("Shutting down server...\n");
-                *shutdown = true;
-                return;
-            }
-            client->send("echo: " + line + "\n");
-        } catch (const std::exception& e) {
-            std::cerr << "Exception: " << e.what() << std::endl;
+    try {
+        std::cout << "Starting new recv \n";
+        std::string line = client->recv_loop();
+        if (line == "die") {
+            client->send("Shutting down server...\n");
+            *shutdown = true;
             return;
         }
+        std::cout << line << std::endl;
+        //client->send("echo: " + line + "\n");
+    } catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+        return;
     }
 }
 

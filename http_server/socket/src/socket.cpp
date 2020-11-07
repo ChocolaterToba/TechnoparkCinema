@@ -227,9 +227,9 @@ std::string Socket::recv_loop() {
             break;
         }
         ret.append(buf, n);
-        while (ret.back() == '\r' || ret.back() == '\n') {
-            ret.pop_back();
-        }
+        //while (ret.back() == '\r' || ret.back() == '\n') {
+           // ret.pop_back();
+        //}
     }
     return ret;
 }
