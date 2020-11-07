@@ -9,7 +9,7 @@
 
 class HttpResponse {
 public:
-    HttpResponse(const HttpRequest &request);
+    explicit HttpResponse(const HttpRequest &request);
     std::string GetHTTPVersion() const;
     std::string GetString() const;
 

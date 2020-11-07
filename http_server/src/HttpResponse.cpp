@@ -1,5 +1,5 @@
 #include "HttpResponse.hpp"
-#include "HttpResponse.hpp"
+#include "HttpRequest.hpp"
 #include "exceptions.hpp"
 
 
@@ -8,7 +8,6 @@ std::string HttpResponse::GetHTTPVersion() const {
 }
 
 std::string HttpResponse::GetString() const {
-
     return response_string;
 }
 
