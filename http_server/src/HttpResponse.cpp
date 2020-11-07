@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <cstdlib>
 #include <cstring>
+#include <algorithm>
 
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
@@ -15,19 +16,17 @@ std::string HttpResponse::GetHTTPVersion() const {
     return http_version;
 }
 
-std::string HttpResponse::GetString() const {
-    return response_string;
+std::vector<char> HttpResponse::GetData() const {
+    return data;
 }
 
-HttpResponse::HttpResponse(const HttpRequest &request) {
-    response_string = "";
-    http_version = "1.1";
+HttpResponse::HttpResponse(const HttpRequest &request): http_version("1.1") {
     if (request.GetHTTPVersion().empty()) {
         http_version = "0.9";
         if (request.GetRequestMethod() == GET) {
             try {
                 SetData(request.GetURL());
-                response_string = data.data_string;
+                std::copy(response_data.begin(), response_data.end(), data.begin());
                 return;
             }
             catch (FileNotFoundException &) {
@@ -46,7 +45,6 @@ HttpResponse::HttpResponse(const HttpRequest &request) {
             }
             catch (HTTPResponseException&) {
                 return_code = "404 Not Found";
-                data.data_string = "";
             }
             break;
         default:
@@ -58,15 +56,17 @@ HttpResponse::HttpResponse(const HttpRequest &request) {
 
 
 void HttpResponse::FormResponseString() {
-    response_string.append("HTTP/").append(http_version).append(" ");
-    response_string.append(return_code).append(CRLF);
+    std::string answer("");
+    answer.append("HTTP/").append(http_version).append(" ");
+    answer.append(return_code).append(CRLF);
     for (auto &header : headers) {
         if (!header.second.empty()) {
-            response_string.append(header.first).append(": ").append(header.second).append(CRLF);
+            answer.append(header.first).append(": ").append(header.second).append(CRLF);
         }
     }
-    if (!data.data_string.empty())
-        response_string.append(CRLF).append(data.data_string).append(CRLF);
+
+    response_data.assign(answer.begin(), answer.end());
+    std::copy(data.begin(), data.end(), response_data.begin());
 }
 
 ContentType HttpResponse::GetContentType(const std::string &url) const {
@@ -132,14 +132,11 @@ void HttpResponse::SetData(const std::string &url) {
     if (url == "/")
         path += "index.html";
 
-    std::ifstream source(path, std::ios::in | std::ios::binary);
+    std::ifstream source(path, std::ios::binary);
     char buffer[BUF_SIZE] = {0};
-    while (source) {
-        source.read(buffer, BUF_SIZE);
-        data.data_string.append(buffer);
-        memset(buffer, '\0', BUF_SIZE);
-    }
-    if (data.data_string.empty())
-        std::cout << "MAZAFAKAAAAAAA" << data.data_string << std::endl;
 
+    while (source.read(buffer, BUF_SIZE)) {
+        data.insert(data.end(), buffer, buffer + BUF_SIZE);
+    }
+    data.insert(data.end(), buffer, buffer + source.gcount());
 }

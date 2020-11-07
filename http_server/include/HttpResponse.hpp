@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "HttpRequest.hpp"
 
@@ -19,23 +20,19 @@ typedef enum {
     VID_MP4,
 } ContentType;
 
-typedef struct {
-    std::string data_string;
-    ContentType data_type;
-} Data;
-
 class HttpResponse {
 public:
     explicit HttpResponse(const HttpRequest &request);
-//    HttpResponse() = default;  //
+    HttpResponse() = default;
     std::string GetHTTPVersion() const;
-    std::string GetString() const;
+    std::vector<char> GetData() const;
 
 private:
     std::string http_version;
-    std::string response_string;
+    std::vector<char> response_data;
     std::string return_code;
-    Data data;
+
+    std::vector<char> data;
 
     std::map<std::string, std::string> headers;
 
@@ -44,5 +41,3 @@ private:
     void SetContentType(ContentType type);
     void FormResponseString();
 };
-
-
