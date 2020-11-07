@@ -12,8 +12,9 @@ class Socket {
     Socket() : m_Sd(-1) {}
     explicit Socket(int sd) : m_Sd(sd) {}
     ~Socket() {
-        if (m_Sd > 0)
-            ::close(m_Sd);
+        if (m_Sd > 0) {
+           ::close(m_Sd);
+        }
     }
 
  public:
@@ -32,13 +33,12 @@ class Socket {
     void setNonBlocked(bool opt);
     void setReuseAddr(int sd);
     void createServerSocket(uint32_t port,
-                                                    uint32_t queue_size);
+                            uint32_t queue_size);
     std::shared_ptr<Socket> accept();
     void close() { ::close(m_Sd); }
 
-    void httpQuery(
-            const std::string& query,
-            std::function<void(const std::string& s)> cb);
+    void httpQuery(const std::string& query,
+                   std::function<void(const std::string& s)> cb);
 
  private:
     // Socket(const Socket &s);

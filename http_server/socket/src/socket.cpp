@@ -15,7 +15,7 @@
 std::string int2ipv4(uint32_t ip) {
     char buf[128];
     snprintf(buf, sizeof(buf), "%u.%u.%u.%u", ip & 0xFF, (ip & 0xFF00) >> 8,
-                     (ip & 0xFF0000) >> 16, (ip & 0xFF000000) >> 24);
+             (ip & 0xFF0000) >> 16, (ip & 0xFF000000) >> 24);
     return buf;
 }
 
@@ -89,9 +89,10 @@ void Socket::connect(const std::string& host, int port) {
     struct sockaddr_in addr = resolve(host.data(), port);
 
     int sd = socket(/*Protocol Family*/ PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (sd <= 0)
+    if (sd <= 0) {
         throw std::runtime_error("error to create socket: " +
                                  std::string(strerror(errno)));
+    }
 
     int connected = ::connect(sd, (struct sockaddr*)&addr, sizeof(addr));
     if (connected == -1) {
@@ -103,15 +104,14 @@ void Socket::connect(const std::string& host, int port) {
     m_Sd = sd;
 }
 
-void Socket::connect(const std::string& host,
-                                         int port,
-                                         int timeout) {
+void Socket::connect(const std::string& host, int port, int timeout) {
     struct sockaddr_in addr = resolve(host.data(), port);
 
     int sd = socket(/*Protocol Family*/ PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (sd <= 0)
+    if (sd <= 0) {
         throw std::runtime_error("error to create socket: " +
                                  std::string(strerror(errno)));
+    }
 
     set_non_blocked_impl(sd, true);
 
@@ -243,8 +243,9 @@ std::string Socket::recvTimed(int timeout) {
     tm.tv_usec = 0;
     int sel = select(m_Sd + 1, /*read*/ &read_fds, /*write*/ NULL,
                                      /*exceptions*/ NULL, &tm);
-    if (sel != 1)
+    if (sel != 1) {
         throw std::runtime_error("read timeout");
+    }
 
     return recv();
 }
@@ -258,9 +259,8 @@ bool Socket::hasData() {
     return false;
 }
 
-void Socket::createServerSocket(
-        uint32_t port,
-        uint32_t listen_queue_size) {
+void Socket::createServerSocket(uint32_t port,
+                                uint32_t listen_queue_size) {
     int sd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sd <= 0) {
         throw std::runtime_error("socket: " + std::string(strerror(errno)));
@@ -289,23 +289,23 @@ std::shared_ptr<Socket> Socket::accept() {
     struct sockaddr_in client;
     memset(&client, 0, sizeof(client));
     socklen_t cli_len = sizeof(client);
+
     std::cerr << "ready for accept new clients: " << std::endl;
     int cli_sd = ::accept(m_Sd, (struct sockaddr*)&client, &cli_len);
     if (-1 == cli_sd) {
         return std::shared_ptr<Socket>();
     }
+
     std::cerr << "new client: " << cli_sd
               << ", from: " << int2ipv4(client.sin_addr.s_addr) << std::endl;
 
     return std::make_shared<Socket>(cli_sd);
 }
 
-void Socket::httpQuery(
-    const std::string& query,
-    std::function<void(const std::string& s)> cb) {
+void Socket::httpQuery(const std::string& query,
+                       std::function<void(const std::string& s)> cb) {
     send(query);
     std::string res = recv_loop();
-    // std::string res = recv();
     std::cerr << "client: " << m_Sd << ", recv: \n" << res << std::endl;
     cb(res);
 }
