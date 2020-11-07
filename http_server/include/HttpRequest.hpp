@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 typedef enum {
     UNKNOWN = -1,
@@ -34,6 +35,8 @@ class HttpRequest {
     std::string GetURL() const;
     std::string GetHTTPVersion() const;
     RequestMethod GetRequestMethod() const;
+    void SetBody(std::string new_body);
+    size_t GetContentLen() const;
 
  private:
     RequestMethod request_method;
@@ -41,6 +44,11 @@ class HttpRequest {
     std::string http_version;
     std::map<std::string, std::string> headers;
 
+    std::string boundary;
+    std::vector<std::string> body_parts;
+    size_t content_length;
+
     void CheckRequestMethod(const std::string &method_name);
+    std::string GetBoundary() const;
 };
 

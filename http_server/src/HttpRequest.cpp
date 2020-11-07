@@ -1,5 +1,6 @@
 #include <string>
 #include <map>
+#include <vector>
 
 #include "exceptions.hpp"
 #include "HttpRequest.hpp"
@@ -37,8 +38,10 @@ HttpRequest::HttpRequest(const std::string &message) {
         http_version = std::string("");   // check
     }
     search+=2;   // \r\n 2 symbols
+
     // get headers
-    while ((pos = message.find(": ", search)) != std::string::npos) {
+    pos = message.find(": ", search);
+    while (pos != std::string::npos) {
         std::string key = message.substr(search, pos-search);
         pos+=2;
         search = pos;
@@ -46,8 +49,9 @@ HttpRequest::HttpRequest(const std::string &message) {
             search++;
         }
         std::string value = message.substr(pos, search-pos);
-        headers.insert (std::pair<std::string, std::string>(key,value));
+        headers.insert(std::pair<std::string, std::string>(key, value));
         search += 2;  // \r\n 2 symbols
+        pos = message.find(": ", search);
     }
 }
 
@@ -91,4 +95,49 @@ std::string HttpRequest::GetHTTPVersion() const {
 
 RequestMethod HttpRequest::GetRequestMethod() const {
     return request_method;
+}
+
+void HttpRequest::SetBody(std::string new_body) {
+    // body = new_body;
+    std::string boundary = HttpRequest::GetBoundary();
+    if (boundary.empty())
+        throw BadFormatException();
+    boundary = std::string("--") + boundary;
+    size_t search = new_body.find(boundary);
+    size_t pos = 0;
+    while (search != std::string::npos) {
+        pos = search  + boundary.length() + 2;
+        search = new_body.find(boundary, pos);
+        if (search != std::string::npos)
+            body_parts.push_back(new_body.substr(pos, search-pos));
+    }
+    if (pos == 0) {
+        body_parts.push_back(new_body);
+    }
+    size_t len = new_body.length();
+    if (pos < len) {
+        body_parts.push_back(new_body.substr(pos, new_body.length() - pos));
+    }
+}
+
+
+std::string HttpRequest::GetBoundary() const {
+    auto iter = headers.find(std::string("Content-Type"));
+    if (iter == headers.end()) {
+        return std::string();
+    } else {
+        size_t pos = iter->second.find(std::string("boundary="));
+        size_t len = (std::string("boundary=")).length();
+        std::string boundary = iter->second.substr(pos + len, iter->second.length() - pos);
+        return boundary;
+    }
+}
+
+size_t HttpRequest::GetContentLen() const {
+    auto iter = headers.find(std::string("Content-Length"));
+    if (iter == headers.end()) {
+        return 0;
+    } else {
+        return stoi(iter->second);
+    }
 }
