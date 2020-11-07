@@ -1,4 +1,5 @@
 *build*
-output/
-lib/
+output
+lib
 .vscode/
+.idea
