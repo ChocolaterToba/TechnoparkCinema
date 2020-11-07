@@ -25,7 +25,6 @@ class HttpRequest {
     std::string GetHTTPVersion() const;
     RequestMethod GetRequestMethod() const;
 
-private:
     RequestMethod request_method;
     std::string url;
     std::string http_version;

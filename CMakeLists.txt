@@ -20,4 +20,7 @@ target_include_directories(socket PUBLIC
 target_link_libraries(server socket)
 target_link_libraries(server pthread)
 
-add_executable(test http_server/src/test.cpp http_server/src/HttpRequest.cpp http_server/src/HttpResponse.cpp)
+add_executable(
+        test http_server/src/test.cpp
+        http_server/src/HttpRequest.cpp
+        http_server/src/HttpResponse.cpp)

@@ -12,7 +12,9 @@ std::string HttpRequest::GetHeader(std::string &string) const {
 }
 
 HttpRequest::HttpRequest(const std::string &message) {
-    // TODO:
+    url = "/index";
+    http_version = "1.1";
+    request_method = GET;
 }
 
 void HttpRequest::GetRequestMethod(const std::string &method_name) {
