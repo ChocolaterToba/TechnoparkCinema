@@ -40,6 +40,8 @@ class Socket {
     void httpQuery(const std::string& query,
                    std::function<void(const std::string& s)> cb);
 
+    std::string httpHeader();
+
  private:
     // Socket(const Socket &s);
     // const Socket& operator=(const Socket &s);

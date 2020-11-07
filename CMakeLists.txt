@@ -12,12 +12,27 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
 include_directories(http_server/include)
 
+add_executable(server http_server/src/main.cpp)
+
+###################
+# Socket Library
+###################
 add_library(socket STATIC http_server/socket/src/socket.cpp)
 target_include_directories(socket PUBLIC
                            http_server/socket/include)
+###################
 
-add_executable(server http_server/src/main.cpp)
+###################
+# HTTPClient Library
+###################
+add_library(client STATIC http_server/HTTPClient/src/HTTPClient.cpp)
+target_include_directories(client PUBLIC
+                           http_server/HTTPClient/include)
+target_link_libraries(client socket)
+###################
+
 target_link_libraries(server socket)
+target_link_libraries(server client)
 target_link_libraries(server pthread)
 
 add_executable(test

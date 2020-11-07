@@ -3,19 +3,15 @@
 #include <vector>
 #include <thread>
 #include "socket.hpp"
+#include "HTTPClient.hpp"
 
 void clientWork(std::shared_ptr<Socket> client, bool* shutdown) {
     client->setRcvTimeout(/*sec*/ 120, /*microsec*/ 0);
     try {
         std::cout << "Starting new recv \n";
-        std::string line = client->recv_loop();
-        if (line == "die") {
-            client->send("Shutting down server...\n");
-            *shutdown = true;
-            return;
-        }
-        std::cout << line << std::endl;
-        //client->send("echo: " + line + "\n");
+        HTTPClient httpclient;
+        httpclient.recvHeader(client);
+        std::cout << "-------------\n" << httpclient.getHeader() << "-------------" << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
         return;
