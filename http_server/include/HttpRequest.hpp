@@ -30,7 +30,7 @@ class HttpRequest {
  public:
     HttpRequest(const std::string &message);
 
-    std::string GetHeader(std::string &header_name) const;
+    std::string GetHeader(std::basic_string<char> header_name) const;
     std::string GetURL() const;
     std::string GetHTTPVersion() const;
     RequestMethod GetRequestMethod() const;

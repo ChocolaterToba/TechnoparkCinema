@@ -2,8 +2,11 @@
 #include <stdexcept>
 #include <vector>
 #include <thread>
+
 #include "socket.hpp"
 #include "HTTPClient.hpp"
+#include "HttpResponse.hpp"
+#include "HttpRequest.hpp"
 
 void clientWork(std::shared_ptr<Socket> client, bool* shutdown) {
     client->setRcvTimeout(/*sec*/ 120, /*microsec*/ 0);
@@ -11,7 +14,8 @@ void clientWork(std::shared_ptr<Socket> client, bool* shutdown) {
         std::cout << "Starting new recv \n";
         HTTPClient httpclient;
         httpclient.recvHeader(client);
-        std::cout << "-------------\n" << httpclient.getHeader() << "-------------" << std::endl;
+        HttpRequest request(httpclient.getHeader());
+        std::cout << "-------------\n" << HttpResponse(request).GetString() << "-------------" << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
         return;

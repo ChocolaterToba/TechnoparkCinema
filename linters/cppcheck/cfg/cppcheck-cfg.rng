@@ -79,14 +79,14 @@
             <element name="returnValue">
               <optional>
                 <attribute name="type">
-                  <data type="string">
+                  <data_string type="string">
                     <param name="pattern">([a-zA-Z_][a-zA-Z_0-9]*[ ])*([a-zA-Z_][a-zA-Z_0-9]*::)*[a-zA-Z_][a-zA-Z_0-9]*([ ]?[*])*</param>
-                  </data>
+                  </data_string>
                 </attribute>
               </optional>
               <optional>
                 <attribute name="container">
-                  <data type="positiveInteger"/>
+                  <data_string type="positiveInteger"/>
                 </attribute>
               </optional>
               <text/>
@@ -153,9 +153,9 @@
                   <element name="not-null"><empty/></element>
                   <element name="not-uninit"><empty/></element>
                   <element name="valid">
-                    <data type="string">
+                    <data_string type="string">
                       <param name="pattern">(-?[0-9]*[,:])*([-]?[0-9]+)?</param>
-                    </data>
+                    </data_string>
                   </element>
                   <element name="minsize">
                     <attribute name="type">
@@ -177,7 +177,7 @@
                   </element>
                   <element name="iterator">
                     <attribute name="container">
-                      <data type="positiveInteger"/>
+                      <data_string type="positiveInteger"/>
                     </attribute>
                     <attribute name="type">
                       <choice>
@@ -196,9 +196,9 @@
 
       <element name="markup">
         <attribute name="ext">
-          <data type="string">
+          <data_string type="string">
             <param name="pattern">[.][a-z]+</param>
-          </data>
+          </data_string>
         </attribute>
         <attribute name="aftercode"><ref name="DATA-BOOL"/></attribute>
         <attribute name="reporterrors"><ref name="DATA-BOOL"/></attribute>
@@ -222,7 +222,7 @@
             </zeroOrMore>
             <optional>
               <element name="structure">
-                <attribute name="offset"><data type="integer"/></attribute>
+                <attribute name="offset"><data_string type="integer"/></attribute>
                 <attribute name="start"><text/></attribute>
                 <attribute name="end"><text/></attribute>
               </element>
@@ -285,7 +285,7 @@
           <choice>
             <element name="type">
               <choice>
-                <attribute name="templateParameter"><data type="integer"/></attribute>
+                <attribute name="templateParameter"><data_string type="integer"/></attribute>
                 <attribute name="string">
                   <value>std-like</value>
                 </attribute>
@@ -294,7 +294,7 @@
             </element>
             <element name="size">
               <optional>
-                <attribute name="templateParameter"><data type="integer"/></attribute>
+                <attribute name="templateParameter"><data_string type="integer"/></attribute>
               </optional>
               <zeroOrMore>
                 <element name="function">
@@ -387,10 +387,10 @@
 </start>
 
   <define name="ARGNO">
-    <data type="integer">
+    <data_string type="integer">
       <param name="minInclusive">1</param>
       <param name="maxInclusive">20</param>
-    </data>
+    </data_string>
   </define>
 
   <define name="DATA-BOOL">
@@ -401,15 +401,15 @@
   </define>
 
   <define name="DATA-NAME">
-    <data type="string">
+    <data_string type="string">
       <param name="pattern">[a-zA-Z_][a-zA-Z_0-9]*</param>
-    </data>
+    </data_string>
   </define>
 
   <define name="DATA-EXTNAME">
-    <data type="string">
+    <data_string type="string">
       <param name="pattern">[a-zA-Z_][a-zA-Z_0-9:,]*</param>
-    </data>
+    </data_string>
   </define>
 
   <define name="CONTAINER-ACTION">

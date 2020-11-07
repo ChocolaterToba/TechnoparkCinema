@@ -51,7 +51,7 @@ HttpRequest::HttpRequest(const std::string &message) {
     }
 }
 
-std::string HttpRequest::GetHeader(std::string &string) const {
+std::string HttpRequest::GetHeader(std::basic_string<char> string) const {
     auto iter = headers.find(string);
     if (iter == headers.end()) {
         return std::string();
