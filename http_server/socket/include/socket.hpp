@@ -24,6 +24,7 @@ class Socket {
                  int port,
                  int timeout);
     void send(const std::string& s);
+    void send(const std::vector<char>& s);
     bool hasData();
     std::string recv();
     std::string recv_loop();
