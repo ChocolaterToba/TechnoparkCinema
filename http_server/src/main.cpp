@@ -57,9 +57,7 @@ int main(int argc, char* argv[]) {
         for (size_t i = 0; i < threads.size(); ++i) {
             threads[i].join();
         }
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
     }
-
-    return 0;
 }
