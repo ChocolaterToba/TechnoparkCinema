@@ -1,6 +1,55 @@
-#include <exception>
+#include <string>
+#include <map>
 
+#include "exceptions.hpp"
 #include "HttpRequest.hpp"
+
+HttpRequest::HttpRequest(const std::string &message) {
+    // find Method
+    size_t pos = 0;
+    size_t search = message.find(' ');
+    std::string method = message.substr(pos, search);
+    CheckRequestMethod(method);
+    if (request_method == UNKNOWN) {
+        throw BadFormatException();
+    }
+    // find URL
+    search++;
+    pos = search;
+    while ((message[search] != ' ') && (message[search] != '\r')) {
+        search++;
+    }
+    if (search == pos) {
+        throw BadFormatException();
+    }
+    url = message.substr(pos, search-pos);
+    // find HTTP version
+    search++;
+    pos = 0;
+    if ((pos = message.find("HTTP/", search - 1, 5)) != std::string::npos) {
+        pos = pos+5;
+        search = pos;
+        while (message[search] != '\r') {
+            search++;
+        }
+        http_version = message.substr(pos, search-pos);
+    } else {
+        http_version = std::string("");   // check
+    }
+    search+=2;   // \r\n 2 symbols
+    // get headers
+    while ((pos = message.find(": ", search)) != std::string::npos) {
+        std::string key = message.substr(search, pos-search);
+        pos+=2;
+        search = pos;
+        while (message[search] != '\r') {
+            search++;
+        }
+        std::string value = message.substr(pos, search-pos);
+        headers.insert (std::pair<std::string, std::string>(key,value));
+        search += 2;  // \r\n 2 symbols
+    }
+}
 
 std::string HttpRequest::GetHeader(std::string &string) const {
     auto iter = headers.find(string);
@@ -11,13 +60,7 @@ std::string HttpRequest::GetHeader(std::string &string) const {
     }
 }
 
-HttpRequest::HttpRequest(const std::string &message) {
-    url = "/index";
-    http_version = "1.1";
-    request_method = GET;
-}
-
-void HttpRequest::GetRequestMethod(const std::string &method_name) {
+void HttpRequest::CheckRequestMethod(const std::string &method_name) {
     if (method_name == "GET")
         request_method = GET;
     else if (method_name == "POST")
