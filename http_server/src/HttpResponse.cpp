@@ -125,7 +125,8 @@ void HttpResponse::SetContentType(ContentType type) {
 void HttpResponse::SetData(const std::string &url) {
     SetContentType(GetContentType(url));
     std::string &str = data.data_string;
-    std::ifstream source(url.c_str() + 1, std::ios::in | std::ios::binary);
+    const std::string path("static" + url);
+    std::ifstream source(path, std::ios::in | std::ios::binary);
     char buffer[BUF_SIZE] = {0};
     while (source) {
         source.read(buffer, BUF_SIZE);
