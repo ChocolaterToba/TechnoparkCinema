@@ -4,22 +4,32 @@
 #include <map>
 #include <string>
 
-class HttpMessage {
+typedef enum {
+    UNKNOWN = -1,
+    GET,
+    POST,
+    OPTIONS,
+    HEAD,
+    PUT,
+    PATCH,
+    DELETE,
+    CONNECT,
+} RequestMethod;
+
+class HttpRequest {
  public:
-    virtual std::string Host();
-    std::string User_Agent();
- protected:
-    std::vector<std::string> headers;
-};
-
-class HttpResponse: public HttpMessage {
-
-};
-
-class HttpRequest: public HttpMessage {
-public:
     HttpRequest(const std::string &message);
 
+    std::string GetHeader(std::string &header_name) const;
+    std::string GetURL() const;
+    std::string GetHTTPVersion() const;
+    RequestMethod GetRequestMethod() const;
 
+private:
+    RequestMethod request_method;
+    std::string url;
+    std::string http_version;
+    std::map<std::string, std::string> headers;
 
+    void GetRequestMethod(const std::string &method_name);
 };
