@@ -1,6 +1,10 @@
-#include "../include/HttpRequest.hpp"
+#include <string>
+#include <map>
 
-HttpRequest::HttpRequest(const std::string message) {
+#include "exceptions.hpp"
+#include "HttpRequest.hpp"
+
+HttpRequest::HttpRequest(const std::string &message) {
     // find Method
     size_t pos = 0;
     size_t search = message.find(' ');
@@ -76,6 +80,7 @@ void HttpRequest::CheckRequestMethod(const std::string &method_name) {
     else
         request_method = UNKNOWN;
 }
+
 std::string HttpRequest::GetURL() const {
     return url;
 }

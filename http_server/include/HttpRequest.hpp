@@ -1,10 +1,7 @@
 #pragma once
 
-#include <iostream>
-#include <vector>
 #include <map>
 #include <string>
-#include "exceptions.hpp"
 
 typedef enum {
     UNKNOWN = -1,
@@ -28,15 +25,17 @@ User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru; rv:1.9b5) Gecko/2008050509 Fire
 Accept: text/html
 Connection: close
 */
+
 class HttpRequest {
  public:
-    HttpRequest(const std::string message);
+    HttpRequest(const std::string &message);
+
     std::string GetHeader(std::string &header_name) const;
     std::string GetURL() const;
     std::string GetHTTPVersion() const;
     RequestMethod GetRequestMethod() const;
 
- protected:
+ private:
     RequestMethod request_method;
     std::string url;
     std::string http_version;
