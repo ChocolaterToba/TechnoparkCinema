@@ -12,19 +12,17 @@
 void clientWork(std::shared_ptr<Socket> client, bool* shutdown) {
     client->setRcvTimeout(/*sec*/ 120, /*microsec*/ 0);
     std::ofstream output("out", std::ios::out);
-//    try {
+    try {
         std::cout << "Starting new recv \n";
         HTTPClient httpclient;
         httpclient.recvHeader(client);
         HttpRequest request(httpclient.getHeader());
         HttpResponse response(request);
         client->send(response.GetData());
-        std::cout << "------IN-------\n" << httpclient.getHeader() << "-------------" << std::endl;
-        output << "-------OUT------\n" << '!' << response.GetData().size() << "-------------" << std::endl;
-//    } catch (const std::exception& e) {
-//        std::cerr << "Exception: " << e.what() << std::endl;
-//        return;
-//    }
+    } catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+        return;
+    }
 }
 
 int main(int argc, char* argv[]) {
