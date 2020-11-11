@@ -1,22 +1,33 @@
 #pragma once
 
 #include <functional>
+#include <vector>
 #include "HTTPClient"
+#include "Worker.hpp"
+
+typedef std::function<std::function<void(std::vector<char>&)>
+                      (std::vector<char>&, HTTPClient&)> PreFuncType;
+typedef std::function<void(std::vector<char>&)> MainFuncType;
+typedef std::function<void(std::vector<char>&, HTTPClient&)> PostFuncType;
 
 class Task {
  private:
-    std::function<void(HTTPClient&)> preFunc;
-    std::function<void()> mainFunc;
-    std::function<void(HTTPClient&)> postFunc;
+    PreFuncType preFunc;
+    MainFuncType mainFunc;
+    PostFuncType postFunc;
 
     HTTPClient& client;
 
  public:
-    explicit Task(HTTPClient& client);
+    explicit Task(HTTPClient client);
 
-    std::function<void(HTTPClient&)> GetPreFunc();
-    std::function<void()> GetMainFunc();
-    std::function<void(HTTPClient&)> GetPostFunc();
+    PreFuncType GetPreFunc();
+    MainFuncType GetMainFunc();
+    MainFuncType GetPostFunc();
+
+    void SetPreFunc(PreFuncType preFunc);
+    void SetMainFunc(MainFuncType mainFunc);
+    void SetPostFunc(PostFuncType postFunc);
 
     HTTPClient& GetClient();
 }
