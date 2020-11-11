@@ -5,7 +5,7 @@
 
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
-#include "exceptions.hpp"
+//#include "exceptions.hpp"
 
 #define ALLOWED_METHODS "HEAD, OPTIONS, GET"
 
@@ -22,8 +22,8 @@ public:
 class StaticResponseBuilder: public ResponseBuilder {
 private:
     void SetContentType(const std::string &url);
-    bool ContentExists(const std::string &url);
-    bytes GetRawData(const std::string &url);
+    static bool ContentExists(const std::string &url);
+    static bytes GetRawData(const std::string &url);
 
 public:
     explicit StaticResponseBuilder(const HttpRequest &request1);

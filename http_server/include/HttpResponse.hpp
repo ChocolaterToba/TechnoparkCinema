@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "HttpRequest.hpp"
-#include "exceptions.hpp"
+//#include "exceptions.hpp"
 
 typedef std::vector<char> bytes;
 
@@ -38,13 +38,13 @@ public:
 
 class HeadOnlyResponse: public HttpResponse {
 public:
-    virtual bytes GetFullData() override;
+    bytes GetFullData() override;
 };
 
 class FullResponse: public HttpResponse {
 private:
     bytes body;
 public:
-    virtual bytes GetFullData() override;
-    bool AddBody(const bytes &src);
+    bytes GetFullData() override;
+    void AddBody(const bytes &src);
 };

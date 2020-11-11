@@ -10,8 +10,8 @@
 #include "ResponseBuilder.hpp"
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
-#include "exceptions.hpp"
-
+//#include "exceptions.hpp"  // right now I will need just one
+class UnknownContentTypeException: public std::exception {};
 
 void HttpResponse::AddHeader(std::pair<std::string, std::string> header) {
     headers.insert(header);
@@ -22,7 +22,7 @@ void HttpResponse::SetReturnCode(const std::string &ret_code) {
 }
 
 std::string HttpResponse::GetReturnCode() const {
-    return std::move(return_code);
+    return return_code;
 }
 
 bytes HeadOnlyResponse::GetFullData() {
@@ -50,9 +50,9 @@ bytes FullResponse::GetFullData() {
     return std::move(result);
 }
 
-bool FullResponse::AddBody(const bytes &src) {
+void FullResponse::AddBody(const bytes &src) {
     headers.insert(std::pair<std::string, std::string>("Content-Length", std::to_string(src.size())));
-    body = std::move(src);
+    body = src;
 }
 
 std::shared_ptr<HttpResponse> ResponseBuilder::GetResponse() {
@@ -133,8 +133,8 @@ void StaticResponseBuilder::MakeResponse() {
     switch (request.GetRequestMethod()) {
         case GET:
             response = std::make_shared<FullResponse>();
-            if (ContentExists(request.GetURL()))
-                std::dynamic_pointer_cast<std::shared_ptr<FullResponse>>(response).get()->get()->AddBody(GetRawData(request.GetURL()));
+            if (ContentExists(request.GetURL()))  // I'm really sorry for the next line :/
+                std::dynamic_pointer_cast<std::shared_ptr<FullResponse>>(response)->get()->AddBody(GetRawData(request.GetURL()));
             else
                 response->SetReturnCode("404 Not Found");
             break;
@@ -165,14 +165,14 @@ void OptionsResponseBuilder::MakeResponse() {
 VideoResponseBuilder::VideoResponseBuilder(const HttpRequest &request1) : ResponseBuilder(request1) {}
 
 void VideoResponseBuilder::MakeResponse() {
-    // TODO: get data from the database and form response, according to the requested piece of bytes
+    // TODO: Get data from the database and form response, according to the requested piece of bytes
 }
 
-AuthorizationHandler_ResponseBuilder::AuthorizationHandler_ResponseBuilder(const HttpRequest &request1) : ResponseBuilder(request1) {
-
-}
+AuthorizationHandler_ResponseBuilder::AuthorizationHandler_ResponseBuilder(const HttpRequest &request1) : ResponseBuilder(request1) {}
 
 void AuthorizationHandler_ResponseBuilder::MakeResponse() {
-    // TODO: make all the logic, that includes parsing the multipart form-data from the request, making needed changes/checks in our user
-    //  database, forming corresponding response with confirmation/error giving to the client
+    // TODO: Make all the logic, that includes parsing the multipart form-data from the request, making needed changes/checks in our user
+    //  database, forming corresponding response with confirmation/error giving to the client. However, it will be better to divide
+    //  authorization/initialization processes, that have influence on the our database, from the part of code, that just
+    //  making response to the client. Or, at least, make it through another method
 }
