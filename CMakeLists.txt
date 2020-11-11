@@ -34,6 +34,15 @@ target_include_directories(client PUBLIC
 target_link_libraries(client socket)
 ###################
 
+######################
+# Async Server Library
+######################
+add_library(asyncServer STATIC http_server/async/src/Master.cpp)
+target_include_directories(asyncServer PUBLIC
+                           http_server/async/include)
+target_link_libraries(asyncServer socket client)
+######################
+
 target_link_libraries(server socket)
 target_link_libraries(server client)
 target_link_libraries(server pthread)
