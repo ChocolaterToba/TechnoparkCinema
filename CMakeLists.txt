@@ -35,6 +35,9 @@ target_link_libraries(server socket)
 target_link_libraries(server client)
 target_link_libraries(server pthread)
 
+
+include_directories(${GTEST_INCLUDE_DIRS})
+
 add_executable(test
         http_server/src/test.cpp
         http_server/src/HttpRequest.cpp
