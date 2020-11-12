@@ -10,49 +10,81 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wpedantic -fPIC")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
-include_directories(http_server/include)
+include_directories(${PROJECT_SOURCE_DIR}/http_server/include)
 
-add_library(http_message STATIC http_server/src/HttpResponse.cpp http_server/src/HttpRequest.cpp)
+add_library(http_message STATIC
+            ${PROJECT_SOURCE_DIR}/http_server/src/HttpResponse.cpp
+            ${PROJECT_SOURCE_DIR}/http_server/src/HttpRequest.cpp)
 
-add_executable(server http_server/src/main.cpp)
+add_executable(server ${PROJECT_SOURCE_DIR}/http_server/src/main.cpp)
 target_link_libraries(server http_message)
 
 ###################
 # Socket Library
 ###################
-add_library(socket STATIC http_server/socket/src/socket.cpp)
+add_library(socket STATIC
+            ${PROJECT_SOURCE_DIR}/http_server/socket/src/socket.cpp)
 target_include_directories(socket PUBLIC
-                           http_server/socket/include)
+                           ${PROJECT_SOURCE_DIR}/http_server/socket/include)
 ###################
 
 ###################
 # HTTPClient Library
 ###################
-add_library(client STATIC http_server/HTTPClient/src/HTTPClient.cpp)
+add_library(client STATIC
+            ${PROJECT_SOURCE_DIR}/http_server/HTTPClient/src/HTTPClient.cpp)
 target_include_directories(client PUBLIC
-                           http_server/HTTPClient/include)
+                           ${PROJECT_SOURCE_DIR}/http_server/HTTPClient/include)
 target_link_libraries(client socket)
 ###################
 
 ######################
 # Async Server Library
 ######################
-file(GLOB async_src http_server/async/src/Task.cpp
-                    http_server/async/src/Worker.cpp
-                    http_server/async/src/TaskBuilder.cpp
-                    http_server/async/src/TasksController.cpp
-                    http_server/async/src/Master.cpp)
-add_library(asyncServer STATIC ${async_src})
+file(GLOB ASYNC_SRC ${PROJECT_SOURCE_DIR}/http_server/async/src/Task.cpp
+                    ${PROJECT_SOURCE_DIR}/http_server/async/src/Worker.cpp
+                    ${PROJECT_SOURCE_DIR}/http_server/async/src/TaskBuilder.cpp
+                    ${PROJECT_SOURCE_DIR}/http_server/async/src/TasksController.cpp
+                    ${PROJECT_SOURCE_DIR}/http_server/async/src/Master.cpp)
+add_library(asyncServer STATIC ${ASYNC_SRC})
 target_include_directories(asyncServer PUBLIC
-                           http_server/async/include)
+                           ${PROJECT_SOURCE_DIR}/http_server/async/include)
 target_link_libraries(asyncServer client)
 ######################
+
+################################
+# Testing
+################################
+
+# Options. Turn on with 'cmake -Dmyvarname=ON'.
+#                       'cmake -DENABLE_TESTING=ON'.
+option(ENABLE_TESTING "Build all tests." OFF) # Makes boolean 'test' available.
+
+if (ENABLE_TESTING)
+  file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/http_server/test/test.cpp)
+
+  # Install Gtest
+  include(FetchContent)
+  FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        release-1.8.0
+  )
+  FetchContent_MakeAvailable(googletest)
+  include(GoogleTest)
+
+  include(CTest)
+ 
+  # Link runTests with what we want to test and the GTest and DZ1 library
+  add_executable(runTests ${TEST_SRC_FILES} ${ASYNC_SRC})
+  target_link_libraries(runTests gtest_main pthread)
+
+  target_link_libraries(runTests asyncServer)
+
+  gtest_discover_tests(runTests)
+
+endif()
 
 target_link_libraries(server socket)
 target_link_libraries(server client)
 target_link_libraries(server pthread)
-
-# add_executable(test
-#         http_server/src/test.cpp
-#         http_server/src/HttpRequest.cpp
-#         http_server/src/HttpResponse.cpp)
