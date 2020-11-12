@@ -37,10 +37,12 @@ target_link_libraries(client socket)
 ######################
 # Async Server Library
 ######################
+file(GLOB async_src http_server/async/src/Task.cpp
+                    http_server/async/src/Worker.cpp)
 add_library(asyncServer STATIC http_server/async/src/Task.cpp)
 target_include_directories(asyncServer PUBLIC
                            http_server/async/include)
-target_link_libraries(asyncServer socket client)
+target_link_libraries(asyncServer client)
 ######################
 
 target_link_libraries(server socket)

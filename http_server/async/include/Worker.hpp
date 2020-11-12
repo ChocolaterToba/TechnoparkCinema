@@ -1,16 +1,29 @@
 #pragma once
 
+#include <thread>
+#include <mutex>
 #include <functional>
 #include <memory>
-#include <thread>
 #include <vector>
+#include <queue>
 #include "HTTPClient.hpp"
-#include "Queue.hpp"
+
+typedef enum {
+    NoTask,
+    TaskRecieved,
+    PreFuncRunning,
+    PreFuncRan,
+    MainFuncRunning,
+    MainFuncRan,
+    PostFuncRunning
+} WorkerStates;
 
 class Worker {
  private:
-    Queue<Task>& tasks;
-    std::unique_ptr<Task> currentTask;
+    std::queue<Task>& tasks;
+    std::mutex tasksMutex;
+    Task currentTask;
+    WorkerStates state;
 
     std::vector<char> data;
 
@@ -18,12 +31,8 @@ class Worker {
     bool stop;
 
  public:
-    explicit Worker(Queue<Task>& tasks);
+    Worker(std::queue<Task>& tasks, std::mutex tasksMutex);
     ~Worker();
-
-    void SetPreFunc(std::function<void(HTTPClient&)> PreFunc);
-    void SetMainFunc(std::function<void()> MainFunc);
-    void SetPostFunc(std::function<void(HTTPClient&)> PostFunc);
 
     void RunPreFunc();
     void RunMainFunc();
