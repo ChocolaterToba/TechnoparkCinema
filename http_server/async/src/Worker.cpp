@@ -7,7 +7,8 @@
 
 #include "Worker.hpp"
 
-Worker::Worker(std::queue<Task>& tasks, std::mutex tasksMutex) :
+Worker::Worker(std::queue<Task>& tasks,
+               std::shared_ptr<std::mutex> tasksMutex) :
         this->tasks(tasks),
         this->tasksMutex(tasksMutex),
         state(NoTask),

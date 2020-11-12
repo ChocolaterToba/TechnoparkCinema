@@ -4,10 +4,10 @@
 #include "Task.hpp"
 #include "TaskFuncs.hpp"
 
-Task::Task(HTTPClient client) : this->client(client),
-                                this->preFunc(PreProcess),
-                                this->mainFunc(MainProcessBasic),
-                                this->postFunc(PostProcess) {}
+Task::Task(HTTPClient client) : client(client),
+                                preFunc(PreProcess),
+                                mainFunc(MainProcessBasic),
+                                postFunc(PostProcess) {}
 
 PreFuncType Task::GetPreFunc() {
     return preFunc;

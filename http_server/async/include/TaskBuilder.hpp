@@ -8,9 +8,9 @@
 class TaskBuilder {
  private:
     std::queue<HTTPClient>& unprocessedClients;
-    std::mutex& unprocessedClientsMutex
+    std::shared_ptr<std::mutex> unprocessedClientsMutex;
     std::vector<Task>& haveNoData;
-    std::mutex& haveNoDataMutex;
+    std::shared_ptr<std::mutex> haveNoDataMutex;
 
     void CreateTasks();
 
@@ -18,11 +18,10 @@ class TaskBuilder {
     bool stop;
 
  public:
-    explicit TaskBuilder(std::queue<HTTPClient>& unprocessedClients,
-                         std::mutex& unprocessedClientsMutex,
-                         std::vector<Task>& haveNoData,
-                         std::mutex& haveNoDataMutex,
-                         );
+    TaskBuilder(std::queue<HTTPClient>& unprocessedClients,
+                std::shared_ptr<std::mutex> unprocessedClientsMutex,
+                std::vector<Task>& haveNoData,
+                std::shared_ptr<std::mutex> haveNoDataMutex);
     ~TaskBuilder();
 
     void Start();

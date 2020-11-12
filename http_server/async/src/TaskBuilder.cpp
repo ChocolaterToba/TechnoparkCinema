@@ -5,13 +5,13 @@
 #include "TaskBuilder.hpp"
 
 TaskBuilder::TaskBuilder(std::queue<HTTPClient>& unprocessedClients,
-                         std::mutex& unprocessedClientsMutex,
+                         std::shared_ptr<std::mutex> unprocessedClientsMutex,
                          std::vector<Task>& haveNoData,
-                         std::mutex& haveNoDataMutex) :
-    this->unprocessedClients(unprocessedClients),
-    this->unprocessedClientsMutex(unprocessedClientsMutex),
-    this->haveNoData(haveNoData),
-    this->haveNoDataMutex(haveNoDataMutex),
+                         std::shared_ptr<std::mutex> haveNoDataMutex) :
+    unprocessedClients(unprocessedClients),
+    unprocessedClientsMutex(unprocessedClientsMutex),
+    haveNoData(haveNoData),
+    haveNoDataMutex(haveNoDataMutex),
     stop(true) {}
 
 TaskBuilder::~TaskBuilder() {

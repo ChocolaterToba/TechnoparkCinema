@@ -42,7 +42,7 @@ file(GLOB async_src http_server/async/src/Task.cpp
                     http_server/async/src/TaskBuilder.cpp
                     http_server/async/src/TasksController.cpp
                     http_server/async/src/Master.cpp)
-add_library(asyncServer STATIC http_server/async/src/Task.cpp)
+add_library(asyncServer STATIC ${async_src})
 target_include_directories(asyncServer PUBLIC
                            http_server/async/include)
 target_link_libraries(asyncServer client)

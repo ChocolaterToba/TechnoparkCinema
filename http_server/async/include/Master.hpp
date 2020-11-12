@@ -6,7 +6,7 @@
 #include "socket.hpp"
 #include "HTTPClient.hpp"
 #include "TaskBuilder.hpp"
-#include "ConnectionsController.hpp"
+#include "TasksController.hpp"
 
 class Master {
  private:
@@ -16,14 +16,14 @@ class Master {
 
     TaskBuilder builder;
     std::queue<HTTPClient> unprocessedClients;
-    std::mutex unprocessedClientsMutex;
+    std::shared_ptr<std::mutex> unprocessedClientsMutex;
 
 
-    ConnectionsController controller;
+    TasksController controller;
     std::vector<Task>& haveNoData;
-    std::mutex& haveNoDataMutex;
+    std::shared_ptr<std::mutex> haveNoDataMutex;
     std::queue<Task>& haveData;
-    std::mutex& haveDataMutex;
+    std::shared_ptr<std::mutex> haveDataMutex;
 
     void Listen();
 
@@ -31,7 +31,7 @@ class Master {
     bool stop;
 
  public:
-    explicit Master(std::unique_ptr<Socket> socket);
+    Master();
 
     //  static void SetSocket(std::unique_ptr<Socket> socket);
     void Start();

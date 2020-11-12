@@ -21,7 +21,7 @@ typedef enum {
 class Worker {
  private:
     std::queue<Task>& tasks;
-    std::mutex tasksMutex;
+    std::shared_ptr<std::mutex> tasksMutex;
     Task currentTask;
     WorkerStates state;
 
@@ -31,7 +31,7 @@ class Worker {
     bool stop;
 
  public:
-    Worker(std::queue<Task>& tasks, std::mutex tasksMutex);
+    Worker(std::queue<Task>& tasks, std::shared_ptr<std::mutex> tasksMutex);
     ~Worker();
 
     void WorkerLoop();

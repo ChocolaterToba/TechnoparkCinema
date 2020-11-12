@@ -4,14 +4,15 @@
 #include <vector>
 #include <mutex>
 #include <thread>
+#include <memory>
 #include "Task.hpp"
 
 class TasksController {
  private:
     std::vector<Task> haveNoData;
-    std::mutex haveNoDataMutex;
+    std::shared_ptr<std::mutex> haveNoDataMutex;
     std::queue<Task> haveData;
-    std::mutex haveDataMutex;
+    std::shared_ptr<std::mutex> haveDataMutex;
 
     std::thread tasksControllerThread;
     void TasksControllerLoop();
@@ -22,9 +23,9 @@ class TasksController {
     ~TasksController();
 
     std::vector<Task>& GetHaveNoData();
-    std::mutex& GetHaveNoDataMutex();
+    std::shared_ptr<std::mutex> GetHaveNoDataMutex();
     std::queue<Task>& GetHaveData();
-    std::mutex& GetHaveDataMutex();
+    std::shared_ptr<std::mutex> GetHaveDataMutex();
 
     void Start();
     void Stop();

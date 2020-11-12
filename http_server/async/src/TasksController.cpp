@@ -1,31 +1,29 @@
 #include <queue>
 #include <mutex>
 #include <thread>
+#include <memory>
 #include "Task.hpp"
 #include "TasksController.hpp"
 
 TasksController::TasksController() :
-    haveNoData(),
-    haveNoDataMutex(),
-    haveData(),
-    haveDataMutex(),
+    haveNoDataMutex(std::make_shared<std::mutex>()),
+    haveDataMutex(std::make_shared<std::mutex>()),
     stop(true) {}
 
 TasksController::~TasksController() {
     Stop();
-    //  TODO(Aglicheev): add mutex handling.
 }
 
 std::vector<Task>& TasksController::GetHaveNoData() {
     return haveNoData;
 }
-std::mutex& TasksController::GetHaveNoDataMutex() {
+std::shared_ptr<std::mutex> TasksController::GetHaveNoDataMutex() {
     return haveNoDataMutex;
 }
 std::queue<Task>& TasksController::GetHaveData() {
     return haveData;
 }
-std::mutex& TasksController::GetHaveDataMutex() {
+std::shared_ptr<std::mutex> TasksController::GetHaveDataMutex() {
     return haveDataMutex;
 }
 

@@ -2,7 +2,7 @@
 
 #include <functional>
 #include <vector>
-#include "HTTPClient"
+#include "HTTPClient.hpp"
 #include "Worker.hpp"
 
 typedef std::function<std::function<void(std::vector<char>&)>
