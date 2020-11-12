@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <functional>
+#include <vector>
 #include "HTTPClient.hpp"
 
 typedef std::function<void(std::vector<char>&)> MainFuncType;

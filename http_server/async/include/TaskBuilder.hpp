@@ -3,6 +3,7 @@
 #include <memory>
 #include <thread>
 #include <queue>
+#include <mutex>
 #include "Task.hpp"
 
 class TaskBuilder {

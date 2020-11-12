@@ -9,33 +9,34 @@
 #include "Master.hpp"
 
 Master::Master():
-        stop(true),
-        unprocessedClientsMutex(std::make_shared<std::mutex>()),
         controller(),
         haveNoData(controller.GetHaveNoData()),
         haveNoDataMutex(controller.GetHaveNoDataMutex()),
         haveData(controller.GetHaveData()),
         haveDataMutex(controller.GetHaveDataMutex()),
-        builder(haveNoData,
-                haveNoDataMutex,
-                haveData,
-                haveDataMutex) {}
+        unprocessedClients(),
+        unprocessedClientsMutex(std::make_shared<std::mutex>()),
+        builder(unprocessedClients,
+                unprocessedClientsMutex,
+                haveNoData,
+                haveNoDataMutex),
+        stop(true) {}
 
 Master::~Master() {
     Stop();
 }
 
-void Listen() {
+void Master::Listen() {
     // TODO(Aglicheev): connections listening.
 }
 
-void Start() {
+void Master::Start() {
     if (stop) {
         stop = false;
-        masterThread = std::thread(Listen);
+        masterThread = std::thread(&Master::Listen, this);
     }
 }
-void Stop() {
+void Master::Stop() {
     if (!stop) {
         stop = true;
         masterThread.join();

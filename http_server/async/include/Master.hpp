@@ -7,6 +7,7 @@
 #include "HTTPClient.hpp"
 #include "TaskBuilder.hpp"
 #include "TasksController.hpp"
+#include "Worker.hpp"
 
 class Master {
  protected:
@@ -14,16 +15,15 @@ class Master {
 
     std::vector<Worker> workers;
 
-    TaskBuilder builder;
-    std::queue<HTTPClient> unprocessedClients;
-    std::shared_ptr<std::mutex> unprocessedClientsMutex;
-
-
     TasksController controller;
     std::vector<Task>& haveNoData;
     std::shared_ptr<std::mutex> haveNoDataMutex;
-    std::queue<Task>& haveData;
+    std::queue<std::unique_ptr<Task>>& haveData;
     std::shared_ptr<std::mutex> haveDataMutex;
+
+    std::queue<HTTPClient> unprocessedClients;
+    std::shared_ptr<std::mutex> unprocessedClientsMutex;
+    TaskBuilder builder;
 
     virtual void Listen();
 

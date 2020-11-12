@@ -18,16 +18,16 @@ class Task {
     HTTPClient& client;
 
  public:
-    explicit Task(HTTPClient client);
+    explicit Task(HTTPClient client = HTTPClient());
     virtual ~Task();
 
     virtual PreFuncType GetPreFunc();
     virtual MainFuncType GetMainFunc();
-    virtual MainFuncType GetPostFunc();
+    virtual PostFuncType GetPostFunc();
 
     virtual void SetPreFunc(PreFuncType preFunc);
     virtual void SetMainFunc(MainFuncType mainFunc);
     virtual void SetPostFunc(PostFuncType postFunc);
 
     virtual HTTPClient& GetClient();
-}
+};

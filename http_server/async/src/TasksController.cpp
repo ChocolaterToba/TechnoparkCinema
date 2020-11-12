@@ -20,7 +20,7 @@ std::vector<Task>& TasksController::GetHaveNoData() {
 std::shared_ptr<std::mutex> TasksController::GetHaveNoDataMutex() {
     return haveNoDataMutex;
 }
-std::queue<Task>& TasksController::GetHaveData() {
+std::queue<std::unique_ptr<Task>>& TasksController::GetHaveData() {
     return haveData;
 }
 std::shared_ptr<std::mutex> TasksController::GetHaveDataMutex() {
@@ -36,7 +36,8 @@ void TasksController::TasksControllerLoop() {
 void TasksController::Start() {
     if (stop) {
         stop = false;
-        tasksControllerThread = std::thread(TasksControllerLoop);
+        tasksControllerThread =
+            std::thread(&TasksController::TasksControllerLoop, this);
     }
 }
 void TasksController::Stop() {

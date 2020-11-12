@@ -1,6 +1,7 @@
 #include <memory>
 #include <thread>
 #include <queue>
+#include <mutex>
 #include "Task.hpp"
 #include "TaskBuilder.hpp"
 
@@ -21,13 +22,13 @@ TaskBuilder::~TaskBuilder() {
 void TaskBuilder::CreateTasks() {
     while (!stop) {
         if (!unprocessedClients.empty())  {
-            unprocessedClientsMutex.lock();
+            unprocessedClientsMutex->lock();
             Task newTask(unprocessedClients.front());
-            unprocessedClients.pop_front();
-            unprocessedClientsMutex.unlock();
-            haveNoDataMutex.lock();
+            unprocessedClients.pop();
+            unprocessedClientsMutex->unlock();
+            haveNoDataMutex->lock();
             haveNoData.push_back(newTask);
-            haveNoDataMutex.unlock();
+            haveNoDataMutex->unlock();
         } else {
             // wait(); TODO
         }
@@ -37,7 +38,7 @@ void TaskBuilder::CreateTasks() {
 void TaskBuilder::Start() {
     if (stop) {
         stop = false;
-        builderThread = std::thread(CreateTasks);
+        builderThread = std::thread(&TaskBuilder::CreateTasks, this);
     }
 }
 void TaskBuilder::Stop() {
