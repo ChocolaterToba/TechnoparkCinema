@@ -23,7 +23,6 @@
 
 static bytes ReadBytes(const std::string &src) {
     bytes data;
-
     std::ifstream source(src, std::ios::binary);
     char buffer[BUF_SIZE] = {0};
     while (source.read(buffer, BUF_SIZE)) {
@@ -37,7 +36,7 @@ TEST(ResponseBuilderTest, GetStaticTest) {
     bytes expected_response_data = ReadBytes("../tests/data/responses/static_get.bytes");
     HttpRequest request(ReadBytes("../tests/data/requests/static_get.bytes"));
 
-    auto builder = std::make_shared<StaticResponseBuilder>(request);
+    std::shared_ptr<ResponseBuilder> builder = std::make_shared<StaticResponseBuilder>(request);
     builder->MakeResponse();
     auto response = builder->GetResponse();
     bytes received_response_data = response->GetFullData();
@@ -49,7 +48,7 @@ TEST(ResponseBuilderTest, OptionsTest) {
     bytes expected_response_data = ReadBytes("../tests/data/responses/options.bytes");
     HttpRequest request(ReadBytes("../tests/data/requests/options.bytes"));
 
-    auto builder = std::make_shared<OptionsResponseBuilder>(request);
+    std::shared_ptr<ResponseBuilder> builder = std::make_shared<OptionsResponseBuilder>(request);
     builder->MakeResponse();
     auto response = builder->GetResponse();
     bytes received_response_data = response->GetFullData();
@@ -61,8 +60,9 @@ TEST(ResponseBuilderTest, VideoTest) {
     bytes expected_response_data = ReadBytes("../tests/data/responses/video_1.bytes");
     HttpRequest request(ReadBytes("../tests/data/requests/video_1.bytes"));
 
-    auto builder = std::make_shared<VideoResponseBuilder>(request);
+    std::shared_ptr<ResponseBuilder> builder = std::make_shared<VideoResponseBuilder>(request);
     builder->MakeResponse();
+    std::cout << builder.get() << std::endl;
     auto response = builder->GetResponse();
     bytes received_response_data = response->GetFullData();
 

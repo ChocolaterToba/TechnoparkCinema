@@ -34,7 +34,7 @@ bytes HeadOnlyResponse::GetFullData() {
     first_line.append(CRLF);
 
     result.assign(first_line.begin(), first_line.end());
-    return std::move(result);
+    return result;
 }
 
 bytes FullResponse::GetFullData() {
@@ -165,12 +165,16 @@ void OptionsResponseBuilder::MakeResponse() {
 VideoResponseBuilder::VideoResponseBuilder(const HttpRequest &request1) : ResponseBuilder(request1) {}
 
 void VideoResponseBuilder::MakeResponse() {
+    response = std::make_shared<FullResponse>();
+    response->AddHeader(std::pair<std::string, std::string>("Content-type:", "video/mp4"));
     // TODO: Get data from the database and form response, according to the requested piece of bytes
 }
 
 AuthorizationHandler_ResponseBuilder::AuthorizationHandler_ResponseBuilder(const HttpRequest &request1) : ResponseBuilder(request1) {}
 
 void AuthorizationHandler_ResponseBuilder::MakeResponse() {
+    response = std::make_shared<HeadOnlyResponse>();
+    response->SetReturnCode("200 OK");
     // TODO: Make all the logic, that includes parsing the multipart form-data from the request, making needed changes/checks in our user
     //  database, forming corresponding response with confirmation/error giving to the client. However, it will be better to divide
     //  authorization/initialization processes, that have influence on the our database, from the part of code, that just
