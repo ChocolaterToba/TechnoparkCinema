@@ -27,7 +27,7 @@ std::shared_ptr<std::mutex> TasksController::GetHaveDataMutex() {
     return haveDataMutex;
 }
 
-void TasksControllerLoop() {
+void TasksController::TasksControllerLoop() {
     while (!stop) {
         // TODO(Aglicheev): listening to queue.
     }
