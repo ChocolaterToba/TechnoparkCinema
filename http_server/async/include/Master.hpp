@@ -2,31 +2,36 @@
 
 #include <memory>
 #include <vector>
+#include <queue>
 #include "socket.hpp"
 #include "HTTPClient.hpp"
 #include "TaskBuilder.hpp"
+#include "ConnectionsController.hpp"
 
 class Master {
  private:
     Socket socket;
 
-    std::vector<std::shared_ptr<Worker>> workers;
+    std::vector<Worker> workers;
 
-    std::unique_ptr<TaskBuilder> builder;
-    std::shared_ptr<Queue<HTTPClient>> unprocessedClients;
+    TaskBuilder builder;
+    std::queue<HTTPClient> unprocessedClients;
+    std::mutex unprocessedClientsMutex;
 
-    std::unique_ptr<ConectionsController> controller;
-    Queue<Task>& haveNoData;
-    Queue<Task>& haveData;
+
+    ConnectionsController controller;
+    std::vector<Task>& haveNoData;
+    std::mutex& haveNoDataMutex;
+    std::queue<Task>& haveData;
+    std::mutex& haveDataMutex;
 
     void Listen();
 
-    std::thread mainThread;
+    std::thread masterThread;
     bool stop;
 
  public:
-    explicit Master(std::unique_ptr<Socket> socket =
-                           std::make_unique<Socket>());
+    explicit Master(std::unique_ptr<Socket> socket);
 
     //  static void SetSocket(std::unique_ptr<Socket> socket);
     void Start();

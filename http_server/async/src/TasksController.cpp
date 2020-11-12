@@ -13,6 +13,7 @@ TasksController::TasksController() :
 
 TasksController::~TasksController() {
     Stop();
+    //  TODO(Aglicheev): add mutex handling.
 }
 
 std::vector<Task>& TasksController::GetHaveNoData() {

@@ -5,7 +5,7 @@
 #include "TaskBuilder.hpp"
 
 TaskBuilder::TaskBuilder(std::queue<HTTPClient>& unprocessedClients,
-                         std::mutex& enprocessedClientsMutex,
+                         std::mutex& unprocessedClientsMutex,
                          std::vector<Task>& haveNoData,
                          std::mutex& haveNoDataMutex) :
     this->unprocessedClients(unprocessedClients),

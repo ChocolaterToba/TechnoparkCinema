@@ -8,7 +8,7 @@
 class TaskBuilder {
  private:
     std::queue<HTTPClient>& unprocessedClients;
-    std::mutex& enprocessedClientsMutex
+    std::mutex& unprocessedClientsMutex
     std::vector<Task>& haveNoData;
     std::mutex& haveNoDataMutex;
 
@@ -19,7 +19,7 @@ class TaskBuilder {
 
  public:
     explicit TaskBuilder(std::queue<HTTPClient>& unprocessedClients,
-                         std::mutex& enprocessedClientsMutex,
+                         std::mutex& unprocessedClientsMutex,
                          std::vector<Task>& haveNoData,
                          std::mutex& haveNoDataMutex,
                          );
