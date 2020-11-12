@@ -43,6 +43,7 @@ public:
 };
 
 class AuthorizationHandler_ResponseBuilder: public ResponseBuilder {
+public:
     explicit AuthorizationHandler_ResponseBuilder(const HttpRequest &request1);
     void MakeResponse() override;
 };

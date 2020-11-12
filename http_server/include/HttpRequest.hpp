@@ -19,7 +19,9 @@ typedef enum {
 
 class HttpRequest {
 public:
-    std::string GetURL() const {return "/index.html";}
-    RequestMethod GetRequestMethod() const {return GET;}
+    HttpRequest(std::vector<char>) {}
+
+    virtual std::string GetURL() const {return "index.html";}
+    virtual RequestMethod GetRequestMethod() const {return GET;}
 };
 
