@@ -2,12 +2,15 @@
 
 #include <memory>
 #include <thread>
-#include "Queue.hpp"
+#include <queue>
 #include "Task.hpp"
 
 class TaskBuilder {
  private:
-    std::shared_ptr<Queue<Task>> haveNoData;
+    std::queue<HTTPClient>& unprocessedClients;
+    std::mutex& enprocessedClientsMutex
+    std::queue<Task>& haveNoData;
+    std::mutex& haveNoDataMutex;
 
     void CreateTasks();
 
@@ -15,7 +18,11 @@ class TaskBuilder {
     bool stop;
 
  public:
-    explicit TaskBuilder(std::shared_ptr<Queue<Task>> haveNoData);
+    explicit TaskBuilder(std::queue<HTTPClient>& unprocessedClients,
+                         std::mutex& enprocessedClientsMutex,
+                         std::queue<Task>& haveNoData,
+                         std::mutex& haveNoDataMutex,
+                         );
     ~TaskBuilder();
 
     void Start();

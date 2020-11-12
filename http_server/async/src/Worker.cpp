@@ -19,11 +19,21 @@ Worker::~Worker() {
 
 void Worker::TakeNewTask() {
     if (state == NoTask) {
-        tasksMutex.lock();
-        task = tasks.front();
-        tasks.pop_front();
-        tasksMutex.unlock();
-        state = TaskReceived;
+        while (!stop) {
+            if (tasks.size()) {
+                if (tasksMutex.try_lock()) {
+                    tasksMutex.lock();
+                    task = tasks.front();
+                    tasks.pop_front();
+                    tasksMutex.unlock();
+                    state = TaskReceived;
+                } else {
+                    // wait(); TODO
+                }
+            } else {
+                // wait(); TODO
+            }
+        }
     } else {
         throw std::exception();  //  Will implement later.
     }
