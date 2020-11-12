@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.14)
 project(server)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -61,7 +61,7 @@ target_link_libraries(asyncServer client)
 option(ENABLE_TESTING "Build all tests." OFF) # Makes boolean 'test' available.
 
 if (ENABLE_TESTING)
-  file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/http_server/test/test.cpp)
+  file(GLOB TEST_SRC_FILES http_server/test/test.cpp)
 
   # Install Gtest
   include(FetchContent)
@@ -76,9 +76,11 @@ if (ENABLE_TESTING)
   include(CTest)
  
   # Link runTests with what we want to test and the GTest and DZ1 library
-  add_executable(runTests ${TEST_SRC_FILES} ${ASYNC_SRC})
+  add_executable(runTests ${TEST_SRC_FILES})
   target_link_libraries(runTests gtest_main pthread)
 
+  target_link_libraries(runTests socket)
+  target_link_libraries(runTests client)
   target_link_libraries(runTests asyncServer)
 
   gtest_discover_tests(runTests)

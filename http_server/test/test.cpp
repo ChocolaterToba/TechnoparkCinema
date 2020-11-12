@@ -1,6 +1,7 @@
 #include <memory>
 #include <vector>
 #include <queue>
+#include "gmock/gmock.h"
 #include "socket.hpp"
 #include "HTTPClient.hpp"
 #include "Task.hpp"
