@@ -20,7 +20,7 @@ Worker::~Worker() {
 void Worker::TakeNewTask() {
     if (state == NoTask) {
         while (!stop) {
-            if (tasks.size()) {
+            if (!tasks.empty()) {
                 if (tasksMutex.try_lock()) {
                     tasksMutex.lock();
                     task = tasks.front();

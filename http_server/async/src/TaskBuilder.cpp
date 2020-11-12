@@ -6,7 +6,7 @@
 
 TaskBuilder::TaskBuilder(std::queue<HTTPClient>& unprocessedClients,
                          std::mutex& enprocessedClientsMutex,
-                         std::queue<Task>& haveNoData,
+                         std::vector<Task>& haveNoData,
                          std::mutex& haveNoDataMutex) :
     this->unprocessedClients(unprocessedClients),
     this->unprocessedClientsMutex(unprocessedClientsMutex),
@@ -20,7 +20,7 @@ TaskBuilder::~TaskBuilder() {
 
 void TaskBuilder::CreateTasks() {
     while (!stop) {
-        if (unprocessedClients.size())  {
+        if (!unprocessedClients.empty())  {
             unprocessedClientsMutex.lock();
             Task newTask(unprocessedClients.front());
             unprocessedClients.pop_front();
