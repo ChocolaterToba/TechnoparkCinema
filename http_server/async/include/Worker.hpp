@@ -34,11 +34,13 @@ class Worker {
     Worker(std::queue<Task>& tasks, std::mutex tasksMutex);
     ~Worker();
 
+    void WorkerLoop();
+
+    void TakeNewTask();
+
     void RunPreFunc();
     void RunMainFunc();
     void RunPostFunc();
-
-    void TakeNewTask();
 
     void Start();
     void Stop();

@@ -14,47 +14,65 @@ Worker::Worker(std::queue<Task>& tasks, std::mutex tasksMutex) :
         stop(true) {}
 
 Worker::~Worker() {
-    switch (state) {
-        case NoTask, PreFuncRan, MainFuncRan:
-            break;
-        default:
-            Stop();
+    Stop();
+}
+
+void Worker::TakeNewTask() {
+    if (state == NoTask) {
+        tasksMutex.lock();
+        task = tasks.front();
+        tasks.pop_front();
+        tasksMutex.unlock();
+        state = TaskReceived;
+    } else {
+        throw std::exception();  //  Will implement later.
     }
 }
 
 void Worker::RunPreFunc() {
     if (state == TaskReceived) {
+        state = PreFuncRunning;
         currentTask.SetMainFunc(currentTask.GetPreFunc()(data, client));
+        state = PreFuncRan;
     } else {
         throw std::exception();  //  Will implement later.
     }
 }
-void RunMainFunc() {
+void Worker::RunMainFunc() {
     if (state == PreFuncRan) {
+        state = MainFuncRunning;
         currentTask.GetMainFunc()(data);
+        state = MainFuncRan;
     } else {
         throw std::exception();  //  Will implement later.
     }
 }
-void RunPostFunc() {
+void Worker::RunPostFunc() {
     if (state == MainFuncRan) {
+        state = PostFuncRunning;
         currentTask.GetPostFunc()(data, client);
+        state = NoTask;
     } else {
         throw std::exception();  //  Will implement later.
     }
 }
 
-void TakeNewTask() {
-    //TODO
+void WorkerLoop() {
+    while (!stop) {
+        TakeNewTask();
+        RunPreFunc();
+        RunMainFunc();
+        RunPostFunc();
+    }
 }
 
-void Start() {
+void Worker::Start() {
     if (stop) {
         stop = false;
-        workerThread = std::thread(TakeNewTask);
+        workerThread = std::thread(TaskLoop);
     }
 }
-void Stop() {
+void Worker::Stop() {
     if (!stop) {
         stop = true;
         workerThread.join();
