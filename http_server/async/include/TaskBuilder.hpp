@@ -1,4 +1,4 @@
-#pragma once;
+#pragma once
 
 #include <memory>
 #include <thread>
@@ -6,13 +6,13 @@
 #include "Task.hpp"
 
 class TaskBuilder {
- private:
+ protected:
     std::queue<HTTPClient>& unprocessedClients;
     std::shared_ptr<std::mutex> unprocessedClientsMutex;
     std::vector<Task>& haveNoData;
     std::shared_ptr<std::mutex> haveNoDataMutex;
 
-    void CreateTasks();
+    virtual void CreateTasks();
 
     std::thread builderThread;
     bool stop;
@@ -22,8 +22,8 @@ class TaskBuilder {
                 std::shared_ptr<std::mutex> unprocessedClientsMutex,
                 std::vector<Task>& haveNoData,
                 std::shared_ptr<std::mutex> haveNoDataMutex);
-    ~TaskBuilder();
+    virtual ~TaskBuilder();
 
-    void Start();
-    void Stop();
+    virtual void Start();
+    virtual void Stop();
 };

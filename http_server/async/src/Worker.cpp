@@ -6,11 +6,12 @@
 #include <queue>
 
 #include "Worker.hpp"
+#include "Task.hpp"
 
 Worker::Worker(std::queue<Task>& tasks,
                std::shared_ptr<std::mutex> tasksMutex) :
-        this->tasks(tasks),
-        this->tasksMutex(tasksMutex),
+        tasks(tasks),
+        tasksMutex(tasksMutex),
         state(NoTask),
         stop(true) {}
 
@@ -41,7 +42,7 @@ void Worker::TakeNewTask() {
 }
 
 void Worker::RunPreFunc() {
-    if (state == TaskReceived) {
+    if (state == TaskRecieved) {
         state = PreFuncRunning;
         currentTask.SetMainFunc(currentTask.GetPreFunc()(data, client));
         state = PreFuncRan;

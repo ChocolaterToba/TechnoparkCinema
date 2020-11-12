@@ -7,6 +7,7 @@
 #include <vector>
 #include <queue>
 #include "HTTPClient.hpp"
+#include "Task.hpp"
 
 typedef enum {
     NoTask,
@@ -32,16 +33,16 @@ class Worker {
 
  public:
     Worker(std::queue<Task>& tasks, std::shared_ptr<std::mutex> tasksMutex);
-    ~Worker();
+    virtual ~Worker();
 
-    void WorkerLoop();
+    virtual void WorkerLoop();
 
-    void TakeNewTask();
+    virtual void TakeNewTask();
 
-    void RunPreFunc();
-    void RunMainFunc();
-    void RunPostFunc();
+    virtual void RunPreFunc();
+    virtual void RunMainFunc();
+    virtual void RunPostFunc();
 
-    void Start();
-    void Stop();
+    virtual void Start();
+    virtual void Stop();
 };

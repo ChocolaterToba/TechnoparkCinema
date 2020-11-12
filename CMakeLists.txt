@@ -61,7 +61,7 @@ target_link_libraries(asyncServer client)
 option(ENABLE_TESTING "Build all tests." OFF) # Makes boolean 'test' available.
 
 if (ENABLE_TESTING)
-  file(GLOB TEST_SRC_FILES http_server/test/test.cpp)
+  file(GLOB TEST_SRC http_server/test/main.cpp)
 
   # Install Gtest
   include(FetchContent)
@@ -76,7 +76,7 @@ if (ENABLE_TESTING)
   include(CTest)
  
   # Link runTests with what we want to test and the GTest and DZ1 library
-  add_executable(runTests ${TEST_SRC_FILES})
+  add_executable(runTests ${TEST_SRC})
   target_link_libraries(runTests gtest_main pthread)
 
   target_link_libraries(runTests socket)

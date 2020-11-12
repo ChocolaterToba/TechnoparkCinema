@@ -1,4 +1,4 @@
-#pragma once;
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -9,7 +9,7 @@
 #include "TasksController.hpp"
 
 class Master {
- private:
+ protected:
     Socket socket;
 
     std::vector<Worker> workers;
@@ -25,15 +25,16 @@ class Master {
     std::queue<Task>& haveData;
     std::shared_ptr<std::mutex> haveDataMutex;
 
-    void Listen();
+    virtual void Listen();
 
     std::thread masterThread;
     bool stop;
 
  public:
     Master();
+    virtual ~Master();
 
     //  static void SetSocket(std::unique_ptr<Socket> socket);
-    void Start();
-    void Stop();
+    virtual void Start();
+    virtual void Stop();
 };

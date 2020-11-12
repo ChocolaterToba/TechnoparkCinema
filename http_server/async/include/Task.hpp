@@ -3,7 +3,6 @@
 #include <functional>
 #include <vector>
 #include "HTTPClient.hpp"
-#include "Worker.hpp"
 
 typedef std::function<std::function<void(std::vector<char>&)>
                       (std::vector<char>&, HTTPClient&)> PreFuncType;
@@ -11,7 +10,7 @@ typedef std::function<void(std::vector<char>&)> MainFuncType;
 typedef std::function<void(std::vector<char>&, HTTPClient&)> PostFuncType;
 
 class Task {
- private:
+ protected:
     PreFuncType preFunc;
     MainFuncType mainFunc;
     PostFuncType postFunc;
@@ -20,14 +19,15 @@ class Task {
 
  public:
     explicit Task(HTTPClient client);
+    virtual ~Task();
 
-    PreFuncType GetPreFunc();
-    MainFuncType GetMainFunc();
-    MainFuncType GetPostFunc();
+    virtual PreFuncType GetPreFunc();
+    virtual MainFuncType GetMainFunc();
+    virtual MainFuncType GetPostFunc();
 
-    void SetPreFunc(PreFuncType preFunc);
-    void SetMainFunc(MainFuncType mainFunc);
-    void SetPostFunc(PostFuncType postFunc);
+    virtual void SetPreFunc(PreFuncType preFunc);
+    virtual void SetMainFunc(MainFuncType mainFunc);
+    virtual void SetPostFunc(PostFuncType postFunc);
 
-    HTTPClient& GetClient();
+    virtual HTTPClient& GetClient();
 }
