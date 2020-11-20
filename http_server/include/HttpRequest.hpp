@@ -51,4 +51,3 @@ class HttpRequest {
     void CheckRequestMethod(const std::string &method_name);
     std::string GetBoundary() const;
 };
-
