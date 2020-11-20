@@ -43,4 +43,3 @@ class HttpRequest {
 
     void CheckRequestMethod(const std::string &method_name);
 };
-
