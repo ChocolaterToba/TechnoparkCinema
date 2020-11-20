@@ -14,7 +14,8 @@ project(${PROJECT_NAME})
 set(LIBRARIES_PATH Libraries)
 add_subdirectory(${LIBRARIES_PATH}/ExampleLibrary)
 
-target_include_directories(${PROJECT_NAME} include)
+add_executable(${PROJECT_NAME} src/main.cpp)
+include_directories(include)
 file(GLOB LIBRARIES_NAMES ExampleLibrary)
 
 set(SRC_PATH src)

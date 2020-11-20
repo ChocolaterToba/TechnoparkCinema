@@ -9,8 +9,8 @@ set(CMAKE_CXX_FLAGS "-std=c++0x")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output)
 
 set(LIBRARY_NAME ExampleLibrary)
-add_library(${LIBRARY_NAME} src/ExampleDialog.cpp)
-target_include_directories(${LIBRARY_NAME} include)
+add_library(${LIBRARY_NAME} STATIC src/ExampleDialog.cpp)
+target_include_directories(${LIBRARY_NAME} PUBLIC include)
 
 ################################
 # Testing
