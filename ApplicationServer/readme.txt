@@ -1,0 +1,2 @@
+Source/Headers/Testing предназначены для application server в общем.
+При написании своего модуля создаем Libraries/Mylibrary и там делаем source/headers/testing папки и отладка проходит в них. Там же создаем свой личный CMakeLists.txt
