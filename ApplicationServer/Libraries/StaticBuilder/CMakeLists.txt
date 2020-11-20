@@ -8,15 +8,17 @@ set(CMAKE_CXX_FLAGS "-std=c++0x")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output)
 
-set(LIBRARY_NAME ExampleLibrary)
-add_library(${LIBRARY_NAME} STATIC src/ExampleDialog.cpp)
+set(LIBRARY_NAME StaticBuilder)
+
+project(${LIBRARY_NAME})
+add_library(${LIBRARY_NAME} STATIC src/main.cpp)
 target_include_directories(${LIBRARY_NAME} PUBLIC include)
 
 ################################
 # Testing
 ################################
 
-set(TEST_SRC_FILES test/Test.cpp)
+set(TEST_SRC_FILES test/main.cpp)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 #                       'cmake -DENABLE_TESTING_LIB=ON'.
