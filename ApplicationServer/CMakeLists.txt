@@ -11,19 +11,19 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output)
 set(PROJECT_NAME AppServer)
 project(${PROJECT_NAME})
 
-set(LIBRARIES_PATH ApplicationServer/Libraries)
+set(LIBRARIES_PATH Libraries)
 add_subdirectory(${LIBRARIES_PATH}/ExampleLibrary)
 
-target_include_directories(${PROJECT_NAME} ApplicationServer/include)
+target_include_directories(${PROJECT_NAME} include)
 file(GLOB LIBRARIES_NAMES ExampleLibrary)
 
-set(SRC_PATH ApplicationServer/src)
+set(SRC_PATH src)
 
 ################################
 # Testing
 ################################
 
-set(TEST_SRC_FILES ApplicationServer/test/Test.cpp)
+set(TEST_SRC_FILES test/Test.cpp)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 #                       'cmake -DENABLE_TESTING=ON'.
