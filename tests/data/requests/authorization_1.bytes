@@ -1,0 +1,7 @@
+POST / HTTP/1.0
+Host: www.site.ru
+Cookie: income=1
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 35
+
+login=Dima&password=12345
