@@ -1,5 +1,10 @@
 #pragma once
 
+#include <fastcgi2/component.h>
+#include <fastcgi2/component_factory.h>
+#include <fastcgi2/handler.h>
+#include <fastcgi2/request.h>
+
 class FCGIClient {
  private:
     int socket;  //  int will be replaced with proper type
@@ -8,6 +13,6 @@ class FCGIClient {
     FCGIClient(int socket);
 
     void listen();
-    void receivePackage();
-    void sendPackage();
+    std::vector<std::string> receivePackage();
+    void sendPackage(std::vector<std::string>);
 };
