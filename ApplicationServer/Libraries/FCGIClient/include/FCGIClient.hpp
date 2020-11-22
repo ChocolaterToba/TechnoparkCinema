@@ -4,6 +4,8 @@
 #include <fastcgi2/component_factory.h>
 #include <fastcgi2/handler.h>
 #include <fastcgi2/request.h>
+#include <vector>
+#include <string>
 
 class FCGIClient {
  private:
@@ -12,7 +14,7 @@ class FCGIClient {
  public:
     FCGIClient(int socket);
 
-    void listen();
-    std::vector<std::string> receivePackage();
-    void sendPackage(std::vector<std::string>);
+    virtual void Listen();
+    virtual std::vector<std::string> ReceivePackage();
+    virtual void SendPackage(std::vector<std::string>);
 };
