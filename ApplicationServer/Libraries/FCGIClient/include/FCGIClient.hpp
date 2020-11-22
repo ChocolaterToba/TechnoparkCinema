@@ -15,6 +15,6 @@ class FCGIClient {
     FCGIClient(int socket);
 
     virtual void Listen();
-    virtual std::vector<std::string> ReceivePackage();
-    virtual void SendPackage(std::vector<std::string>);
+    virtual std::map<std::string, std::string> ReceivePackage();
+    virtual void SendPackage(std::map<std::string, std::string>);
 };
