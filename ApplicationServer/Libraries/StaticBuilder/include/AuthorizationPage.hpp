@@ -10,10 +10,10 @@ class AuthorizationPage: public StaticBuilder {
     virtual void AddErrorCode();
     
  public:
-    AuthorizationPage();
+    AuthorizationPage(FCGIClient dbClient, FCGIClient videoFilesClient);
 
-    virtual void ParseRequestData();
-    virtual void ReceiveMetadata();
+    virtual void ParseRequestData(std::map<std::string, std::string> requestData);
+    virtual void AddMetadata();
     virtual void CreateResponseData();
-    virtual std::vector<char>& GetResponseData();
+    virtual std::map<std::string, std::string> GetResponseData();
 }

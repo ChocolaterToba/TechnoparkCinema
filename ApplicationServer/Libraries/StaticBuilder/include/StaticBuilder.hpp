@@ -8,13 +8,16 @@ class StaticBuilder {
  protected:
     std::string pageType;
     std::vector<char> requestData;
-    std::vector<char> responseData;  
+    std::vector<char> responseData;
+
+    FCGIClient dbClient;
+    FCGIClient videoFilesClient;
 
  public:
-    explicit StaticBuilder();
+    StaticBuilder(FCGIClient dbClient, FCGIClient videoFilesClient);
 
-    virtual void ParseRequestData(std::string pageType, std::vector<char> requestData);
-    virtual void ParseMetadata(std::vector<char> metadata);
+    virtual void ParseRequestData(std::map<std::string, std::string> requestData);
+    virtual void AddMetadata();
     virtual void CreateResponseData();
-    virtual std::vector<char>& GetResponseData();
+    virtual std::map<std::string, std::string> GetResponseData();
 };
