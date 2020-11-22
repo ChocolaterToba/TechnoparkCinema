@@ -7,13 +7,13 @@
 
 #include "StaticBuilder.hpp"
 #include "AuthorizationPage.hpp"
+#include "FCGIClient.hpp"
 
-class MockAuthorizationPage : public AuthorizationPage {
+class MockClient : public FCGIClient {
  public:
-    MOCK_METHOD(void, ParseRequestData, void());
-    MOCK_METHOD(void, ReceiveMetadata, void());
-    MOCK_METHOD(void, CreateResponseData, void());
-    MOCK_METHOD(std::vector<char>&, GetResponseData, void());
+    MOCK_METHOD(void, listen, void);
+    MOCK_METHOD(std::vector<std::string>, ReceivePackage, void);
+    MOCK_METHOD(void, SendPackage, std::vector<std::string>);
 };
 
 bool compareFiles(const std::string& p1, const std::string& p2) {
@@ -37,9 +37,9 @@ bool compareFiles(const std::string& p1, const std::string& p2) {
 }
 
 TEST(ParseRequestTesting, test1) {
-    MockAuthorizationPage mockPage;
-    StaticBuilder* page = static_cast<StaticBuilder*>(&mockPage);
-    EXPECT_CALL(mockPage, ParseRequestData)
+    MockClient mockClient;
+    StaticBuilder page;
+    EXPECT_CALL(mockClient, Listen)
         .Times(1)
         .WillOnce(Return(100));
 }
