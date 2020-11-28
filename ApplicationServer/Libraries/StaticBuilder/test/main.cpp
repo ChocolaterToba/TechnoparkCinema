@@ -57,11 +57,11 @@ TEST(AuthPageTesting, AuthUnsuccessfull) {
         .Times(1)
         .WillOnce(Return(void));
 
-    FastCGIData DBResponse;
-    DBResponse["authAccess"] = "False";
+    FastCGIData DBUserResponse;
+    DBUserResponse["authAccess"] = "False";
     EXPECT_CALL(mockDBClient, ReceivePackage)
         .Times(1)
-        .WillOnce(Return(DBResponse));
+        .WillOnce(Return(DBUserResponse));
 
     //  Setting up mock client for video fileserver.
     MockClient mockVideoFilesClient;
@@ -87,7 +87,8 @@ TEST(AuthPageTesting, AuthUnsuccessfull) {
     pageBuilder->AddMetadata();
     pageBuilder->CreateResponseData();
 
-    EXPECT_EQ(pageBuilder->GetResponseData()["authAccess"], "False");
+    EXPECT_EQ(pageBuilder->GetResponseData()["authAccess"], "False")
+        << "User doen't have access, but page claims they do";
 }
 
 
@@ -103,11 +104,11 @@ TEST(AuthPageTesting, AuthSuccessfull) {
         .Times(1)
         .WillOnce(Return(void));
 
-    FastCGIData DBResponse;
-    DBResponse["authAccess"] = "True";
+    FastCGIData DBUserResponse;
+    DBUserResponse["authAccess"] = "True";
     EXPECT_CALL(mockDBClient, ReceivePackage)
         .Times(1)
-        .WillOnce(Return(DBResponse));
+        .WillOnce(Return(DBUserResponse));
 
     //  Setting up mock client for video fileserver.
     MockClient mockVideoFilesClient;
@@ -133,7 +134,8 @@ TEST(AuthPageTesting, AuthSuccessfull) {
     pageBuilder->AddMetadata();
     pageBuilder->CreateResponseData();
 
-    EXPECT_EQ(pageBuilder->GetResponseData()["authAccess"], "True");
+    EXPECT_EQ(pageBuilder->GetResponseData()["authAccess"], "True")
+        << "User has access, but page claims they don't";
 }
 
 TEST(HotPageTesting, basicTest) {
@@ -152,11 +154,11 @@ TEST(HotPageTesting, basicTest) {
     DBUserResponse["alreadyWatched"] = "Titanic";
 
     FastCGIData DBVideoResponse;
-    DBFilmResponse["filmTitles"] = "Titanic|Rain Man|Very Scary Movie";
-    DBFilmResponse["filmPreviews"] = "titanic_preview_path|"
-                                     "rain_man_preview_path|"
-                                     "very_scary_movie_preview_path";
-    DBFilmResponse["filmRatings"] = "10.0|10.0|0.0";
+    DBFilmResponse["titles"] = "Titanic|Rain Man|Very Scary Movie";
+    DBFilmResponse["previews"] = "titanic_preview_path|"
+                                 "rain_man_preview_path|"
+                                 "very_scary_movie_preview_path";
+    DBFilmResponse["ratings"] = "10.0|10.0|0.0";
     EXPECT_CALL(mockDBClient, ReceivePackage)
         .Times(2)
         .WillOnce(Return(DBUserResponse)
@@ -186,14 +188,14 @@ TEST(HotPageTesting, basicTest) {
     pageBuilder->AddMetadata();
     pageBuilder->CreateResponseData();
 
-    EXPECT_EQ(pageBuilder->GetResponseData()["filmTitles"],
-              DBVideoResponse["filmTitles"])
+    EXPECT_EQ(pageBuilder->GetResponseData()["titles"],
+              DBVideoResponse["titles"])
         << "Film titles were processed incorrectly";
-    EXPECT_EQ(pageBuilder->GetResponseData()["filmPreviews"],
-              DBVideoResponse["filmPreviews"])
+    EXPECT_EQ(pageBuilder->GetResponseData()["previews"],
+              DBVideoResponse["previews"])
         << "Film previews were processed incorrectly";
-    EXPECT_EQ(pageBuilder->GetResponseData()["filmRatings"],
-              DBVideoResponse["filmRatings"])
+    EXPECT_EQ(pageBuilder->GetResponseData()["ratings"],
+              DBVideoResponse["ratings"])
         << "Film ratings were processed incorrectly";
     EXPECT_EQ(pageBuilder->GetResponseData()["alreadyWatched"],
               DBUserResponse["alreadyWatched"])
@@ -218,11 +220,11 @@ TEST(MainPageTesting, basicTest) {
     DBUserResponse["unfinished"] = "Rain Man";
 
     FastCGIData DBFilmsResponse;
-    DBFilmsResponse["filmTitles"] = "Titanic|Rain Man|Very Scary Movie";
-    DBFilmsResponse["filmPreviews"] = "titanic_preview_path|"
+    DBFilmsResponse["titles"] = "Titanic|Rain Man|Very Scary Movie";
+    DBFilmsResponse["previews"] = "titanic_preview_path|"
                                              "rain_man_preview_path|"
                                              "very_scary_movie_preview_path";
-    DBFilmsResponse["filmRatings"] = "10.0|10.0|0.0";
+    DBFilmsResponse["ratings"] = "10.0|10.0|0.0";
 
     EXPECT_CALL(mockDBClient, ReceivePackage)
         .Times(2)
@@ -241,10 +243,10 @@ TEST(MainPageTesting, basicTest) {
     EXPECT_CALL(mockVideoFilesClient, ReceivePackage)
         .Times(0);
 
-    HotVideosPage hotPage(mockDBClient, mockVideoFilesClient);
+    MainPage mainPage(mockDBClient, mockVideoFilesClient);
 
     //  Testing actual page builder.
-    StaticBuilder* pageBuilder = static_cast<StaticBuilder*>(&hotPage);
+    StaticBuilder* pageBuilder = static_cast<StaticBuilder*>(&mainPage);
 
     FastCGIData exampleRequestData;
     exampleRequestData["Username"] = "ExampleUser";
@@ -253,38 +255,234 @@ TEST(MainPageTesting, basicTest) {
     pageBuilder->AddMetadata();
     pageBuilder->CreateResponseData();
 
-    EXPECT_EQ(pageBuilder->GetResponseData()["filmTitlesNew"],
+    EXPECT_EQ(pageBuilder->GetResponseData()["titlesNew"],
               "Very Scary Movie|Titanic|Rain Man")
         << "Film titles were processed incorrectly";
-    EXPECT_EQ(pageBuilder->GetResponseData()["filmTitlesHot"],
+    EXPECT_EQ(pageBuilder->GetResponseData()["titlesHot"],
               "Titanic|Rain Man|Very Scary Movie")
         << "Film titles were processed incorrectly";
-    EXPECT_EQ(pageBuilder->GetResponseData()["filmTitlesUnfinished"],
+    EXPECT_EQ(pageBuilder->GetResponseData()["titlesUnfinished"],
               "Rain Man")
         << "Film titles were processed incorrectly";
 
-    EXPECT_EQ(pageBuilder->GetResponseData()["filmPreviewsNew"],
+    EXPECT_EQ(pageBuilder->GetResponseData()["previewsNew"],
               "very_scary_movie_preview_path|"
               "titanic_preview_path|rain_man_preview_path")
         << "Film previews were processed incorrectly";
-    EXPECT_EQ(pageBuilder->GetResponseData()["filmPreviewsHot"],
+    EXPECT_EQ(pageBuilder->GetResponseData()["previewsHot"],
               "titanic_preview_path|rain_man_preview_path|"
               "very_scary_movie_preview_path")
         << "Film previews were processed incorrectly";
-    EXPECT_EQ(pageBuilder->GetResponseData()["filmPreviewsUnfinished"],
+    EXPECT_EQ(pageBuilder->GetResponseData()["previewsUnfinished"],
               "titanic_preview_path|rain_man_preview_path|"
               "very_scary_movie_preview_path")
         << "Film previews were processed incorrectly";
 
-    EXPECT_EQ(pageBuilder->GetResponseData()["filmRatingsNew"],
+    EXPECT_EQ(pageBuilder->GetResponseData()["ratingsNew"],
               "0.0|10.0|10.0")
         << "Film ratings were processed incorrectly";
-    EXPECT_EQ(pageBuilder->GetResponseData()["filmRatingsHot"],
+    EXPECT_EQ(pageBuilder->GetResponseData()["ratingsHot"],
               "10.0|10.0|0.0")
         << "Film ratings were processed incorrectly";
-    EXPECT_EQ(pageBuilder->GetResponseData()["filmRatingsUnfinished"],
+    EXPECT_EQ(pageBuilder->GetResponseData()["ratingsUnfinished"],
               "10.0")
         << "Film ratings were processed incorrectly";
+}
+
+
+TEST(RecommendationsPageTesting, basicTest) {
+    //  Setting up mock client for database.
+    MockClient mockDBClient;
+
+    EXPECT_CALL(mockDBClient, SendPackage)
+        .Times(2)
+        .WillOnce(Return(void));
+
+    EXPECT_CALL(mockDBClient, Listen)
+        .Times(2)
+        .WillOnce(Return(void));
+
+    FastCGIData DBUserResponse;
+    DBUserResponse["alreadyWatched"] = "Titanic";
+
+    FastCGIData DBFilmsResponse;
+    DBFilmsResponse["titles"] = "Titanic|Rain Man|Very Scary Movie";
+    DBFilmsResponse["previews"] = "titanic_preview_path|"
+                                             "rain_man_preview_path|"
+                                             "very_scary_movie_preview_path";
+    DBFilmsResponse["ratings"] = "10.0|10.0|0.0";
+
+    EXPECT_CALL(mockDBClient, ReceivePackage)
+        .Times(2)
+        .WillOnce(Return(DBUserResponse)
+        .WillOnce(Return(DBFilmsResponse));
+
+    //  Setting up mock client for video fileserver.
+    MockClient mockVideoFilesClient;
+
+    EXPECT_CALL(mockVideoFilesClient, SendPackage)
+        .Times(0);
+
+    EXPECT_CALL(mockVideoFilesClient, Listen)
+        .Times(0);
+
+    EXPECT_CALL(mockVideoFilesClient, ReceivePackage)
+        .Times(0);
+
+    RecommendationsPage recommendationsPage(mockDBClient, mockVideoFilesClient);
+
+    //  Testing actual page builder.
+    StaticBuilder* pageBuilder = \
+        static_cast<StaticBuilder*>(&recommendationsPage);
+
+    FastCGIData exampleRequestData;
+    exampleRequestData["Username"] = "ExampleUser";
+
+    pageBuilder->ParseRequestData(exampleRequestData);
+    pageBuilder->AddMetadata();
+    pageBuilder->CreateResponseData();
+
+    EXPECT_EQ(pageBuilder->GetResponseData()["titles"],
+              "Rain Man")
+        << "Film titles were processed incorrectly";
+    EXPECT_EQ(pageBuilder->GetResponseData()["previews"],
+              "rain_man_preview_path")
+        << "Film previews were processed incorrectly";
+    EXPECT_EQ(pageBuilder->GetResponseData()["ratings"],
+              "10.0")
+        << "Film ratings were processed incorrectly";
+}
+
+
+TEST(RoomPageTesting, basicTest) {
+    //  Setting up mock client for database.
+    MockClient mockDBClient;
+
+    EXPECT_CALL(mockDBClient, SendPackage)
+        .Times(1)
+        .WillOnce(Return(void));
+
+    EXPECT_CALL(mockDBClient, Listen)
+        .Times(1)
+        .WillOnce(Return(void));
+
+    FastCGIData DBFilmsResponse;
+    DBFilmsResponse["chat"] = "alice: This is great!|bob:No, that's wrong!";
+    DBFilmsResponse["startTimestamp"] = "00::10::25";
+
+    EXPECT_CALL(mockDBClient, ReceivePackage)
+        .Times(1)
+        .WillOnce(Return(DBFilmsResponse));
+
+    //  Setting up mock client for video fileserver.
+    MockClient mockVideoFilesClient;
+
+    EXPECT_CALL(mockVideoFilesClient, SendPackage)
+        .Times(0);
+
+    EXPECT_CALL(mockVideoFilesClient, Listen)
+        .Times(0);
+
+    EXPECT_CALL(mockVideoFilesClient, ReceivePackage)
+        .Times(0);
+
+    RoomPage roomPage(mockDBClient, mockVideoFilesClient);
+
+    //  Testing actual page builder.
+    StaticBuilder* pageBuilder = static_cast<StaticBuilder*>(&roomPage);
+
+    FastCGIData exampleRequestData;
+    exampleRequestData["Username"] = "ExampleUser";
+    exampleRequestData["RoomCode"] = "12345678";
+
+    pageBuilder->ParseRequestData(exampleRequestData);
+    pageBuilder->AddMetadata();
+    pageBuilder->CreateResponseData();
+
+    EXPECT_EQ(pageBuilder->GetResponseData()["chat"],
+              DBFilmsResponse["chat"])
+        << "Chat was processed incorrectly";
+    EXPECT_EQ(pageBuilder->GetResponseData()["startTimestamp"],
+              DBFilmsResponse["startTimestamp"])
+        << "'Starting from' timestap was processed incorrectly";
+}
+
+
+TEST(VideoPreviewBlock, basicTest) {
+    //  Setting up mock client for database.
+    MockClient mockDBClient;
+
+    EXPECT_CALL(mockDBClient, SendPackage)
+        .Times(1)
+        .WillOnce(Return(void));
+
+    EXPECT_CALL(mockDBClient, Listen)
+        .Times(1)
+        .WillOnce(Return(void));
+
+    FastCGIData DBFilmsResponse;
+    DBFilmsResponse["previewImagePath"] = "titanic_preview_path|";
+    DBFilmsResponse["previewVideoPath"] = "titanic_preview_video_path|";
+    DBFilmsResponse["rating"] = "10.0";
+    DBFilmsResponse["director"] = "James Cameron";
+    DBFilmsResponse["premiered"] = "18.11.1997";
+    DBFilmsResponse["actors"] = "Leonardo DiCaprio|Kate Winslet|"
+                                "William Zane|William Paxton";
+
+    EXPECT_CALL(mockDBClient, ReceivePackage)
+        .Times(1)
+        .WillOnce(Return(DBFilmsResponse));
+
+    //  Setting up mock client for video fileserver.
+    MockClient mockVideoFilesClient;
+
+    EXPECT_CALL(mockVideoFilesClient, SendPackage)
+        .Times(0);
+
+    EXPECT_CALL(mockVideoFilesClient, Listen)
+        .Times(0);
+
+    EXPECT_CALL(mockVideoFilesClient, ReceivePackage)
+        .Times(0);
+
+    VideoPreviewBlock previewBlock(mockDBClient, mockVideoFilesClient);
+
+    //  Testing actual page builder.
+    StaticBuilder* pageBuilder = static_cast<StaticBuilder*>(&previewBlock);
+
+    FastCGIData exampleRequestData;
+    exampleRequestData["movieName"] = "Titanic";
+
+    pageBuilder->ParseRequestData(exampleRequestData);
+    pageBuilder->AddMetadata();
+    pageBuilder->CreateResponseData();
+
+    DBFilmsResponse["previewImagePath"] = "titanic_preview_path|";
+    DBFilmsResponse["previewVideoPath"] = "titanic_preview_video_path|";
+    DBFilmsResponse["rating"] = "10.0";
+    DBFilmsResponse["director"] = "James Cameron";
+    DBFilmsResponse["premiered"] = "18.11.1997";
+    DBFilmsResponse["actors"] = "Leonardo DiCaprio|Kate Winslet|"
+                                "William Zane|William Paxton";
+
+    EXPECT_EQ(pageBuilder->GetResponseData()["previewImagePath"],
+              DBFilmsResponse["previewImagePath"])
+        << "Film image preview was processed incorrectly";
+    EXPECT_EQ(pageBuilder->GetResponseData()["previewVideoPath"],
+              DBFilmsResponse["previewVideoPath"])
+        << "Film video preview was processed incorrectly";
+    EXPECT_EQ(pageBuilder->GetResponseData()["rating"],
+              DBFilmsResponse["rating"])
+        << "Film rating was processed incorrectly";
+    EXPECT_EQ(pageBuilder->GetResponseData()["director"],
+              DBFilmsResponse["director"])
+        << "Film director was processed incorrectly";
+    EXPECT_EQ(pageBuilder->GetResponseData()["premiered"],
+              DBFilmsResponse["premiered"])
+        << "Film premiere date was processed incorrectly";
+    EXPECT_EQ(pageBuilder->GetResponseData()["actors"],
+              DBFilmsResponse["actors"])
+        << "Film actors were processed incorrectly";
 }
 
 

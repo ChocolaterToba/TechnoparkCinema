@@ -8,7 +8,7 @@
 typedef std::map<std::string, std::string> UserMatadata;
 typedef std::map<std::string, std::string> FilmData;
 
-class ReccomendationsPage: public StaticBuilder {
+class RecommendationsPage: public StaticBuilder {
  protected:
     UserMetadata userMetadata;
     std::vector<FilmData> films;
@@ -16,7 +16,7 @@ class ReccomendationsPage: public StaticBuilder {
     //  Will add more as page's functionality grows.
 
  public:
-    ReccomendationsPage(FCGIClient dbClient, FCGIClient videoFilesClient);
+    RecommendationsPage(FCGIClient dbClient, FCGIClient videoFilesClient);
 
     virtual void ParseRequestData(FastCGIData requestData);
     virtual void AddMetadata();
