@@ -1,20 +1,21 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <map>
 #include "StaticBuilder.hpp"
 
 typedef std::map<std::string, std::string> UserMatadata;
+typedef std::map<std::string, std::string> FilmData;
 
-class AuthorizationPage: public StaticBuilder {
+class VideoPreviewBlock: public StaticBuilder {
  protected:
-    UserMatadata userMetadata;
-    bool AuthSuccess;
-    void AddErrorCode();
+    UserMetadata userMetadata;
+    FilmData film;
     //  Will add more as page's functionality grows.
 
  public:
-    AuthorizationPage(FCGIClient dbClient, FCGIClient videoFilesClient);
+    VideoPreviewBlock(FCGIClient dbClient, FCGIClient videoFilesClient);
 
     virtual void ParseRequestData(FastCGIData requestData);
     virtual void AddMetadata();

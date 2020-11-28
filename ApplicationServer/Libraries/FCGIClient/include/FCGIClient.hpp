@@ -11,10 +11,11 @@ class FCGIClient {
  private:
     int socket;  //  int will be replaced with proper type
 
+    virtual void Listen();
+
  public:
     FCGIClient(int socket);
 
-    virtual void Listen();
     virtual std::map<std::string, std::string> ReceivePackage();
     virtual void SendPackage(std::map<std::string, std::string>);
 };

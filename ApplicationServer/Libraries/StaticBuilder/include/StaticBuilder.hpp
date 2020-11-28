@@ -2,13 +2,16 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include "FSGIClient.h"
+
+typedef std::map<std::string, std::string> FastCGIData;
 
 class StaticBuilder {
  protected:
     std::string pageType;
-    std::vector<char> requestData;
-    std::vector<char> responseData;
+    FastCGIData requestData;
+    FastCGIData responseData;
 
     FCGIClient dbClient;
     FCGIClient videoFilesClient;
@@ -16,8 +19,8 @@ class StaticBuilder {
  public:
     StaticBuilder(FCGIClient dbClient, FCGIClient videoFilesClient);
 
-    virtual void ParseRequestData(std::map<std::string, std::string> requestData);
+    virtual void ParseRequestData(FastCGIData requestData);
     virtual void AddMetadata();
     virtual void CreateResponseData();
-    virtual std::map<std::string, std::string> GetResponseData();
+    virtual FastCGIData GetResponseData();
 };

@@ -13,8 +13,8 @@
 class MockClient : public FCGIClient {
  public:
     MOCK_METHOD(void, listen, void);
-    MOCK_METHOD(std::map<std::string, std::string>, ReceivePackage, void);
-    MOCK_METHOD(void, SendPackage, std::map<std::string, std::string>);
+    MOCK_METHOD(FastCGIData, ReceivePackage, void);
+    MOCK_METHOD(void, SendPackage, FastCGIData);
 };
 
 bool compareFiles(const std::string& p1, const std::string& p2) {
@@ -49,7 +49,7 @@ TEST(AuthPageTesting, test1) {
         .Times(1)
         .WillOnce(Return(void));
 
-    std::map<std::string, std::string> exampleDBResponse;
+    FastCGIData exampleDBResponse;
     exampleDBResponse["authAccess"] = "False";
     EXPECT_CALL(mockDBClient, ReceivePackage)
         .Times(1)
@@ -57,6 +57,105 @@ TEST(AuthPageTesting, test1) {
     
     //  Setting up mock client for video fileserver.
     MockClient mockVideoFilesClient;
+
+    EXPECT_CALL(mockVideoFilesClient, SendPackage)
+        .Times(0);
+
+    EXPECT_CALL(mockVideoFilesClient, Listen)
+        .Times(0);
+
+    EXPECT_CALL(mockVideoFilesClient, ReceivePackage)
+        .Times(0);
+    
+    AuthorizationPage authPage(mockDBClient, mockVideoFilesClient);
+    
+    //  Testing actual page builder.
+    StaticBuilder* pageBuilder = static_cast<StaticBuilder*>(&authPage);
+
+    FastCGIData exampleRequestData;
+    exampleRequestData["Username"] = "ExampleUser";
+
+    pageBuilder->ParseRequestData(exampleRequestData);
+    pageBuilder->AddMetadata();
+    pageBuilder->CreateResponseData();
+
+    EXPECT_EQ(pageBuilder->GetResponseData()["authAccess"], "False")
+}
+
+TEST(AuthPageTesting, test2) {
+    //  Setting up mock client for database.
+    MockClient mockDBClient;
+
+    EXPECT_CALL(mockDBClient, SendPackage)
+        .Times(1)
+        .WillOnce(Return(void));
+
+    EXPECT_CALL(mockDBClient, Listen)
+        .Times(1)
+        .WillOnce(Return(void));
+
+    FastCGIData exampleDBResponse;
+    exampleDBResponse["authAccess"] = "False";
+    EXPECT_CALL(mockDBClient, ReceivePackage)
+        .Times(1)
+        .WillOnce(Return(exampleDBResponse));
+    
+    //  Setting up mock client for video fileserver.
+    MockClient mockVideoFilesClient;
+
+    EXPECT_CALL(mockVideoFilesClient, SendPackage)
+        .Times(0);
+
+    EXPECT_CALL(mockVideoFilesClient, Listen)
+        .Times(0);
+
+    EXPECT_CALL(mockVideoFilesClient, ReceivePackage)
+        .Times(0);
+    
+    AuthorizationPage authPage(mockDBClient, mockVideoFilesClient);
+    
+    //  Testing actual page builder.
+    StaticBuilder* pageBuilder = static_cast<StaticBuilder*>(&authPage);
+
+    FastCGIData exampleRequestData;
+    exampleRequestData["Username"] = "ExampleUser";
+
+    pageBuilder->ParseRequestData(exampleRequestData);
+    pageBuilder->AddMetadata();
+    pageBuilder->CreateResponseData();
+
+    EXPECT_EQ(pageBuilder->GetResponseData()["authAccess"], "False")
+}
+
+TEST(AuthPageTesting, test1) {
+    //  Setting up mock client for database.
+    MockClient mockDBClient;
+
+    EXPECT_CALL(mockDBClient, SendPackage)
+        .Times(1)
+        .WillOnce(Return(void));
+
+    EXPECT_CALL(mockDBClient, Listen)
+        .Times(1)
+        .WillOnce(Return(void));
+
+    std::map<std::string, std::string> exampleDBResponse;
+    exampleDBResponse["authAccess"] = "True";
+    EXPECT_CALL(mockDBClient, ReceivePackage)
+        .Times(1)
+        .WillOnce(Return(exampleDBResponse));
+    
+    //  Setting up mock client for video fileserver.
+    MockClient mockVideoFilesClient;
+
+    EXPECT_CALL(mockVideoFilesClient, SendPackage)
+        .Times(0);
+
+    EXPECT_CALL(mockVideoFilesClient, Listen)
+        .Times(0);
+
+    EXPECT_CALL(mockVideoFilesClient, ReceivePackage)
+        .Times(0);
     
     AuthorizationPage authPage(mockDBClient, mockVideoFilesClient);
     
@@ -70,7 +169,7 @@ TEST(AuthPageTesting, test1) {
     pageBuilder->AddMetadata();
     pageBuilder->CreateResponseData();
 
-    EXPECT_EQ(pageBuilder->GetResponseData()["authAccess"], "False")
+    EXPECT_EQ(pageBuilder->GetResponseData()["authAccess"], "True")
 }
 
 int main(int argc, char **argv) {
