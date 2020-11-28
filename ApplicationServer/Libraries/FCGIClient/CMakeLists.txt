@@ -6,29 +6,23 @@ set(CMAKE_CXX_FLAGS "-std=c++0x")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output)
 
-set(PROJECT_NAME AppServer)
-project(${PROJECT_NAME})
+set(LIBRARY_NAME FastCGILib)
+project(${LIBRARY_NAME})
 
-set(LIBRARIES_PATH Libraries)
-add_subdirectory(${LIBRARIES_PATH}/StaticBuilder)
-
-add_executable(${PROJECT_NAME} src/main.cpp)
-include_directories(include)
-file(GLOB LIBRARIES_NAMES ExampleLibrary)
-
-set(SRC_PATH src)
+add_library(${LIBRARY_NAME} STATIC src/main.cpp)
+target_include_directories(${LIBRARY_NAME} PUBLIC include)
 
 ################################
 # Testing
 ################################
 
-set(TEST_SRC_FILES test/Test.cpp)
+set(TEST_SRC_FILES test/main.cpp)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
-#                       'cmake -DENABLE_TESTING=ON'.
-option(ENABLE_TESTING "Build all tests." OFF) # Makes boolean 'test' available.
+#                       'cmake -DENABLE_TESTING_LIB=ON'.
+option(ENABLE_TESTING_LIB "Build all tests." OFF) # Makes boolean 'test' available.
 
-if (ENABLE_TESTING)
+if (ENABLE_TESTING_LIB)
   # Install Gtest
   include(FetchContent)
   FetchContent_Declare(
@@ -42,18 +36,22 @@ if (ENABLE_TESTING)
   include(CTest)
  
   # Link runTests with what we want to test and the GTest and DZ1 library
-  add_executable(runTests ${TEST_SRC_FILES})
-  target_link_libraries(runTests gtest_main pthread)
+  add_executable(test${LIBRARY_NAME} ${TEST_SRC_FILES})
+  target_link_libraries(test${LIBRARY_NAME} gtest_main pthread)
 
-  target_link_libraries(runTests ${LIBRARIES_PATH}/${LIBRARIES_NAMES})
+  target_link_libraries(test${LIBRARY_NAME} ${LIBRARY_NAME})
 
-  gtest_discover_tests(runTests)
+  gtest_discover_tests(test${LIBRARY_NAME})
 
 endif()
 
-option(ENABLE_COVERAGE "Run coverage" OFF)
+################################
+# Coverage
+################################
 
-# if (ENABLE_COVERAGE)
+# option(ENABLE_COVERAGE_LIB "Run coverage" OFF)
+
+# if (ENABLE_COVERAGE_LIB)
 #   set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/coverage_module)
 #   include(CodeCoverage)
 
