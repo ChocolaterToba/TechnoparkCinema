@@ -13,7 +13,7 @@ add_subdirectory(../FCGIClient subproject/FastCGIClient)
 
 add_library(${LIBRARY_NAME} STATIC src/main.cpp)
 target_include_directories(${LIBRARY_NAME} PUBLIC include)
-target_link_libraries(${LIBRARY_NAME} FCGIClientLib)
+target_link_libraries(${LIBRARY_NAME} FastCGIClientLib)
 
 ################################
 # Testing

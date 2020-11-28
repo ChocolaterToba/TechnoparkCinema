@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "-std=c++0x")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output)
 
-set(LIBRARY_NAME FastCGILib)
+set(LIBRARY_NAME FastCGIClientLib)
 project(${LIBRARY_NAME})
 
 add_library(${LIBRARY_NAME} STATIC src/main.cpp)
