@@ -1,6 +1,0 @@
-GET /index.jpg HTTP/1.0
-Host: example.org
-Accept: */*
-User-Agent: Mozilla/4.0 (compatible; MSIE 5.0; Windows 98)
-Referer: http://example.org/
-
