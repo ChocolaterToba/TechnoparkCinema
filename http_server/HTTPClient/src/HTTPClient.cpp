@@ -13,8 +13,6 @@ std::vector<char>::iterator HTTPClient::parseBuffer(std::vector<char>& buffer, s
     return endlineIter;
 }
 
-
-
 void HTTPClient::recvHeader(std::shared_ptr<Socket> client) {
     header.clear();
     body.clear();
@@ -45,11 +43,18 @@ void HTTPClient::recvHeader(std::shared_ptr<Socket> client) {
     }
 
     header = result.substr(0, bodyStartIndex + shift / 2);
-    std::cout << "Received header: " << std::endl << header << std::endl;
+    std::cerr << "Received header: " << std::endl << header << std::endl;
 
     std::vector<char> temp(result.begin() + bodyStartIndex + shift, result.end());
     if (binaryBodyStarted) {
         temp.insert(temp.end(), body.begin(), body.end());
     }
     body = std::move(temp);
+}
+
+void HTTPClient::recvBody(std::shared_ptr<Socket> client, size_t contentLength) {
+    contentLength -= body.size();
+    std::vector<char> receivedBody = std::move(client->recvVector(contentLength));
+    body.insert(body.begin(), receivedBody.begin(), receivedBody.end());
+    std::cerr << "Successfully received body, size: " << body.size() << " bytes" << std::endl;
 }

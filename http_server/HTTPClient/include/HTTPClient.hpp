@@ -18,4 +18,5 @@ class HTTPClient {
     void setHeader(std::string header) { this->header = std::move(header); }
     void setBody(std::vector<char> body) { this->body = std::move(body); }
     void recvHeader(std::shared_ptr<Socket> client);
+    void recvBody(std::shared_ptr<Socket> client, size_t contentLength);
 };
