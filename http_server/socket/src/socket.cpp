@@ -173,7 +173,7 @@ void Socket::send(const std::vector<char>& str) {
 }
 
 std::string Socket::recv() {
-    char buf[128];
+    char buf[256];
 #ifdef __APPLE__
     // mac os x don't defines MSG_NOSIGNAL
     int n = ::recv(m_Sd, buf, sizeof(buf), 0);
@@ -261,7 +261,7 @@ std::string Socket::recvTimed(int timeout) {
 }
 
 std::vector<char> Socket::recvVector() {
-    char buf[128];
+    char buf[256];
 #ifdef __APPLE__
     // mac os x don't defines MSG_NOSIGNAL
     int n = ::recv(m_Sd, buf, sizeof(buf), 0);
