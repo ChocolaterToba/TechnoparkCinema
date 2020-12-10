@@ -3,10 +3,12 @@
 #include <memory>
 #include <vector>
 #include <queue>
+#include <map>
 #include "socket.hpp"
 #include "HTTPClient.hpp"
 #include "TaskBuilder.hpp"
 #include "TasksController.hpp"
+#include "Listener.hpp"
 #include "Worker.hpp"
 
 class Master {
@@ -14,6 +16,9 @@ class Master {
     Socket socket;
 
     std::vector<Worker> workers;
+
+    std::map<std::string, int> ports;
+    std::vector<Listener> listeners;
 
     TasksController controller;
     std::vector<Task>& haveNoData;
@@ -25,13 +30,11 @@ class Master {
     std::shared_ptr<std::mutex> unprocessedClientsMutex;
     TaskBuilder builder;
 
-    virtual void Listen();
-
     std::thread masterThread;
     bool stop;
 
  public:
-    Master();
+    explicit Master(std::map<std::string, int>& ports, size_t workersAmount = 1);
     virtual ~Master();
 
     //  static void SetSocket(std::unique_ptr<Socket> socket);

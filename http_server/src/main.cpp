@@ -9,16 +9,20 @@
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
 
-void clientWork(std::shared_ptr<Socket> client, bool* shutdown) {
-    client->setRcvTimeout(/*sec*/ 120, /*microsec*/ 0);
-    std::ofstream output("out", std::ios::out);
+#include "Listener.hpp"
+
+void clientWork(HTTPClient client, bool* shutdown) {
     try {
         std::cout << "Starting new recv \n";
-        HTTPClient httpclient;
-        httpclient.recvHeader(client);
-        HttpRequest request(httpclient.getHeader());
+        client.recvHeader();
+
+        HttpRequest request(client.getHeader());
         HttpResponse response(request);
-        client->send(response.GetData());
+
+        // httpclient.setHeader(std::move(response.GetHeader()));
+        // httpclient.setBody(std::move(response.getBody()));
+        // httpclient.send();
+        client.send(std::move(response.GetData()));
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
         return;
@@ -34,28 +38,27 @@ int main(int argc, char* argv[]) {
     std::vector<std::thread> threads;
 
     try {
-        Socket s;
-        s.createServerSocket(port, 5);
+        std::queue<HTTPClient> unprocessedClients;
+        std::shared_ptr<std::mutex> unprocessedClientsMutex = std::make_shared<std::mutex>();
+
+        Listener listener(port, unprocessedClients, unprocessedClientsMutex);
+        listener.Start();
 
         bool shutdown = false;
-        size_t needToClean = 100;
 
         while (!shutdown) {
-            if (threads.size() > needToClean) {
-                needToClean *= 2;
-                for (size_t i = threads.size() - 1; i > 0; --i) {
-                    if (threads[i].joinable()) {
-                        threads[i].join();
-                        threads.erase(threads.begin() + i);
-                    }
-                }
-                if (threads[0].joinable()) {
-                    threads[0].join();
-                    threads.erase(threads.begin() + 0);
-                }
+            unprocessedClientsMutex->lock();
+            if (unprocessedClients.empty()) {
+                unprocessedClientsMutex->unlock();
+                std::cerr << "No new connections" << std::endl;
+                sleep(3);  // wait for 3 seconds
+                continue;
             }
+
             std::cout << "start new accept \n";
-            threads.push_back(std::thread(clientWork, s.accept(), &shutdown));
+            threads.push_back(std::thread(clientWork, std::move(unprocessedClients.front()), &shutdown));
+            unprocessedClients.pop();
+            unprocessedClientsMutex->unlock();
         }
         for (size_t i = 0; i < threads.size(); ++i) {
             threads[i].join();

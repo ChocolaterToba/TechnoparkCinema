@@ -18,7 +18,7 @@ class Task {
     HTTPClient& client;
 
  public:
-    explicit Task(HTTPClient client = HTTPClient());
+    explicit Task(HTTPClient client);
     virtual ~Task();
 
     virtual PreFuncType GetPreFunc();
