@@ -3,6 +3,7 @@
 #include <unistd.h>    // close()
 #include <memory>
 #include <string>
+#include <vector>
 #include <functional>
 
 std::string int2ipv4(uint32_t ip);
@@ -19,20 +20,31 @@ class Socket {
 
  public:
     int sd() const noexcept { return m_Sd; }
+
     void connect(const std::string& host, int port);
     void connect(const std::string& host,
                  int port,
                  int timeout);
+
     void send(const std::string& s);
     void send(const std::vector<char>& s);
+
     bool hasData();
+
     std::string recv();
-    std::string recv_loop();
     std::string recv(size_t bytes);
     std::string recvTimed(int timeout);
+    std::string recvLoop();
+
+    std::vector<char> recvVector();
+    std::vector<char> recvVector(size_t bytes);
+    std::vector<char> recvVectorTimed(int timeout);
+    std::vector<char> recvVectorLoop();
+
     void setRcvTimeout(int sec, int microsec);
     void setNonBlocked(bool opt);
     void setReuseAddr(int sd);
+
     void createServerSocket(uint32_t port,
                             uint32_t queue_size);
     std::shared_ptr<Socket> accept();
