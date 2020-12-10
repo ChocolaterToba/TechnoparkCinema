@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <random>
 #include "DatabaseManager.hpp"
+#include <chrono>
 // not started yet
 DatabaseManager::DatabaseManager() {
 
@@ -36,8 +37,10 @@ std::queue<std::string> DatabaseManager::GetTemplates(std::queue<std::string> na
     vect.push_back("<div class = \"col-md-2\"><img src = \"images/img4.jpg\"></div>");
     vect.push_back("<div class = \"col-md-2\"><img src = \"images/img5.jpg\"></div>");
     vect.push_back("<div class = \"col-md-2\"><img src = \"images/img6.jpg\"></div>");
-    auto rng = std::default_random_engine {};
-    std::shuffle(std::begin(vect), std::end(vect), rng);
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine e(seed);
+    //  auto rng = std::default_random_engine {};
+    std::shuffle(std::begin(vect), std::end(vect), e);
     for (size_t i = 0; i < 6; i++) {
         temp.push(vect[i]);
     }
