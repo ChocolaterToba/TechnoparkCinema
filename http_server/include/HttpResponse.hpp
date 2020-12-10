@@ -21,13 +21,13 @@ typedef enum {
 } ContentType;
 
 class HttpResponse {
-public:
+ public:
     explicit HttpResponse(const HttpRequest &request);
     HttpResponse() = default;
     std::string GetHTTPVersion() const;
     std::vector<char> GetData() const;
 
-private:
+ private:
     std::string http_version;
     std::vector<char> response_data;
     std::string return_code;

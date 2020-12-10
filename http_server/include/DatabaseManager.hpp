@@ -2,21 +2,19 @@
 
 #include <map>
 #include <string>
+#include <queue>
 
-
+// not started yet - сейчас это временный фейк.
 class DatabaseManager {
  public:
-    explicit DatabaseManager(const std::ifstream &source);
+    explicit DatabaseManager();
 
-    std::string GetHeader(std::basic_string<char> header_name) const;
-    std::string GetURL() const;
-    std::string GetHTTPVersion() const;
+    std::queue<std::string> GetParameters(std::queue<std::string> names);
+
+    //вообще не долнжны быть тут
+    std::queue<std::string> GetTemplates(std::queue<std::string> names);
 
 
  private:
-    std::string url;
-    std::string http_version;
-    std::map<std::string, std::string> headers;
 
-    void CheckRequestMethod(const std::string &method_name);
 };

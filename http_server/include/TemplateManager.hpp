@@ -20,6 +20,7 @@ class TemplateManager {
 
 
  private:
+    // заменить очереди на map
     // будут std::vector<std::pair<int, std::string> для templates. Int для FOR
     std::string HTML;
     std::queue<std::string> htmltemplates;

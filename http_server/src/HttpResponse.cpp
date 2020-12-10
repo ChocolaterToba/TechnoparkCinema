@@ -133,12 +133,23 @@ void HttpResponse::SetData(const std::string &url) {
     SetContentType(GetContentType(url));
     std::string path("../static" + url);
     if (url == "/")
-        path += "index.html";
+        path += "IndexTemplate.html";  // "index.html"
 
     std::ifstream source(path, std::ios::binary);
-    char buffer[BUF_SIZE] = {0};
-    while (source.read(buffer, BUF_SIZE)) {
-        data.insert(data.end(), buffer, buffer + BUF_SIZE);
-    }
-    data.insert(data.end(), buffer, buffer + source.gcount());
+    TemplateManager TManager(source);
+    std::queue<std::string> parameters = TManager.GetParameterNames();
+    std::queue<std::string> temp = TManager.GetTemplateNames();
+    DatabaseManager DManager;
+
+    std::queue<std::string> parameters_new = DManager.GetParameters(parameters);
+    std::queue<std::string> temp_new = DManager.GetTemplates(temp);
+
+    std::vector<char> result = TManager.GetHtml(parameters_new, temp_new);
+
+    // char buffer[BUF_SIZE] = {0};
+    // while (source.read(buffer, BUF_SIZE)) {
+    //     data.insert(data.end(), buffer, buffer + BUF_SIZE);
+    // }
+    // data.insert(data.end(), buffer, buffer + source.gcount());
+    data.insert(data.end(), result.begin(), result.end());
 }
