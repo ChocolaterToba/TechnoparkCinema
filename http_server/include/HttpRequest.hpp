@@ -28,7 +28,7 @@ Connection: close
 
 class HttpRequest {
  public:
-    HttpRequest(const std::string &message);
+    explicit HttpRequest(const std::string &message);
 
     std::string GetHeader(std::basic_string<char> header_name) const;
     std::string GetURL() const;

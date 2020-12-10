@@ -9,6 +9,8 @@
 
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
+#include "DatabaseManager.hpp"
+#include "TemplateManager.hpp"
 #include "exceptions.hpp"
 
 
@@ -67,7 +69,7 @@ void HttpResponse::FormResponseData() {
     answer.append(CRLF);
 
     response_data.assign(answer.begin(), answer.end());
-    response_data.insert( response_data.end(), data.begin(), data.end() );
+    response_data.insert(response_data.end(), data.begin(), data.end());
 }
 
 ContentType HttpResponse::GetContentType(const std::string &url) const {
@@ -119,7 +121,7 @@ void HttpResponse::SetContentType(ContentType type) {
         case VID_MP4:
             c_t_header.second = "video/mp4";
             break;
-        default:;
+        default:
             throw UnknownContentTypeException();
     }
 

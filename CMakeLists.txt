@@ -14,7 +14,9 @@ include_directories(${PROJECT_SOURCE_DIR}/http_server/include)
 
 add_library(http_message STATIC
             ${PROJECT_SOURCE_DIR}/http_server/src/HttpResponse.cpp
-            ${PROJECT_SOURCE_DIR}/http_server/src/HttpRequest.cpp)
+            ${PROJECT_SOURCE_DIR}/http_server/src/HttpRequest.cpp
+            ${PROJECT_SOURCE_DIR}/http_server/src/DatabaseManager.cpp
+            ${PROJECT_SOURCE_DIR}/http_server/src/TemplateManager.cpp)
 
 add_executable(server ${PROJECT_SOURCE_DIR}/http_server/src/main.cpp)
 target_link_libraries(server http_message)
