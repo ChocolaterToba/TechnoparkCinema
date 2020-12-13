@@ -46,7 +46,8 @@ file(GLOB ASYNC_SRC ${PROJECT_SOURCE_DIR}/http_server/async/src/Task.cpp
                     ${PROJECT_SOURCE_DIR}/http_server/async/src/TaskBuilder.cpp
                     ${PROJECT_SOURCE_DIR}/http_server/async/src/TasksController.cpp
                     ${PROJECT_SOURCE_DIR}/http_server/async/src/Listener.cpp
-                    ${PROJECT_SOURCE_DIR}/http_server/async/src/Master.cpp)
+                    ${PROJECT_SOURCE_DIR}/http_server/async/src/Master.cpp
+                    ${PROJECT_SOURCE_DIR}/http_server/async/src/msleep.cpp)
 add_library(asyncServer STATIC ${ASYNC_SRC})
 target_include_directories(asyncServer PUBLIC
                            ${PROJECT_SOURCE_DIR}/http_server/async/include)

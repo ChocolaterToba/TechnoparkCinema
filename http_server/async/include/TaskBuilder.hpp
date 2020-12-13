@@ -10,7 +10,7 @@ class TaskBuilder {
  protected:
     std::queue<HTTPClient>& unprocessedClients;
     std::shared_ptr<std::mutex> unprocessedClientsMutex;
-    std::vector<Task>& haveNoData;
+    std::vector<std::unique_ptr<Task>>& haveNoData;
     std::shared_ptr<std::mutex> haveNoDataMutex;
 
     virtual void CreateTasks();
@@ -21,7 +21,7 @@ class TaskBuilder {
  public:
     TaskBuilder(std::queue<HTTPClient>& unprocessedClients,
                 std::shared_ptr<std::mutex> unprocessedClientsMutex,
-                std::vector<Task>& haveNoData,
+                std::vector<std::unique_ptr<Task>>& haveNoData,
                 std::shared_ptr<std::mutex> haveNoDataMutex);
     virtual ~TaskBuilder();
 

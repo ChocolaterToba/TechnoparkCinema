@@ -32,3 +32,7 @@ void Task::SetPostFunc(PostFuncType postFunc) {
 HTTPClient& Task::GetClient() {
     return client;
 }
+bool Task::HasData() {
+    return client.hasData();
+}
+

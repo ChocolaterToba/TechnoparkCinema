@@ -21,7 +21,7 @@ class Master {
     std::vector<Listener> listeners;
 
     TasksController controller;
-    std::vector<Task>& haveNoData;
+    std::vector<std::unique_ptr<Task>>& haveNoData;
     std::shared_ptr<std::mutex> haveNoDataMutex;
     std::queue<std::unique_ptr<Task>>& haveData;
     std::shared_ptr<std::mutex> haveDataMutex;

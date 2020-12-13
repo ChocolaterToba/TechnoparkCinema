@@ -2,8 +2,10 @@
 #include <mutex>
 #include <thread>
 #include <memory>
+
 #include "Task.hpp"
 #include "TasksController.hpp"
+#include "msleep.hpp"
 
 TasksController::TasksController() :
     haveNoDataMutex(std::make_shared<std::mutex>()),
@@ -14,7 +16,7 @@ TasksController::~TasksController() {
     Stop();
 }
 
-std::vector<Task>& TasksController::GetHaveNoData() {
+std::vector<std::unique_ptr<Task>>& TasksController::GetHaveNoData() {
     return haveNoData;
 }
 std::shared_ptr<std::mutex> TasksController::GetHaveNoDataMutex() {
@@ -29,7 +31,29 @@ std::shared_ptr<std::mutex> TasksController::GetHaveDataMutex() {
 
 void TasksController::TasksControllerLoop() {
     while (!stop) {
-        // TODO(Aglicheev): listening to queue.
+        if (!haveNoData.empty()) {
+            std::queue<std::unique_ptr<Task>> buffer;
+            haveNoDataMutex->lock();
+            size_t i = 0;
+            while (i < haveNoData.size()) {
+                if (haveNoData[i]->HasData()) {
+                    buffer.push(std::move(haveNoData[i]));
+                    haveNoData.erase(haveNoData.begin() + i);
+                } else {
+                    ++i;
+                }
+            }
+            haveNoDataMutex->unlock();
+
+            haveDataMutex->lock();
+            while (!buffer.empty()) {
+                haveData.push(std::move(buffer.front()));
+                buffer.pop();
+            }
+            haveDataMutex->unlock();
+        }
+
+        msleep(120);
     }
 }
 

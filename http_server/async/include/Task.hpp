@@ -30,4 +30,6 @@ class Task {
     virtual void SetPostFunc(PostFuncType postFunc);
 
     virtual HTTPClient& GetClient();
+
+    virtual bool HasData();
 };

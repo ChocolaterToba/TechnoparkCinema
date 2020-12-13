@@ -7,6 +7,7 @@
 
 #include "Worker.hpp"
 #include "Task.hpp"
+#include "msleep.hpp"
 
 Worker::Worker(std::queue<std::unique_ptr<Task>>& tasks,
                std::shared_ptr<std::mutex> tasksMutex) :
@@ -30,14 +31,15 @@ void Worker::TakeNewTask() {
                     tasksMutex->unlock();
                     state = TaskRecieved;
                 } else {
-                    // wait(); TODO
+                    msleep(30);
                 }
             } else {
-                // wait(); TODO
+                msleep(30);
             }
         }
     } else {
-        throw std::exception();  //  Will implement later.
+        throw std::runtime_error(std::string(
+            "Worker: TakeNewTask: state is not NoTask!"));
     }
 }
 
@@ -48,7 +50,8 @@ void Worker::RunPreFunc() {
                                  currentTask->GetClient()));
         state = PreFuncRan;
     } else {
-        throw std::exception();  //  Will implement later.
+        throw std::runtime_error(std::string(
+            "Worker: RunPreFunc: state is not TaskRecieved!"));
     }
 }
 void Worker::RunMainFunc() {
@@ -57,7 +60,8 @@ void Worker::RunMainFunc() {
         currentTask->GetMainFunc()(data);
         state = MainFuncRan;
     } else {
-        throw std::exception();  //  Will implement later.
+        throw std::runtime_error(std::string(
+            "Worker: RunMainFunc: state is not PreFuncRan!"));
     }
 }
 void Worker::RunPostFunc() {
@@ -66,7 +70,8 @@ void Worker::RunPostFunc() {
         currentTask->GetPostFunc()(data, currentTask->GetClient());
         state = NoTask;
     } else {
-        throw std::exception();  //  Will implement later.
+        throw std::runtime_error(std::string(
+            "Worker: RunPostFunc: state is not MainFuncRan!"));
     }
 }
 
@@ -82,6 +87,7 @@ void Worker::WorkerLoop() {
 void Worker::Start() {
     if (stop) {
         stop = false;
+        state = NoTask;
         workerThread = std::thread(&Worker::WorkerLoop, this);
     }
 }

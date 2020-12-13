@@ -9,7 +9,7 @@
 
 class TasksController {
  protected:
-    std::vector<Task> haveNoData;
+    std::vector<std::unique_ptr<Task>> haveNoData;
     std::shared_ptr<std::mutex> haveNoDataMutex;
     std::queue<std::unique_ptr<Task>> haveData;
     std::shared_ptr<std::mutex> haveDataMutex;
@@ -22,7 +22,7 @@ class TasksController {
     TasksController();
     virtual ~TasksController();
 
-    virtual std::vector<Task>& GetHaveNoData();
+    virtual std::vector<std::unique_ptr<Task>>& GetHaveNoData();
     virtual std::shared_ptr<std::mutex> GetHaveNoDataMutex();
     virtual std::queue<std::unique_ptr<Task>>& GetHaveData();
     virtual std::shared_ptr<std::mutex> GetHaveDataMutex();
