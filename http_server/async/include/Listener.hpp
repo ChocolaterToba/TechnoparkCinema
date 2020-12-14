@@ -31,6 +31,6 @@ class Listener {
     ~Listener();
     
     void Start();
-    void Stop();
     void Loop();
+    void Stop();
 };

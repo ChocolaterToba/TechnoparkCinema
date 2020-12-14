@@ -34,9 +34,14 @@ class Worker {
  public:
     Worker(std::queue<Task>& tasks,
            std::shared_ptr<std::mutex> tasksMutex);
-    virtual ~Worker();
 
-    virtual void WorkerLoop();
+    Worker(const Worker& other) = delete;
+    Worker(Worker&& other);
+
+    Worker& operator=(const Worker& other) = delete;
+    Worker& operator=(Worker&& other);
+
+    virtual ~Worker();
 
     virtual void TakeNewTask();
 
@@ -45,5 +50,6 @@ class Worker {
     virtual void RunPostFunc();
 
     virtual void Start();
+    virtual void Loop();
     virtual void Stop();
 };

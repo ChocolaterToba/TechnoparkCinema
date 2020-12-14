@@ -24,14 +24,14 @@ Master::Master(std::map<std::string, int>& ports, size_t workersAmount):
         builder(unprocessedClients, unprocessedClientsMutex,
                 haveNoData, haveNoDataMutex),
         stop(true) {
-            // if (!workersAmount) {
-            //     throw std::runtime_error(std::string(
-            //         "Master constructor: cannot construct master with no workers"
-            //     ));
-            // }
-            // for (size_t i = 0; i < workersAmount; ++i) {
-            //     workers.emplace_back(haveData, haveDataMutex);
-            // }
+            if (!workersAmount) {
+                throw std::runtime_error(std::string(
+                    "Master constructor: cannot construct master with no workers"
+                ));
+            }
+            for (size_t i = 0; i < workersAmount; ++i) {
+                workers.emplace_back(haveData, haveDataMutex);
+            }
             for (auto& keyVal : ports) {
                 listeners.emplace_back(keyVal.second, unprocessedClients, unprocessedClientsMutex);
             }

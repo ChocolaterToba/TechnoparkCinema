@@ -16,6 +16,21 @@ Worker::Worker(std::queue<Task>& tasks,
         state(NoTask),
         stop(true) {}
 
+Worker::Worker(Worker&& other) :
+        Worker(other.tasks, other.tasksMutex) {
+    other.Stop();
+}
+
+Worker& Worker::operator=(Worker&& other) {
+    Stop();
+    tasks = other.tasks;
+    tasksMutex = other.tasksMutex;
+    currentTask = Task();
+    state = NoTask;
+    other.Stop();
+    return *this;
+}
+
 Worker::~Worker() {
     Stop();
 }
@@ -74,7 +89,15 @@ void Worker::RunPostFunc() {
     }
 }
 
-void Worker::WorkerLoop() {
+void Worker::Start() {
+    if (stop) {
+        stop = false;
+        state = NoTask;
+        workerThread = std::thread(&Worker::Loop, this);
+    }
+}
+
+void Worker::Loop() {
     while (!stop) {
         TakeNewTask();
         RunPreFunc();
@@ -83,16 +106,11 @@ void Worker::WorkerLoop() {
     }
 }
 
-void Worker::Start() {
-    if (stop) {
-        stop = false;
-        state = NoTask;
-        workerThread = std::thread(&Worker::WorkerLoop, this);
-    }
-}
 void Worker::Stop() {
     if (!stop) {
         stop = true;
         workerThread.join();
+        data.clear();
+        state = NoTask;
     }
 }

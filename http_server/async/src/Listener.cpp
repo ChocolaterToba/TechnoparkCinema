@@ -37,13 +37,6 @@ Listener::~Listener() {
     Stop();
 }
 
-void Listener::Stop() {
-    if (!stop) {
-        stop = true;
-        listenerThread.join();
-    }
-}
-
 void Listener::Start() {
     if (stop) {
         stop = false;
@@ -60,4 +53,9 @@ void Listener::Loop() {
     }
 }
 
-
+void Listener::Stop() {
+    if (!stop) {
+        stop = true;
+        listenerThread.join();
+    }
+}
