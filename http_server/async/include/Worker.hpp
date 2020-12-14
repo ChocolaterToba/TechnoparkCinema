@@ -21,9 +21,9 @@ typedef enum {
 
 class Worker {
  private:
-    std::queue<std::unique_ptr<Task>>& tasks;
+    std::queue<Task>& tasks;
     std::shared_ptr<std::mutex> tasksMutex;
-    std::unique_ptr<Task> currentTask;
+    Task currentTask;
     WorkerStates state;
 
     std::vector<char> data;
@@ -32,7 +32,7 @@ class Worker {
     bool stop;
 
  public:
-    Worker(std::queue<std::unique_ptr<Task>>& tasks,
+    Worker(std::queue<Task>& tasks,
            std::shared_ptr<std::mutex> tasksMutex);
     virtual ~Worker();
 

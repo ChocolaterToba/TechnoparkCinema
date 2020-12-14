@@ -62,6 +62,24 @@ void set_non_blocked_impl(int sd, bool opt) {
 
 }    // namespace
 
+// Move semantics
+Socket::Socket(Socket&& other) :
+    m_Sd(other.m_Sd),
+    port(other.port),
+    queue_size(other.queue_size) {
+    other.close();
+    createServerSocket(port, queue_size);
+}
+Socket& Socket::operator=(Socket&& other) {
+    close();
+    m_Sd = other.m_Sd;
+    port = other.port;
+    queue_size = other.queue_size;
+    other.close();
+    createServerSocket(port, queue_size);
+    return *this;
+}
+
 void Socket::setNonBlocked(bool opt) {
     set_non_blocked_impl(m_Sd, opt);
 }
@@ -382,6 +400,8 @@ void Socket::createServerSocket(uint32_t port,
 
     listen(sd, listen_queue_size);
     m_Sd = sd;
+    this->port = port;
+    this->queue_size = listen_queue_size;
 }
 
 std::shared_ptr<Socket> Socket::accept() {

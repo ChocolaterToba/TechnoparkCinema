@@ -9,7 +9,7 @@
 
 TaskBuilder::TaskBuilder(std::queue<HTTPClient>& unprocessedClients,
                          std::shared_ptr<std::mutex> unprocessedClientsMutex,
-                         std::vector<std::unique_ptr<Task>>& haveNoData,
+                         std::vector<Task>& haveNoData,
                          std::shared_ptr<std::mutex> haveNoDataMutex) :
     unprocessedClients(unprocessedClients),
     unprocessedClientsMutex(unprocessedClientsMutex),
@@ -30,7 +30,7 @@ void TaskBuilder::CreateTasks() {
             unprocessedClients.pop();
             unprocessedClientsMutex->unlock();
             haveNoDataMutex->lock();
-            haveNoData.emplace_back(&newTask);
+            haveNoData.push_back(std::move(newTask));
             haveNoDataMutex->unlock();
         } else {
             msleep(30);

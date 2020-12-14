@@ -9,7 +9,7 @@
 #include "Task.hpp"
 #include "msleep.hpp"
 
-Worker::Worker(std::queue<std::unique_ptr<Task>>& tasks,
+Worker::Worker(std::queue<Task>& tasks,
                std::shared_ptr<std::mutex> tasksMutex) :
         tasks(tasks),
         tasksMutex(tasksMutex),
@@ -25,7 +25,6 @@ void Worker::TakeNewTask() {
         while (!stop) {
             if (!tasks.empty()) {
                 if (tasksMutex->try_lock()) {
-                    tasksMutex->lock();
                     currentTask = std::move(tasks.front());
                     tasks.pop();
                     tasksMutex->unlock();
@@ -46,8 +45,8 @@ void Worker::TakeNewTask() {
 void Worker::RunPreFunc() {
     if (state == TaskRecieved) {
         state = PreFuncRunning;
-        currentTask->SetMainFunc(currentTask->GetPreFunc()(data,
-                                 currentTask->GetClient()));
+        currentTask.SetMainFunc(currentTask.GetPreFunc()(data,
+                                currentTask.GetInput()));
         state = PreFuncRan;
     } else {
         throw std::runtime_error(std::string(
@@ -57,7 +56,7 @@ void Worker::RunPreFunc() {
 void Worker::RunMainFunc() {
     if (state == PreFuncRan) {
         state = MainFuncRunning;
-        currentTask->GetMainFunc()(data);
+        currentTask.GetMainFunc()(data, currentTask.GetOutput());
         state = MainFuncRan;
     } else {
         throw std::runtime_error(std::string(
@@ -67,7 +66,7 @@ void Worker::RunMainFunc() {
 void Worker::RunPostFunc() {
     if (state == MainFuncRan) {
         state = PostFuncRunning;
-        currentTask->GetPostFunc()(data, currentTask->GetClient());
+        currentTask.GetPostFunc()(data, currentTask.GetOutput());
         state = NoTask;
     } else {
         throw std::runtime_error(std::string(

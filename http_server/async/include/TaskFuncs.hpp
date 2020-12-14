@@ -4,7 +4,8 @@
 #include <vector>
 #include "HTTPClient.hpp"
 
-typedef std::function<void(std::vector<char>&)> MainFuncType;
-MainFuncType PreProcess(std::vector<char>& data, HTTPClient& client);
-void MainProcessBasic(std::vector<char>& data);
-void PostProcess(std::vector<char>& data, HTTPClient& client);
+// Main function should also set output client (maybe add list of them???).
+typedef std::function<void(std::vector<char>&, HTTPClient&)> MainFuncType;
+MainFuncType PreProcess(std::vector<char>& data, HTTPClient& input);
+void MainProcessBasic(std::vector<char>& data, HTTPClient& output);
+void PostProcess(std::vector<char>& data, HTTPClient& output);

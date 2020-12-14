@@ -11,7 +11,13 @@ std::string int2ipv4(uint32_t ip);
 class Socket {
  public:
     Socket() : m_Sd(-1) {}
-    explicit Socket(int sd) : m_Sd(sd) {}
+    explicit Socket(int sd) : m_Sd(sd), port(0), queue_size(0) {}
+
+    Socket(const Socket& other) = delete;
+    Socket(Socket&& other);
+
+    Socket& operator=(const Socket& other) = delete;
+    Socket& operator=(Socket&& other);
     ~Socket() {
         if (m_Sd > 0) {
            ::close(m_Sd);
@@ -56,8 +62,7 @@ class Socket {
     std::string httpHeader();
 
  private:
-    // Socket(const Socket &s);
-    // const Socket& operator=(const Socket &s);
- private:
     int m_Sd;
+    uint32_t port;
+    uint32_t queue_size;
 };

@@ -32,9 +32,9 @@ Master::Master(std::map<std::string, int>& ports, size_t workersAmount):
             // for (size_t i = 0; i < workersAmount; ++i) {
             //     workers.emplace_back(haveData, haveDataMutex);
             // }
-            // for (auto& keyVal : ports) {
-            //     listeners.emplace_back(keyVal.second, unprocessedClients, unprocessedClientsMutex);
-            // }
+            for (auto& keyVal : ports) {
+                listeners.emplace_back(keyVal.second, unprocessedClients, unprocessedClientsMutex);
+            }
         }
 
 Master::~Master() {

@@ -6,8 +6,8 @@
 int BUFFER_SIZE = 256;
 
 
-HTTPClient::HTTPClient(std::shared_ptr<Socket> client) : client(client) {
-    client->setRcvTimeout(/*sec*/ 120, /*microsec*/ 0);
+HTTPClient::HTTPClient(std::shared_ptr<Socket> socket) : socket(socket) {
+    socket->setRcvTimeout(/*sec*/ 120, /*microsec*/ 0);
 }
 
 std::vector<char>::iterator HTTPClient::parseBuffer(std::vector<char>& buffer, std::string& target) {
@@ -27,7 +27,7 @@ void HTTPClient::recvHeader() {
     bool binaryBodyStarted = false;
     while (result.find("\r\n\r\n") == std::string::npos &&
            result.find("\n\n") == std::string::npos) {
-        buffer = std::move(client->recvVector());
+        buffer = std::move(socket->recvVector());
 
         auto endlineIter = parseBuffer(buffer, result);
         if (endlineIter != buffer.end()) {  // if '\0' was in buffer
@@ -59,16 +59,16 @@ void HTTPClient::recvHeader() {
 
 void HTTPClient::recvBody(size_t contentLength) {
     contentLength -= body.size();
-    std::vector<char> receivedBody = std::move(client->recvVector(contentLength));
+    std::vector<char> receivedBody = std::move(socket->recvVector(contentLength));
     body.insert(body.begin(), receivedBody.begin(), receivedBody.end());
     std::cerr << "Successfully received body, size: " << body.size() << " bytes" << std::endl;
 }
 
 void HTTPClient::send() {
-    client->send(header + "\r\n\r\n");
-    client->send(body);
+    socket->send(header + "\r\n\r\n");
+    socket->send(body);
 }
 
 void HTTPClient::send(std::vector<char> data) {
-    client->send(std::move(data));
+    socket->send(std::move(data));
 }

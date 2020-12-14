@@ -21,6 +21,13 @@ class Listener {
     explicit Listener(int port,
                       std::queue<HTTPClient>& unprocessedClients,
                       std::shared_ptr<std::mutex> unprocessedClientsMutex);
+
+    Listener(const Listener& other) = delete;
+    Listener(Listener&& other);
+
+    Listener& operator=(const Listener& other) = delete;
+    Listener& operator=(Listener&& other);
+
     ~Listener();
     
     void Start();

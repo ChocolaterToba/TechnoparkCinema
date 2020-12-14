@@ -9,12 +9,29 @@
 Listener::Listener(int port,
                    std::queue<HTTPClient>& unprocessedClients,
                    std::shared_ptr<std::mutex> unprocessedClientsMutex) :
-          socket(),
+          socket(), 
           unprocessedClients(unprocessedClients),
           unprocessedClientsMutex(unprocessedClientsMutex),
           stop(true) {
-              socket.createServerSocket(port, 5);
-          }
+    socket.createServerSocket(port, 5);
+}
+
+Listener::Listener(Listener&& other) :
+    unprocessedClients(other.unprocessedClients),
+    unprocessedClientsMutex(other.unprocessedClientsMutex),
+    stop(true) {
+    other.Stop();
+    socket = std::move(other.socket);
+}
+
+Listener& Listener::operator=(Listener&& other) {
+    Stop();
+    other.Stop();
+    socket = std::move(other.socket);
+    unprocessedClients = std::move(other.unprocessedClients);
+    unprocessedClientsMutex = std::move(other.unprocessedClientsMutex);
+    return *this;
+}
 
 Listener::~Listener() {
     Stop();

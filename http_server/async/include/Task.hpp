@@ -4,9 +4,9 @@
 #include <vector>
 #include "HTTPClient.hpp"
 
-typedef std::function<std::function<void(std::vector<char>&)>
+typedef std::function<void(std::vector<char>&, HTTPClient&)> MainFuncType;
+typedef std::function<MainFuncType
                       (std::vector<char>&, HTTPClient&)> PreFuncType;
-typedef std::function<void(std::vector<char>&)> MainFuncType;
 typedef std::function<void(std::vector<char>&, HTTPClient&)> PostFuncType;
 
 class Task {
@@ -15,10 +15,12 @@ class Task {
     MainFuncType mainFunc;
     PostFuncType postFunc;
 
-    HTTPClient& client;
+    std::shared_ptr<HTTPClient> input;
+    std::shared_ptr<HTTPClient> output;
 
  public:
-    explicit Task(HTTPClient client);
+    Task();
+    explicit Task(HTTPClient& input);
     virtual ~Task();
 
     virtual PreFuncType GetPreFunc();
@@ -29,7 +31,10 @@ class Task {
     virtual void SetMainFunc(MainFuncType mainFunc);
     virtual void SetPostFunc(PostFuncType postFunc);
 
-    virtual HTTPClient& GetClient();
+    virtual HTTPClient& GetInput();
+    virtual HTTPClient& GetOutput();
+    virtual void SetInput(HTTPClient& input);
+    virtual void SetOutput(HTTPClient& output);
 
     virtual bool HasData();
 };

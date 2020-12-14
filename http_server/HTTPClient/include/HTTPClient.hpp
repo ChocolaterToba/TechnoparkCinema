@@ -29,5 +29,5 @@ class HTTPClient {
     void send();
     void send(std::vector<char> data);
 
-    bool hasData() { return socket->hasData() }
+    bool hasData() { return socket->hasData(); }
 };

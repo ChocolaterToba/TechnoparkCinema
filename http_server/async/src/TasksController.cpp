@@ -16,13 +16,13 @@ TasksController::~TasksController() {
     Stop();
 }
 
-std::vector<std::unique_ptr<Task>>& TasksController::GetHaveNoData() {
+std::vector<Task>& TasksController::GetHaveNoData() {
     return haveNoData;
 }
 std::shared_ptr<std::mutex> TasksController::GetHaveNoDataMutex() {
     return haveNoDataMutex;
 }
-std::queue<std::unique_ptr<Task>>& TasksController::GetHaveData() {
+std::queue<Task>& TasksController::GetHaveData() {
     return haveData;
 }
 std::shared_ptr<std::mutex> TasksController::GetHaveDataMutex() {
@@ -32,16 +32,15 @@ std::shared_ptr<std::mutex> TasksController::GetHaveDataMutex() {
 void TasksController::TasksControllerLoop() {
     while (!stop) {
         if (!haveNoData.empty()) {
-            std::queue<std::unique_ptr<Task>> buffer;
+            std::queue<Task> buffer;
             haveNoDataMutex->lock();
-            size_t i = 0;
-            while (i < haveNoData.size()) {
-                if (haveNoData[i]->HasData()) {
+            int i = haveNoData.size();
+            while (i >= 0) {
+                if (haveNoData[i].HasData()) {
                     buffer.push(std::move(haveNoData[i]));
                     haveNoData.erase(haveNoData.begin() + i);
-                } else {
-                    ++i;
                 }
+                --i;
             }
             haveNoDataMutex->unlock();
 

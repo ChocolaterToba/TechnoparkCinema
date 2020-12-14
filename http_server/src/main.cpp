@@ -13,16 +13,15 @@
 
 void clientWork(HTTPClient client, bool* shutdown) {
     try {
-        std::cout << "Starting new recv \n";
+        std::cout << "Starting new recv" << std::endl;
         client.recvHeader();
 
         HttpRequest request(client.getHeader());
         HttpResponse response(request);
 
-        // httpclient.setHeader(std::move(response.GetHeader()));
-        // httpclient.setBody(std::move(response.getBody()));
-        // httpclient.send();
         client.send(std::move(response.GetData()));
+        std::cout << "Ending recv" << std::endl << std::endl;
+
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
         return;
