@@ -7,29 +7,22 @@
 #include "TasksController.hpp"
 #include "msleep.hpp"
 
-TasksController::TasksController() :
-    haveNoDataMutex(std::make_shared<std::mutex>()),
-    haveDataMutex(std::make_shared<std::mutex>()),
+TasksController::TasksController(std::vector<Task>& haveNoData,
+                                 std::shared_ptr<std::mutex> haveNoDataMutex,
+                                 std::queue<Task>& haveData,
+                                 std::shared_ptr<std::mutex> haveDataMutex) :
+    haveNoData(haveNoData),
+    haveNoDataMutex(haveNoDataMutex),
+    haveData(haveData),
+    haveDataMutex(haveDataMutex),
     stop(true) {}
 
 TasksController::~TasksController() {
     Stop();
 }
 
-std::vector<Task>& TasksController::GetHaveNoData() {
-    return haveNoData;
-}
-std::shared_ptr<std::mutex> TasksController::GetHaveNoDataMutex() {
-    return haveNoDataMutex;
-}
-std::queue<Task>& TasksController::GetHaveData() {
-    return haveData;
-}
-std::shared_ptr<std::mutex> TasksController::GetHaveDataMutex() {
-    return haveDataMutex;
-}
 
-void TasksController::TasksControllerLoop() {
+void TasksController::Loop() {
     while (!stop) {
         if (!haveNoData.empty()) {
             std::queue<Task> buffer;
@@ -59,8 +52,7 @@ void TasksController::TasksControllerLoop() {
 void TasksController::Start() {
     if (stop) {
         stop = false;
-        tasksControllerThread =
-            std::thread(&TasksController::TasksControllerLoop, this);
+        tasksControllerThread = std::thread(&TasksController::Loop, this);
     }
 }
 void TasksController::Stop() {

@@ -16,6 +16,8 @@ class Listener {
     bool stop;
 
     std::thread listenerThread;
+
+    void Loop();
  
  public:
     explicit Listener(int port,
@@ -31,6 +33,5 @@ class Listener {
     ~Listener();
     
     void Start();
-    void Loop();
     void Stop();
 };

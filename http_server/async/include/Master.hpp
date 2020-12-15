@@ -4,6 +4,7 @@
 #include <vector>
 #include <queue>
 #include <map>
+
 #include "socket.hpp"
 #include "HTTPClient.hpp"
 #include "TaskBuilder.hpp"
@@ -20,17 +21,16 @@ class Master {
     std::map<std::string, int> ports;
     std::vector<Listener> listeners;
 
-    TasksController controller;
-    std::vector<Task>& haveNoData;
-    std::shared_ptr<std::mutex> haveNoDataMutex;
-    std::queue<Task>& haveData;
-    std::shared_ptr<std::mutex> haveDataMutex;
-
     std::queue<HTTPClient> unprocessedClients;
     std::shared_ptr<std::mutex> unprocessedClientsMutex;
+    std::vector<Task> haveNoData;
+    std::shared_ptr<std::mutex> haveNoDataMutex;
     TaskBuilder builder;
 
-    std::thread masterThread;
+    std::queue<Task> haveData;
+    std::shared_ptr<std::mutex> haveDataMutex;
+    TasksController controller;
+
     bool stop;
 
  public:
@@ -39,5 +39,5 @@ class Master {
 
     //  static void SetSocket(std::unique_ptr<Socket> socket);
     virtual void Start();
-    virtual void Stop();
+    virtual void Stop();  // Processes all existing connections
 };

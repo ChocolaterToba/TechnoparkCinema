@@ -31,6 +31,14 @@ class Worker {
     std::thread workerThread;
     bool stop;
 
+    virtual void TakeNewTask();
+
+    virtual void RunPreFunc();
+    virtual void RunMainFunc();
+    virtual void RunPostFunc();
+
+    virtual void Loop();
+
  public:
     Worker(std::queue<Task>& tasks,
            std::shared_ptr<std::mutex> tasksMutex);
@@ -43,13 +51,8 @@ class Worker {
 
     virtual ~Worker();
 
-    virtual void TakeNewTask();
-
-    virtual void RunPreFunc();
-    virtual void RunMainFunc();
-    virtual void RunPostFunc();
+    
 
     virtual void Start();
-    virtual void Loop();
     virtual void Stop();
 };
