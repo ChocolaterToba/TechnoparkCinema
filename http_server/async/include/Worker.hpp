@@ -21,28 +21,38 @@ typedef enum {
 
 class Worker {
  private:
-    std::queue<std::unique_ptr<Task>>& tasks;
+    std::queue<Task>& tasks;
     std::shared_ptr<std::mutex> tasksMutex;
-    std::unique_ptr<Task> currentTask;
+    Task currentTask;
     WorkerStates state;
 
+    std::string headers;
     std::vector<char> data;
 
     std::thread workerThread;
     bool stop;
-
- public:
-    Worker(std::queue<std::unique_ptr<Task>>& tasks,
-           std::shared_ptr<std::mutex> tasksMutex);
-    virtual ~Worker();
-
-    virtual void WorkerLoop();
 
     virtual void TakeNewTask();
 
     virtual void RunPreFunc();
     virtual void RunMainFunc();
     virtual void RunPostFunc();
+
+    virtual void Loop();
+
+ public:
+    Worker(std::queue<Task>& tasks,
+           std::shared_ptr<std::mutex> tasksMutex);
+
+    Worker(const Worker& other) = delete;
+    Worker(Worker&& other);
+
+    Worker& operator=(const Worker& other) = delete;
+    Worker& operator=(Worker&& other);
+
+    virtual ~Worker();
+
+    
 
     virtual void Start();
     virtual void Stop();

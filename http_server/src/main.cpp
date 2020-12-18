@@ -9,16 +9,19 @@
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
 
-void clientWork(std::shared_ptr<Socket> client, bool* shutdown) {
-    client->setRcvTimeout(/*sec*/ 120, /*microsec*/ 0);
-    std::ofstream output("out", std::ios::out);
+#include "Master.hpp"
+
+void clientWork(HTTPClient client, bool* shutdown) {
     try {
-        std::cout << "Starting new recv \n";
-        HTTPClient httpclient;
-        httpclient.recvHeader(client);
-        HttpRequest request(httpclient.getHeader());
+        std::cout << "Starting new recv" << std::endl;
+        client.recvHeader();
+
+        HttpRequest request(client.getHeader());
         HttpResponse response(request);
-        client->send(response.GetData());
+
+        client.send(std::move(response.GetData()));
+        std::cout << "Ending recv" << std::endl << std::endl;
+
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
         return;
@@ -30,37 +33,48 @@ int main(int argc, char* argv[]) {
         std::cerr << "usage: " << argv[0] << " port" << std::endl;
         return 0;
     }
-    int port = std::stoi(std::string(argv[1]));
-    std::vector<std::thread> threads;
 
     try {
-        Socket s;
-        s.createServerSocket(port, 5);
-
-        bool shutdown = false;
-        size_t needToClean = 100;
-
-        while (!shutdown) {
-            if (threads.size() > needToClean) {
-                needToClean *= 2;
-                for (size_t i = threads.size() - 1; i > 0; --i) {
-                    if (threads[i].joinable()) {
-                        threads[i].join();
-                        threads.erase(threads.begin() + i);
-                    }
-                }
-                if (threads[0].joinable()) {
-                    threads[0].join();
-                    threads.erase(threads.begin() + 0);
-                }
-            }
-            std::cout << "start new accept \n";
-            threads.push_back(std::thread(clientWork, s.accept(), &shutdown));
-        }
-        for (size_t i = 0; i < threads.size(); ++i) {
-            threads[i].join();
-        }
+        std::map<std::string, int> ports;
+        ports["external"] = 5555;
+        ports["database"] = 6666;
+        Master master(ports, 1);
+        master.Start();
+        sleep(300);  // replace with graceful shutdown.
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
     }
+    // int port = std::stoi(std::string(argv[1]));
+    // std::vector<std::thread> threads;
+
+    // try {
+    //     std::queue<HTTPClient> unprocessedClients;
+    //     std::shared_ptr<std::mutex> unprocessedClientsMutex = std::make_shared<std::mutex>();
+
+    //     Listener listener(port, unprocessedClients, unprocessedClientsMutex);
+    //     Listener listener2(6666, unprocessedClients, unprocessedClientsMutex);
+    //     listener.Start();
+
+    //     bool shutdown = false;
+
+    //     while (!shutdown) {
+    //         unprocessedClientsMutex->lock();
+    //         if (unprocessedClients.empty()) {
+    //             unprocessedClientsMutex->unlock();
+    //             //std::cerr << "No new connections" << std::endl;
+    //             sleep(1);  // wait for 3 seconds
+    //             continue;
+    //         }
+
+    //         std::cout << "start new accept \n";
+    //         threads.push_back(std::thread(clientWork, std::move(unprocessedClients.front()), &shutdown));
+    //         unprocessedClients.pop();
+    //         unprocessedClientsMutex->unlock();
+    //     }
+    //     for (size_t i = 0; i < threads.size(); ++i) {
+    //         threads[i].join();
+    //     }
+    // } catch (const std::exception &e) {
+    //     std::cerr << e.what() << std::endl;
+    // }
 }

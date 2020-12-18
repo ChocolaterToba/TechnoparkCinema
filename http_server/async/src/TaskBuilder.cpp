@@ -2,8 +2,10 @@
 #include <thread>
 #include <queue>
 #include <mutex>
+
 #include "Task.hpp"
 #include "TaskBuilder.hpp"
+#include "msleep.hpp"
 
 TaskBuilder::TaskBuilder(std::queue<HTTPClient>& unprocessedClients,
                          std::shared_ptr<std::mutex> unprocessedClientsMutex,
@@ -22,15 +24,16 @@ TaskBuilder::~TaskBuilder() {
 void TaskBuilder::CreateTasks() {
     while (!stop) {
         if (!unprocessedClients.empty())  {
+            //  TaskBuilder is singular, so there's no "queue shrinking" problem.
             unprocessedClientsMutex->lock();
             Task newTask(unprocessedClients.front());
             unprocessedClients.pop();
             unprocessedClientsMutex->unlock();
             haveNoDataMutex->lock();
-            haveNoData.push_back(newTask);
+            haveNoData.push_back(std::move(newTask));
             haveNoDataMutex->unlock();
         } else {
-            // wait(); TODO
+            msleep(30);
         }
     }
 }
