@@ -27,7 +27,7 @@ void TasksController::Loop() {
         if (!haveNoData.empty()) {
             std::queue<Task> buffer;
             haveNoDataMutex->lock();
-            int i = haveNoData.size();
+            int i = haveNoData.size() - 1;
             while (i >= 0) {
                 if (haveNoData[i].HasData()) {
                     buffer.push(std::move(haveNoData[i]));
@@ -45,7 +45,7 @@ void TasksController::Loop() {
             haveDataMutex->unlock();
         }
 
-        msleep(120);
+        msleep(125);
     }
 }
 

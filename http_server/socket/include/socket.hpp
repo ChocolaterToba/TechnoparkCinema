@@ -6,6 +6,8 @@
 #include <vector>
 #include <functional>
 
+#include <iostream>
+
 std::string int2ipv4(uint32_t ip);
 
 class Socket {
@@ -19,6 +21,7 @@ class Socket {
     Socket& operator=(const Socket& other) = delete;
     Socket& operator=(Socket&& other);
     ~Socket() {
+        std::cout << "Socket destructor called" << std::endl;
         if (m_Sd > 0) {
            ::close(m_Sd);
         }
@@ -54,7 +57,9 @@ class Socket {
     void createServerSocket(uint32_t port,
                             uint32_t queue_size);
     std::shared_ptr<Socket> accept();
-    void close() { ::close(m_Sd); }
+    void close() {
+       ::close(m_Sd);
+       m_Sd = -1;}
 
     void httpQuery(const std::string& query,
                    std::function<void(const std::string& s)> cb);

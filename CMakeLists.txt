@@ -15,6 +15,7 @@ include_directories(${PROJECT_SOURCE_DIR}/http_server/include)
 add_library(http_message STATIC
             ${PROJECT_SOURCE_DIR}/http_server/src/HttpResponse.cpp
             ${PROJECT_SOURCE_DIR}/http_server/src/HttpRequest.cpp)
+target_include_directories(http_message PUBLIC ${PROJECT_SOURCE_DIR}/http_server/include)
 
 add_executable(server ${PROJECT_SOURCE_DIR}/http_server/src/main.cpp)
 target_link_libraries(server http_message)
@@ -42,6 +43,7 @@ target_link_libraries(client socket)
 # Async Server Library
 ######################
 file(GLOB ASYNC_SRC ${PROJECT_SOURCE_DIR}/http_server/async/src/Task.cpp
+                    ${PROJECT_SOURCE_DIR}/http_server/async/src/TaskFuncs.cpp
                     ${PROJECT_SOURCE_DIR}/http_server/async/src/Worker.cpp
                     ${PROJECT_SOURCE_DIR}/http_server/async/src/TaskBuilder.cpp
                     ${PROJECT_SOURCE_DIR}/http_server/async/src/TasksController.cpp
@@ -51,7 +53,7 @@ file(GLOB ASYNC_SRC ${PROJECT_SOURCE_DIR}/http_server/async/src/Task.cpp
 add_library(asyncServer STATIC ${ASYNC_SRC})
 target_include_directories(asyncServer PUBLIC
                            ${PROJECT_SOURCE_DIR}/http_server/async/include)
-target_link_libraries(asyncServer client)
+target_link_libraries(asyncServer client pthread http_message)
 ######################
 
 ################################

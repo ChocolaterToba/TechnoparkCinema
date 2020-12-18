@@ -44,6 +44,7 @@ void Worker::TakeNewTask() {
                     tasks.pop();
                     tasksMutex->unlock();
                     state = TaskRecieved;
+                    break;
                 } else {
                     msleep(30);
                 }
@@ -60,8 +61,8 @@ void Worker::TakeNewTask() {
 void Worker::RunPreFunc() {
     if (state == TaskRecieved) {
         state = PreFuncRunning;
-        currentTask.SetMainFunc(currentTask.GetPreFunc()(data,
-                                currentTask.GetInput()));
+        currentTask.SetMainFunc(
+            currentTask.GetPreFunc()(headers, data, currentTask.GetInput()));
         state = PreFuncRan;
     } else {
         throw std::runtime_error(std::string(
@@ -71,7 +72,7 @@ void Worker::RunPreFunc() {
 void Worker::RunMainFunc() {
     if (state == PreFuncRan) {
         state = MainFuncRunning;
-        currentTask.GetMainFunc()(data, currentTask.GetOutput());
+        currentTask.GetMainFunc()(headers, data, currentTask.GetOutput());
         state = MainFuncRan;
     } else {
         throw std::runtime_error(std::string(
@@ -81,7 +82,7 @@ void Worker::RunMainFunc() {
 void Worker::RunPostFunc() {
     if (state == MainFuncRan) {
         state = PostFuncRunning;
-        currentTask.GetPostFunc()(data, currentTask.GetOutput());
+        currentTask.GetPostFunc()(headers, data, currentTask.GetOutput());
         state = NoTask;
     } else {
         throw std::runtime_error(std::string(
@@ -101,7 +102,8 @@ void Worker::Loop() {
     while (!stop) {
         TakeNewTask();
         RunPreFunc();
-        RunMainFunc();
+        currentTask.SetOutput(currentTask.GetInput());  // TODO: remove this when satisfying next TODO
+        RunMainFunc();   // TODO: async clients logic
         RunPostFunc();
     }
 }
@@ -110,7 +112,10 @@ void Worker::Stop() {
     if (!stop) {
         stop = true;
         workerThread.join();
-        data.clear();
         state = NoTask;
+
+        headers.clear();
+        data.clear();
+
     }
 }

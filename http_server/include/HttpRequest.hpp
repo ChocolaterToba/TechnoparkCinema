@@ -26,6 +26,7 @@ Accept: text/html
 Connection: close
 */
 
+// This whole things needs rework ASAP.
 class HttpRequest {
  public:
     HttpRequest(const std::string &message);

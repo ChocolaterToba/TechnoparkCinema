@@ -26,8 +26,8 @@ class HTTPClient {
     void recvHeader();
     void recvBody(size_t contentLength);
 
-    void send();
-    void send(std::vector<char> data);
+    void send(bool close = false);
+    void send(std::vector<char> data, bool close = false);
 
     bool hasData() { return socket->hasData(); }
 };

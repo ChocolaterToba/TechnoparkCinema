@@ -24,7 +24,7 @@ TaskBuilder::~TaskBuilder() {
 void TaskBuilder::CreateTasks() {
     while (!stop) {
         if (!unprocessedClients.empty())  {
-            //  TaskBuilder is single, so there's no "queue shrinking" problem.
+            //  TaskBuilder is singular, so there's no "queue shrinking" problem.
             unprocessedClientsMutex->lock();
             Task newTask(unprocessedClients.front());
             unprocessedClients.pop();

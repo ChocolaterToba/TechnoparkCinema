@@ -48,7 +48,8 @@ void HTTPClient::recvHeader() {
     }
 
     header = result.substr(0, bodyStartIndex + shift / 2);
-    std::cerr << "Received header: " << std::endl << header << std::endl;
+    // std::cerr << "Received header: " << std::endl << header << std::endl;
+    std::cerr << "Received header" << std::endl;
 
     std::vector<char> temp(result.begin() + bodyStartIndex + shift, result.end());
     if (binaryBodyStarted) {
@@ -64,11 +65,17 @@ void HTTPClient::recvBody(size_t contentLength) {
     std::cerr << "Successfully received body, size: " << body.size() << " bytes" << std::endl;
 }
 
-void HTTPClient::send() {
+void HTTPClient::send(bool close) {
     socket->send(header + "\r\n\r\n");
     socket->send(body);
+    if (close) {
+        socket->close();
+    }
 }
 
-void HTTPClient::send(std::vector<char> data) {
+void HTTPClient::send(std::vector<char> data, bool close) {
     socket->send(std::move(data));
+    if (close) {
+        socket.reset();
+    }
 }

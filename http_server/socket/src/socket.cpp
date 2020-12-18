@@ -64,7 +64,6 @@ void set_non_blocked_impl(int sd, bool opt) {
 
 // Move semantics
 Socket::Socket(Socket&& other) :
-    m_Sd(other.m_Sd),
     port(other.port),
     queue_size(other.queue_size) {
     other.close();
@@ -72,7 +71,6 @@ Socket::Socket(Socket&& other) :
 }
 Socket& Socket::operator=(Socket&& other) {
     close();
-    m_Sd = other.m_Sd;
     port = other.port;
     queue_size = other.queue_size;
     other.close();
