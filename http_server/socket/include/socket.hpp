@@ -40,6 +40,8 @@ class Socket {
 
     bool hasData();
 
+    int getPort() { return port; }
+
     std::string recv();
     std::string recv(size_t bytes);
     std::string recvTimed(int timeout);

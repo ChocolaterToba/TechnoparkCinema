@@ -10,6 +10,12 @@ HTTPClient::HTTPClient(std::shared_ptr<Socket> socket) : socket(socket) {
     socket->setRcvTimeout(/*sec*/ 120, /*microsec*/ 0);
 }
 
+HTTPClient::HTTPClient(int port, int queueSize) {
+    socket = std::make_shared<Socket>();
+    socket->createServerSocket(port, queueSize);
+    socket->setRcvTimeout(/*sec*/ 120, /*microsec*/ 0);
+}
+
 std::vector<char>::iterator HTTPClient::parseBuffer(std::vector<char>& buffer, std::string& target) {
     // Returns true if '\0' was found, which means that binary body started.
     auto endlineIter = std::find(buffer.begin(), buffer.end(), '\0');
@@ -78,4 +84,11 @@ void HTTPClient::send(std::vector<char> data, bool close) {
     if (close) {
         socket.reset();
     }
+}
+
+int HTTPClient::getPort() {
+    if (socket != nullptr) {
+        return socket->getPort();
+    }
+    return -1;
 }

@@ -16,6 +16,7 @@ class HTTPClient {
 
  public:
     explicit HTTPClient(std::shared_ptr<Socket> socket);
+    explicit HTTPClient(int port, int queueSize);
 
     std::string getHeader() { return header; }
     std::vector<char> getBody() { return body; }
@@ -30,4 +31,6 @@ class HTTPClient {
     void send(std::vector<char> data, bool close = false);
 
     bool hasData() { return socket->hasData(); }
+
+    int getPort();
 };
