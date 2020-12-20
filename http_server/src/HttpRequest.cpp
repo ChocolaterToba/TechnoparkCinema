@@ -92,3 +92,19 @@ std::string HttpRequest::GetHTTPVersion() const {
 RequestMethod HttpRequest::GetRequestMethod() const {
     return request_method;
 }
+
+std::map<std::string, std::string> HttpRequest::GetAllHeaders() const {
+    return headers;
+}
+
+int HttpRequest::GetContentLength() {
+    int result;
+    try {
+        result = std::stoi(headers["Content-Length"]);
+    }
+    catch (std::invalid_argument &e) {
+        result = -1;
+    }
+    return result;
+}
+

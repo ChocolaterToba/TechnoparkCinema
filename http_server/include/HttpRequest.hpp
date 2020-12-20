@@ -32,9 +32,12 @@ class HttpRequest {
     HttpRequest(const std::string &message);
 
     std::string GetHeader(std::basic_string<char> header_name) const;
+    ~HttpRequest() {};
     std::string GetURL() const;
     std::string GetHTTPVersion() const;
     RequestMethod GetRequestMethod() const;
+    std::map<std::string, std::string> GetAllHeaders() const;
+    int GetContentLength();
 
  private:
     RequestMethod request_method;
