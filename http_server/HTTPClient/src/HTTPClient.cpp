@@ -11,6 +11,7 @@ HTTPClient::HTTPClient(std::shared_ptr<Socket> socket) : socket(socket) {
 }
 
 HTTPClient::HTTPClient(int port, int queueSize) {
+    // TODO:: add "only for sending" option
     socket = std::make_shared<Socket>();
     socket->createServerSocket(port, queueSize);
     socket->setRcvTimeout(/*sec*/ 120, /*microsec*/ 0);

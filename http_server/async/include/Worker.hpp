@@ -26,7 +26,7 @@ class Worker {
     Task currentTask;
     WorkerStates state;
 
-    std::string headers;
+    std::map<std::string, std::string> headers;
     std::vector<char> data;
 
     std::thread workerThread;

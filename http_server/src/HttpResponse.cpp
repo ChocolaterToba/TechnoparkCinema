@@ -72,7 +72,7 @@ void HttpResponse::FormResponseData() {
     response.insert(response.end(), response_body.begin(), response_body.end());
 }
 
-ContentType HttpResponse::GetContentType(const std::string &url) const {
+ContentType HttpResponse::GetContentType(const std::string& url) {
     std::string ext(url.c_str() + url.rfind('.') + 1);
     if (ext == "/") {
         return TXT_HTML;
@@ -129,7 +129,7 @@ void HttpResponse::SetContentType(ContentType type) {
 }
 
 
-void HttpResponse::SetResponseBody(const std::vector<char> body) {
+void HttpResponse::SetResponseBody(const std::vector<char>& body) {
     response_body.insert(response_body.end(), body.begin(), body.end());
     // OLD
     // SetContentType(GetContentType(url));

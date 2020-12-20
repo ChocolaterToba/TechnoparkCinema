@@ -1,14 +1,20 @@
 #pragma once
 
 #include <functional>
-#include <map>
 #include <vector>
+#include <map>
+#include <string>
 #include "HTTPClient.hpp"
 
-typedef std::function<void(std::string&, std::vector<char>&, HTTPClient&)> MainFuncType;
+typedef std::function<void(std::map<std::string, std::string>&, std::vector<char>&,
+                           HTTPClient&, HTTPClient&)> MainFuncType;
 typedef std::function<MainFuncType
-                      (std::string&, std::vector<char>&, HTTPClient&)> PreFuncType;
-typedef std::function<void(std::string&, std::vector<char>&, HTTPClient&)> PostFuncType;
+                      (std::map<std::string, std::string>&,
+                       std::vector<char>&,
+                       HTTPClient&)> PreFuncType;
+typedef std::function<void(std::map<std::string, std::string>&,
+                           std::vector<char>&,
+                           HTTPClient&)> PostFuncType;
 
 class Task {
  protected:

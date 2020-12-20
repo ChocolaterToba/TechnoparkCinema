@@ -27,6 +27,8 @@ public:
     std::string GetHTTPVersion() const;
     std::vector<char> GetData() const;
 
+    static ContentType GetContentType(const std::string& url);
+
 private:
     std::string http_version;
     std::vector<char> response;
@@ -36,8 +38,7 @@ private:
 
     std::map<std::string, std::string> headers;
 
-    void SetResponseBody(const std::vector<char> body);
-    ContentType GetContentType(const std::string &url) const;
+    void SetResponseBody(const std::vector<char>& body);
     void SetContentType(ContentType type);
     void FormResponseData();
 };

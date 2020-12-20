@@ -62,7 +62,8 @@ void Worker::RunPreFunc() {
     if (state == TaskRecieved) {
         state = PreFuncRunning;
         currentTask.SetMainFunc(
-            currentTask.GetPreFunc()(headers, data, currentTask.GetInput()));
+            currentTask.GetPreFunc()(headers, data,
+                                     currentTask.GetInput()));
         state = PreFuncRan;
     } else {
         throw std::runtime_error(std::string(
@@ -72,7 +73,9 @@ void Worker::RunPreFunc() {
 void Worker::RunMainFunc() {
     if (state == PreFuncRan) {
         state = MainFuncRunning;
-        currentTask.GetMainFunc()(headers, data, currentTask.GetOutput());
+        currentTask.GetMainFunc()(headers, data,
+                                  currentTask.GetInput(),
+                                  currentTask.GetOutput());
         state = MainFuncRan;
     } else {
         throw std::runtime_error(std::string(

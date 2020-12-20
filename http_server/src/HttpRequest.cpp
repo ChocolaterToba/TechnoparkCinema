@@ -9,7 +9,7 @@ HttpRequest::HttpRequest(const std::string &message) {
     size_t pos = 0;
     size_t search = message.find(' ');
     std::string method = message.substr(pos, search);
-    CheckRequestMethod(method);
+    SetRequestMethod(method);
     if (request_method == UNKNOWN) {
         throw BadFormatException();
     }
@@ -60,25 +60,8 @@ std::string HttpRequest::GetHeader(std::basic_string<char> string) const {
     }
 }
 
-void HttpRequest::CheckRequestMethod(const std::string &method_name) {
-    if (method_name == "GET")
-        request_method = GET;
-    else if (method_name == "POST")
-        request_method = POST;
-    else if (method_name == "OPTIONS")
-        request_method = OPTIONS;
-    else if (method_name == "HEAD")
-        request_method = HEAD;
-    else if (method_name == "PUT")
-        request_method = PUT;
-    else if (method_name == "PATCH")
-        request_method = PATCH;
-    else if (method_name == "DELETE")
-        request_method = DELETE;
-    else if (method_name == "CONNECT")
-        request_method = CONNECT;
-    else
-        request_method = UNKNOWN;
+void HttpRequest::SetRequestMethod(const std::string& method_name) {
+    request_method = StringToRequestMethod(method_name);
 }
 
 std::string HttpRequest::GetURL() const {
@@ -91,6 +74,10 @@ std::string HttpRequest::GetHTTPVersion() const {
 
 RequestMethod HttpRequest::GetRequestMethod() const {
     return request_method;
+}
+
+std::string HttpRequest::GetRequestMethodString() const {
+    return RequestMethodToString(request_method);
 }
 
 std::map<std::string, std::string> HttpRequest::GetAllHeaders() const {
@@ -108,3 +95,48 @@ int HttpRequest::GetContentLength() {
     return result;
 }
 
+std::string HttpRequest::RequestMethodToString(RequestMethod method) {
+    switch (method) {
+        case GET:
+            return "GET";
+        case POST:
+            return "POST";
+        case OPTIONS:
+            return "OPTIONS";
+        case HEAD:
+            return "HEAD";
+        case PUT:
+            return "PUT";
+        case PATCH:
+            return "PATCH";
+        case DELETE:
+            return "DELETE";
+        case CONNECT:
+            return "CONNECT";
+        default:
+            return "UNKNOWN";
+    }
+}
+
+RequestMethod HttpRequest::StringToRequestMethod(const std::string& methodString) {
+    RequestMethod method;
+    if (methodString == "GET")
+        method = GET;
+    else if (methodString == "POST")
+        method = POST;
+    else if (methodString == "OPTIONS")
+        method = OPTIONS;
+    else if (methodString == "HEAD")
+        method = HEAD;
+    else if (methodString == "PUT")
+        method = PUT;
+    else if (methodString == "PATCH")
+        method = PATCH;
+    else if (methodString == "DELETE")
+        method = DELETE;
+    else if (methodString == "CONNECT")
+        method = CONNECT;
+    else
+        method = UNKNOWN;
+    return method;
+}

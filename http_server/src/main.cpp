@@ -11,22 +11,22 @@
 
 #include "Master.hpp"
 
-void clientWork(HTTPClient client, bool* shutdown) {
-    try {
-        std::cout << "Starting new recv" << std::endl;
-        client.recvHeader();
+// void clientWork(HTTPClient client, bool* shutdown) {
+//     try {
+//         std::cout << "Starting new recv" << std::endl;
+//         client.recvHeader();
 
-        HttpRequest request(client.getHeader());
-        HttpResponse response(request);
+//         HttpRequest request(client.getHeader());
+//         HttpResponse response(request);
 
-        client.send(std::move(response.GetData()));
-        std::cout << "Ending recv" << std::endl << std::endl;
+//         client.send(std::move(response.GetData()));
+//         std::cout << "Ending recv" << std::endl << std::endl;
 
-    } catch (const std::exception& e) {
-        std::cerr << "Exception: " << e.what() << std::endl;
-        return;
-    }
-}
+//     } catch (const std::exception& e) {
+//         std::cerr << "Exception: " << e.what() << std::endl;
+//         return;
+//     }
+// }
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
