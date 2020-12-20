@@ -22,21 +22,21 @@ typedef enum {
 
 class HttpResponse {
 public:
-    explicit HttpResponse(const HttpRequest &request);
+    explicit HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType, std::string url, std::vector<char> body);
     HttpResponse() = default;
     std::string GetHTTPVersion() const;
     std::vector<char> GetData() const;
 
 private:
     std::string http_version;
-    std::vector<char> response_data;
+    std::vector<char> response;
     std::string return_code;
 
-    std::vector<char> data;
+    std::vector<char> response_body;
 
     std::map<std::string, std::string> headers;
 
-    void SetData(const std::string &url);
+    void SetResponseBody(const std::vector<char> body);
     ContentType GetContentType(const std::string &url) const;
     void SetContentType(ContentType type);
     void FormResponseData();

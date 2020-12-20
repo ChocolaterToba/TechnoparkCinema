@@ -17,16 +17,18 @@ std::string HttpResponse::GetHTTPVersion() const {
 }
 
 std::vector<char> HttpResponse::GetData() const {
-    return std::move(response_data);
+    return std::move(response);
 }
-
-HttpResponse::HttpResponse(const HttpRequest &request): http_version("1.1") {
-    if (request.GetHTTPVersion().empty()) {
+    // std::string GetURL() const;
+    // std::string GetHTTPVersion() const;
+    // RequestMethod GetRequestMethod() const;
+HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType, std::string url, std::vector<char> body): http_version("1.1") {
+    if (HTTPVersion.empty()) {
         http_version = "0.9";
-        if (request.GetRequestMethod() == GET) {
+        if (reqType == GET) {
             try {
-                SetData(request.GetURL());
-                std::copy(response_data.begin(), response_data.end(), data.begin());
+                SetResponseBody(body);
+                std::copy(response.begin(), response.end(), response_body.begin());
                 return;
             }
             catch (FileNotFoundException &) {
@@ -37,10 +39,10 @@ HttpResponse::HttpResponse(const HttpRequest &request): http_version("1.1") {
         }
     }
 
-    switch (request.GetRequestMethod()) {
+    switch (reqType) {
         case GET:
             try {
-                SetData(request.GetURL());
+                SetResponseBody(body);
                 return_code = "200 OK";
             }
             catch (HTTPResponseException&) {
@@ -66,8 +68,8 @@ void HttpResponse::FormResponseData() {
     }
     answer.append(CRLF);
 
-    response_data.assign(answer.begin(), answer.end());
-    response_data.insert( response_data.end(), data.begin(), data.end() );
+    response.assign(answer.begin(), answer.end());
+    response.insert(response.end(), response_body.begin(), response_body.end());
 }
 
 ContentType HttpResponse::GetContentType(const std::string &url) const {
@@ -119,7 +121,7 @@ void HttpResponse::SetContentType(ContentType type) {
         case VID_MP4:
             c_t_header.second = "video/mp4";
             break;
-        default:;
+        default:
             throw UnknownContentTypeException();
     }
 
@@ -127,16 +129,18 @@ void HttpResponse::SetContentType(ContentType type) {
 }
 
 
-void HttpResponse::SetData(const std::string &url) {
-    SetContentType(GetContentType(url));
-    std::string path("../static" + url);
-    if (url == "/")
-        path += "index.html";
+void HttpResponse::SetResponseBody(const std::vector<char> body) {
+    response_body.insert(response_body.end(), body.begin(), body.end());
+    // OLD
+    // SetContentType(GetContentType(url));
+    // std::string path("../static" + url);
+    // if (url == "/")
+    //     path += "index.html";
 
-    std::ifstream source(path, std::ios::binary);
-    char buffer[BUF_SIZE] = {0};
-    while (source.read(buffer, BUF_SIZE)) {
-        data.insert(data.end(), buffer, buffer + BUF_SIZE);
-    }
-    data.insert(data.end(), buffer, buffer + source.gcount());
+    // std::ifstream source(path, std::ios::binary);
+    // char buffer[BUF_SIZE] = {0};
+    // while (source.read(buffer, BUF_SIZE)) {
+    //     response_body.insert(response_body.end(), buffer, buffer + BUF_SIZE);
+    // }
+    // response_body.insert(response_body.end(), buffer, buffer + source.gcount());
 }
