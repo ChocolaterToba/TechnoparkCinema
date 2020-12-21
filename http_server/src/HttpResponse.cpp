@@ -22,7 +22,9 @@ std::vector<char> HttpResponse::GetData() const {
     // std::string GetURL() const;
     // std::string GetHTTPVersion() const;
     // RequestMethod GetRequestMethod() const;
-HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType, std::string url, std::vector<char> body): http_version("1.1") {
+HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
+                           std::string url, std::string keepAlive,
+                           std::vector<char> body): http_version(HTTPVersion), keep_alive(keepAlive) {
     if (HTTPVersion.empty()) {
         http_version = "0.9";
         if (reqType == GET) {
@@ -58,17 +60,20 @@ HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType, std::
 
 
 void HttpResponse::FormResponseData() {
-    std::string answer("");
-    answer.append("HTTP/").append(http_version).append(" ");
-    answer.append(return_code).append(CRLF);
-    for (auto &header : headers) {
-        if (!header.second.empty()) {
-            answer.append(header.first).append(": ").append(header.second).append(CRLF);
+    std::string response_header("");
+    response_header.append("HTTP/").append(http_version).append(" ");
+    response_header.append(return_code).append(CRLF);
+    if (http_version == "1.0" && keep_alive == "Keep-Alive") {
+        response_header.append("Connection: Keep-Alive");
+    }
+    for (auto& header_pair : headers) {
+        if (!header_pair.second.empty()) {
+            response_header.append(header_pair.first).append(": ").append(header_pair.second).append(CRLF);
         }
     }
-    answer.append(CRLF);
+    response_header.append(CRLF);
 
-    response.assign(answer.begin(), answer.end());
+    response.assign(response_header.begin(), response_header.end());
     response.insert(response.end(), response_body.begin(), response_body.end());
 }
 
