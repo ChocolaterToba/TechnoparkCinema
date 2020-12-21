@@ -25,6 +25,21 @@ std::vector<char>::iterator HTTPClient::parseBuffer(std::vector<char>& buffer, s
     return endlineIter;
 }
 
+void HTTPClient::setBody(std::queue<std::string>& bodyQueue, const std::string& separator) {
+    body.clear();
+    for (size_t i = 0; i < bodyQueue.size(); ++i) {
+        std::string& str = bodyQueue.front();
+        std::copy(str.begin(), str.end(), std::back_inserter(body));
+        bodyQueue.pop();
+        bodyQueue.push(str);
+        for (auto& character : separator) {
+            if (character) {
+                body.push_back(character);
+            }
+        }
+    }
+}
+
 void HTTPClient::recvHeader() {
     header.clear();
     body.clear();
@@ -87,14 +102,14 @@ void HTTPClient::send(std::vector<char> data, bool close) {
     }
 }
 
-int HTTPClient::getPort() {
+int HTTPClient::getPort() const {
     if (socket != nullptr) {
         return socket->getPort();
     }
     return -1;
 }
 
-int HTTPClient::getSd() {
+int HTTPClient::getSd() const {
     if (socket != nullptr) {
         return socket->sd();
     }

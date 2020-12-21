@@ -42,7 +42,7 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
         // If no db access is required, then
         // output = std::move(input);
         // else
-        // output = HTTPClient(6666, 1);
+        // output = HTTPClient(7777, 1);
         // pendingDBResponseMutex.lock();
         // pendingDBResponse.insert(std::pair<int, HTTPClient&>(input.getSD(), input));
         // pendingDBResponseMutex.unlock();
@@ -88,7 +88,14 @@ void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>&
     HttpResponse response(headers["http_version"],
                           HttpRequest::StringToRequestMethod(headers["method"]),
                           headers["url"], headers["Connection"], body);
-    // TODO: add "Connection: Keep-Alive" to headers in response
+    
+    // Just for testing, delete later
+    // std::queue<std::string> testingQueue;
+    // testingQueue.push("thisisfortest");
+    // testingQueue.push("this is for test too");
+    // testingQueue.push("this is for test three!!!");
+    // output.setBody(testingQueue, std::string("Delim"));
+
     if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
         output.send(response.GetData());
     } else {

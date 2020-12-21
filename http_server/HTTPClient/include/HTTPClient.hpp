@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <queue>
 #include <memory>
 #include "socket.hpp"
 
@@ -18,11 +19,12 @@ class HTTPClient {
     explicit HTTPClient(std::shared_ptr<Socket> socket);
     explicit HTTPClient(int port, int queueSize);
 
-    std::string getHeader() { return header; }
-    std::vector<char> getBody() { return body; }
+    std::string getHeader() const { return header; }
+    std::vector<char> getBody() const { return body; }
 
     void setHeader(std::string header) { this->header = std::move(header); }
     void setBody(std::vector<char> body) { this->body = std::move(body); }
+    void setBody(std::queue<std::string>& bodyQueue, const std::string& separator = std::string("|"));
 
     void recvHeader();
     void recvBody(size_t contentLength);
@@ -30,8 +32,8 @@ class HTTPClient {
     void send(bool close = false);
     void send(std::vector<char> data, bool close = false);
 
-    bool hasData() { return socket->hasData(); }
+    bool hasData() const { return socket->hasData(); }
 
-    int getPort();
-    int getSd();
+    int getPort() const;
+    int getSd() const;
 };
