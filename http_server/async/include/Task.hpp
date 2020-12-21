@@ -8,7 +8,7 @@
 #include "HTTPClient.hpp"
 
 typedef std::function<void(std::map<std::string, std::string>&, std::vector<char>&,
-                           std::map<int, HTTPClient>&, std::shared_ptr<std::mutex>,
+                           std::map<int, HTTPClient&>&, std::shared_ptr<std::mutex>,
                            HTTPClient&, HTTPClient&)> MainFuncType;
 typedef std::function<MainFuncType
                       (std::map<std::string, std::string>&,

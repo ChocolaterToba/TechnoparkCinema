@@ -11,7 +11,7 @@
 
 Worker::Worker(std::queue<Task>& tasks,
                std::shared_ptr<std::mutex> tasksMutex,
-               std::map<int, HTTPClient>& pendingDBResponse,
+               std::map<int, HTTPClient&>& pendingDBResponse,
                std::shared_ptr<std::mutex> pendingDBResponseMutex) :
         tasks(tasks),
         tasksMutex(tasksMutex),

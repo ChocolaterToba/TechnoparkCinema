@@ -33,14 +33,21 @@ MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector
 }
 
 void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<char>& body,
-                      std::map<int, HTTPClient>& pendingDBResponse,
+                      std::map<int, HTTPClient&>& pendingDBResponse,
                       std::shared_ptr<std::mutex> pendingDBResponseMutex,
                       HTTPClient& input, HTTPClient& output) {
     ContentType type = HttpResponse::GetContentType(headers["url"]);
     if (type == TXT_HTML) {
         // Template stuff goes here
-        // If no db access is required, then output = std::move(input)
-        // else, output = HTTPClient(6666, 5) or similar
+        // If no db access is required, then
+        // output = std::move(input);
+        // else
+        // output = HTTPClient(6666, 1);
+        // pendingDBResponseMutex.lock();
+        // pendingDBResponse.insert(std::pair<int, HTTPClient&>(input.getSD(), input));
+        // pendingDBResponseMutex.unlock();
+        // headers and body have to be made anew, basically
+        
 
         // This has to be deleted
         if (headers["url"] == "/")
@@ -65,12 +72,17 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
     }
 }
 void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vector<char>& body,
-                           std::map<int, HTTPClient>& pendingDBResponse,
+                           std::map<int, HTTPClient&>& pendingDBResponse,
                            std::shared_ptr<std::mutex> pendingDBResponseMutex,
                            HTTPClient& input, HTTPClient& output) {
-    // Get task from "pending response" queue
+    // get sd from body
+    // output = pendingDBResponse.at(sd);
+    // pendingDBResponseMutex.lock();
+    // pendingDBResponse.erase(sd);
+    // pendingDBResponseMutex.unlock();
     // Template postprocesing goes here
-    // output = oldTask.GetClient()
+    // headers are made anew as if no DB accessing happened
+    // body is resulting document
 }
 void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& output) {
     HttpResponse response(headers["http_version"],
