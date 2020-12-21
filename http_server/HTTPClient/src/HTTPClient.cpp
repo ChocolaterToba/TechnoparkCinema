@@ -32,12 +32,26 @@ void HTTPClient::setBody(std::queue<std::string>& bodyQueue, const std::string& 
         std::copy(str.begin(), str.end(), std::back_inserter(body));
         bodyQueue.pop();
         bodyQueue.push(str);
-        for (auto& character : separator) {
-            if (character) {
+        if (i < bodyQueue.size() - 1) {
+            for (auto& character : separator) {
                 body.push_back(character);
             }
         }
     }
+}
+
+std::queue<std::string> HTTPClient::getBodyQueue(const std::string& separator) const {
+    std::string bodyString(body.begin(), body.end());
+    std::queue<std::string> result;
+
+    std::size_t start = 0, end = 0;
+    while ((end = bodyString.find(separator, start)) != std::string::npos) {
+        result.push(bodyString.substr(start, end - start));
+        start = end + separator.length();
+    }
+    result.push(bodyString.substr(start));
+
+    return std::move(result);
 }
 
 void HTTPClient::recvHeader() {

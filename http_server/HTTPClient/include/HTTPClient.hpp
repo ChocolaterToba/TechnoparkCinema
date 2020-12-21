@@ -21,10 +21,11 @@ class HTTPClient {
 
     std::string getHeader() const { return header; }
     std::vector<char> getBody() const { return body; }
+    std::queue<std::string> getBodyQueue(const std::string& separator = "|") const;
 
     void setHeader(std::string header) { this->header = std::move(header); }
     void setBody(std::vector<char> body) { this->body = std::move(body); }
-    void setBody(std::queue<std::string>& bodyQueue, const std::string& separator = std::string("|"));
+    void setBody(std::queue<std::string>& bodyQueue, const std::string& separator = "|");
 
     void recvHeader();
     void recvBody(size_t contentLength);

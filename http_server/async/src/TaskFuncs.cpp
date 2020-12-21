@@ -95,6 +95,7 @@ void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>&
     // testingQueue.push("this is for test too");
     // testingQueue.push("this is for test three!!!");
     // output.setBody(testingQueue, std::string("Delim"));
+    // testingQueue = std::move(output.getBodyQueue("Delim"));
 
     if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
         output.send(response.GetData());
