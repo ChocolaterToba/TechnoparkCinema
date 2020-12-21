@@ -10,14 +10,19 @@
 #include "msleep.hpp"
 
 Worker::Worker(std::queue<Task>& tasks,
-               std::shared_ptr<std::mutex> tasksMutex) :
+               std::shared_ptr<std::mutex> tasksMutex,
+               std::map<int, HTTPClient>& pendingDBResponse,
+               std::shared_ptr<std::mutex> pendingDBResponseMutex) :
         tasks(tasks),
         tasksMutex(tasksMutex),
+        pendingDBResponse(pendingDBResponse),
+        pendingDBResponseMutex(pendingDBResponseMutex),
         state(NoTask),
         stop(true) {}
 
 Worker::Worker(Worker&& other) :
-        Worker(other.tasks, other.tasksMutex) {
+        Worker(other.tasks, other.tasksMutex,
+               other.pendingDBResponse, other.pendingDBResponseMutex) {
     other.Stop();
 }
 
@@ -74,6 +79,8 @@ void Worker::RunMainFunc() {
     if (state == PreFuncRan) {
         state = MainFuncRunning;
         currentTask.GetMainFunc()(headers, data,
+                                  pendingDBResponse,
+                                  pendingDBResponseMutex,
                                   currentTask.GetInput(),
                                   currentTask.GetOutput());
         state = MainFuncRan;

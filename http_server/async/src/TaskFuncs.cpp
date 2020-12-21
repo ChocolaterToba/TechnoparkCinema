@@ -1,10 +1,9 @@
-#include "TaskFuncs.hpp"
-
 #include <vector>
 #include <map>
 #include <string>
 #include <fstream>
 
+#include "TaskFuncs.hpp"
 #include "HTTPClient.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
@@ -34,6 +33,8 @@ MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector
 }
 
 void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<char>& body,
+                      std::map<int, HTTPClient>& pendingDBResponse,
+                      std::shared_ptr<std::mutex> pendingDBResponseMutex,
                       HTTPClient& input, HTTPClient& output) {
     ContentType type = HttpResponse::GetContentType(headers["url"]);
     if (type == TXT_HTML) {
@@ -64,6 +65,8 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
     }
 }
 void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vector<char>& body,
+                           std::map<int, HTTPClient>& pendingDBResponse,
+                           std::shared_ptr<std::mutex> pendingDBResponseMutex,
                            HTTPClient& input, HTTPClient& output) {
     // Get task from "pending response" queue
     // Template postprocesing goes here

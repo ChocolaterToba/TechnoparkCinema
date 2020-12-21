@@ -33,4 +33,5 @@ class HTTPClient {
     bool hasData() { return socket->hasData(); }
 
     int getPort();
+    int getSd();
 };

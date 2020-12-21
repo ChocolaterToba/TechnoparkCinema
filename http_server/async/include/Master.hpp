@@ -31,6 +31,9 @@ class Master {
     std::shared_ptr<std::mutex> haveDataMutex;
     TasksController controller;
 
+    std::map<int, HTTPClient> pendingDBResponse;
+    std::shared_ptr<std::mutex> pendingDBResponseMutex;
+
     bool stop;
 
  public:

@@ -93,3 +93,10 @@ int HTTPClient::getPort() {
     }
     return -1;
 }
+
+int HTTPClient::getSd() {
+    if (socket != nullptr) {
+        return socket->sd();
+    }
+    return -1;
+}

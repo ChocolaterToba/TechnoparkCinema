@@ -23,6 +23,8 @@ class Worker {
  private:
     std::queue<Task>& tasks;
     std::shared_ptr<std::mutex> tasksMutex;
+    std::map<int, HTTPClient>& pendingDBResponse;
+    std::shared_ptr<std::mutex> pendingDBResponseMutex;
     Task currentTask;
     WorkerStates state;
 
@@ -42,7 +44,9 @@ class Worker {
 
  public:
     Worker(std::queue<Task>& tasks,
-           std::shared_ptr<std::mutex> tasksMutex);
+           std::shared_ptr<std::mutex> tasksMutex,
+           std::map<int, HTTPClient>& pendingDBResponse,
+           std::shared_ptr<std::mutex> pendingDBResponseMutex);
 
     Worker(const Worker& other) = delete;
     Worker(Worker&& other);

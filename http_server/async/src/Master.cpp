@@ -15,9 +15,7 @@
 #include "msleep.hpp"
 
 Master::Master(std::map<std::string, int>& ports, size_t workersAmount):
-        workers(),
         ports(ports),
-        listeners(),
         unprocessedClients(),
         unprocessedClientsMutex(std::make_shared<std::mutex>()),
         haveNoData(),
@@ -34,7 +32,8 @@ Master::Master(std::map<std::string, int>& ports, size_t workersAmount):
                 ));
             }
             for (size_t i = 0; i < workersAmount; ++i) {
-                workers.emplace_back(haveData, haveDataMutex);
+                workers.emplace_back(haveData, haveDataMutex,
+                                     pendingDBResponse, pendingDBResponseMutex);
             }
 
             for (auto& keyVal : ports) {
