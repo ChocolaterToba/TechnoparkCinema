@@ -3,6 +3,9 @@
 #include <fstream>
 #include <streambuf>
 #include <queue>
+
+#include <cstring>
+
 #include "exceptions.hpp"
 #include "TemplateManager.hpp"
 
@@ -10,6 +13,75 @@ using std::string;
 using std::vector;
 using std::queue;
 
+
+
+typedef enum {
+    FREE,
+    TEMPLATE_FOUND,
+    END
+} state_t;
+
+void TemplateManager::ExtractParameters() {
+    size_t begin = HTML.find("{[") + 2;
+    size_t end = HTML.find("]}", begin) - 1;
+
+    string parameters = HTML.substr(begin, end);
+
+    begin = 0;
+    while ((end = parameters.find(',', begin)) != string::npos) {
+        html_parameters.push(parameters.substr(begin, end - begin));
+        begin = end;
+        while (std::isspace(parameters[++begin]));
+    }
+
+    html_parameters.push(parameters.substr(begin, parameters.length() - begin));
+}
+
+void TemplateManager::InsertTemplates() {
+    size_t pos = 0;
+    state_t state = FREE;
+    pos = 0;
+
+    while (state != END) {
+        switch (state) {
+            case FREE:
+                pos = HTML.find("{%", pos);
+                if (pos == string::npos)
+                    state = END;
+                else if (HTML.substr(pos + 2, pos + 3) != "FOR" &&
+                         HTML.substr(pos + 2, pos + 6) != "ENDFOR")
+                    state = TEMPLATE_FOUND;
+                break;
+            case TEMPLATE_FOUND: {
+                size_t begin = pos;
+                size_t end = HTML.find("%}", pos);
+
+                pos += 2;
+                while (std::isspace(HTML[++pos]));
+
+                size_t name_begin = pos;
+                while (!std::isspace(HTML[pos]) && pos < end - 1)
+                    ++pos;
+                size_t name_end = pos;
+
+                string template_name = HTML.substr(name_begin, name_end);
+
+                string path = "../static/templates/" + template_name + ".html";
+                std::ifstream source(path, std::ios::binary);
+                string template_doc((std::istreambuf_iterator<char>(source)), std::istreambuf_iterator<char>());
+
+                HTML.erase(begin, end + 2);
+                HTML.insert(begin, template_doc);
+
+                pos = begin;
+                state = FREE;
+                break;
+            }
+            case END:
+                break;
+        }
+    }
+}
 
 TemplateManager::TemplateManager(const string &url) {
     string path("../static");
@@ -20,51 +92,11 @@ TemplateManager::TemplateManager(const string &url) {
         path  += url  +  "IndexTemplate.html";  // "index.html"
     // check url type
 
-
-    // load template based on url type
-
     std::ifstream source(path, std::ios::binary);
-    string HtmlDoc((std::istreambuf_iterator<char>(source)),
-                 std::istreambuf_iterator<char>());
+    HTML = string((std::istreambuf_iterator<char>(source)), std::istreambuf_iterator<char>());
 
-    // replace all {%%} with actual text, keep {{}} and {%FOR%}{%ENDFOR%}
-
-    size_t lbracket = 0;
-    size_t rbracket = 0;
-    InsertTemplates(HtmlDoc, lbracket, rbracket);
-    lbracket = 0;
-    rbracket = 0;
-    while ((lbracket = HtmlDoc.find("{{", lbracket)) && (rbracket = HtmlDoc.find("}}", rbracket))
-            && (rbracket != string::npos) && (lbracket != string::npos)) {
-        string parameter = HtmlDoc.substr(lbracket + 2, rbracket - lbracket - 2);
-        html_parameters.push(parameter);
-        lbracket = rbracket + 2;
-        rbracket = rbracket + 2;
-    }
-    HTML = HtmlDoc;
-}
-
-void TemplateManager::InsertTemplates(string &page, size_t l, size_t r) {
-    while ((l = page.find("{%", l)) && (r = page.find("%}", r))
-            && (r != string::npos) && (l != string::npos)) {
-        string html_template = page.substr(l + 2, r - l - 2);
-        l = html_template.find("FOR");
-        if ((l != string::npos)) {
-            l = r  +  2;
-            r  += 2;
-            InsertTemplates(page, l, r);
-        } else {
-            string path("../static/templates/" + html_template + ".html");
-            std::ifstream source(path, std::ios::binary);
-            string HtmlDoc((std::istreambuf_iterator<char>(source)),
-                std::istreambuf_iterator<char>());
-            l = r - html_template.length() - 2;
-            page.erase(l, r-l + 2);
-            page.insert(l, HtmlDoc);
-        }
-        l = r + 2;
-        r = r + 2;
-    }
+    ExtractParameters();
+    InsertTemplates();
 }
 
 void TemplateManager::FixCycles(string &page, size_t l, size_t r, std::map<string, string> parameters) {
@@ -104,8 +136,7 @@ void TemplateManager::FixCycles(string &page, size_t l, size_t r, std::map<strin
 }
 
 
-vector<char> TemplateManager::GetHtmlFixed(std::map<string, string> parameters,
-                                                 string url) {
+vector<char> TemplateManager::GetHtmlFixed(std::map<string, string> parameters, string url) {
     string path("../static");
     if (url == "/")
         path  += url  +  "IndexTemplate.html";  // "index.html"
@@ -143,92 +174,3 @@ vector<char> TemplateManager::GetHtmlFixed(std::map<string, string> parameters,
 queue<string> TemplateManager::GetParameterNames() {
     return  html_parameters;
 }
-
-// парсинг вынести в 2 отдельные функции. Шаблоны рекурсивно.
-TemplateManagerOld::TemplateManagerOld(std::ifstream &source) {
-    string HtmlDoc((std::istreambuf_iterator<char>(source)),
-                   std::istreambuf_iterator<char>());
-    // заменить на лямбда функции поиска от позиции и возвращать string
-    // и для {%%} чтобы разпарсить весь документ,
-    // в результате получить набор параметров
-    size_t lbracket = 0;
-    size_t rbracket = 0;
-    lbracket = HtmlDoc.find("{{", lbracket);
-    rbracket = HtmlDoc.find("}}", rbracket);
-    while ((lbracket = HtmlDoc.find("{{", lbracket)) && (rbracket = HtmlDoc.find("}}", rbracket))
-           && (rbracket != string::npos) && (lbracket != string::npos)) {
-        string parameter = HtmlDoc.substr(lbracket + 2, rbracket-lbracket-2);
-        html_parameters.push(parameter);
-        lbracket = rbracket + 2;
-        rbracket = rbracket + 2;
-    }
-    // временная заглушка, поскольку может быть {{параметр}} внутри макроса {%%}
-    // временно будем подставлять готовый "случайный" код из набора
-    // нужно парсить {%for:N:{{parameter}}} т.е. N раз читаем parameter
-    // и параметры должны быть разные (а-ля ID фильмов)
-    lbracket = 0;
-    rbracket = 0;
-    while ((lbracket = HtmlDoc.find("{%", lbracket)) && (rbracket = HtmlDoc.find("%}", rbracket))
-           && (rbracket != string::npos) && (lbracket != string::npos)) {
-        string html_template = HtmlDoc.substr(lbracket + 2, rbracket-lbracket-2);
-        html_templates.push(html_template);
-        lbracket = rbracket + 2;
-        rbracket = rbracket + 2;
-    }
-    HTML = HtmlDoc;
-}
-//  queue будет заменена на map для хранения параметров
-queue<string> TemplateManagerOld::GetParameterNames() {
-    return  html_parameters;
-}
-queue<string> TemplateManagerOld::GetTemplateNames() {
-    return html_templates;
-}
-
-vector<char> TemplateManagerOld::GetHtml(queue<string> &parameters, queue<string> &templates) {
-    size_t lbracket = 0;
-    size_t rbracket = 0;
-    while ((lbracket = HTML.find("{{")) && (rbracket = HTML.find("}}"))
-           && (rbracket != string::npos) && (lbracket != string::npos)) {
-        string parameter = parameters.front();
-        parameters.pop();
-        HTML.erase(lbracket, rbracket + 2-lbracket);
-        HTML.insert(lbracket, parameter);
-        // HTML.append(parameter, lbracket, parameter.length());
-    }
-    // временная заглушка, поскольку может быть {{параметр}} внутри макроса {%%}
-    // временно будем подставлять готовый "случайный" код из набора
-    // нужно парсить {%for:N:{{parameter}}} т.е. N раз читаем parameter
-    // и параметры должны быть разные (а-ля ID фильмов)
-    lbracket = 0;
-    rbracket = 0;
-    while ((lbracket = HTML.find("{%")) && (rbracket = HTML.find("%}"))
-           && (rbracket != string::npos) && (lbracket != string::npos)) {
-        string html_template = templates.front();
-        templates.pop();
-        HTML.erase(lbracket, rbracket + 2-lbracket);
-        HTML.insert(lbracket, html_template);
-        // HTML.append(html_template, lbracket, html_template.length());
-    }
-    return vector<char> (HTML.begin(), HTML.end());
-}
-
-
-vector<char> TemplateManagerOld::GetHtmlFixed(queue<string> &parameters, queue<string> &templates, string url) {
-    size_t lbracket = 0;
-    size_t rbracket = 0;
-
-    string path("../static"  +  url);
-    string path_templates("../static/templates/");
-    while ((lbracket = HTML.find("{%")) && (rbracket = HTML.find("%}"))
-           && (rbracket != string::npos) && (lbracket != string::npos)) {
-        string html_template = templates.front();
-        templates.pop();
-        HTML.erase(lbracket, rbracket + 2-lbracket);
-        HTML.insert(lbracket, html_template);
-        // HTML.append(html_template, lbracket, html_template.length());
-    }
-
-    return vector<char> (HTML.begin(), HTML.end());
-}
-
