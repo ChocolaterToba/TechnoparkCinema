@@ -18,11 +18,8 @@
 				<p>{{moviedescription}}</p>
 				<p>Cast: </p>
 				<div class = "casting">
-                    <img src ="{{starphoto}}" title = "{{starname}}">
-                    {%rating%}
-                    {%rating%}
-                    {%rating%}
-                    {%rating%}
+					<img src ="{{starphoto}}" title = "{{starname}}">
+					{%FOR 0 TO {{movierating}} %}{%FOR 0 TO {{movierating}} %}{%rating%}{%ENDFOR%}{%ENDFOR%}
 				</div>
 				<a href="#"><i class="fa fa-play"></i>Watch Now Alone</a>
 				<a href="#" class="watch2-btn"><i class="fa fa-play"></i>Watch Now with friends</a>
@@ -42,12 +39,7 @@
 		<div class="row">
 			<div class = "col-md-12">
 				<div class="row">
-                    {%recommended%}
-                    {%recommended%}
-                    {%recommended%}
-                    {%recommended%}
-                    {%recommended%}
-                    {%recommended%}
+					{%FOR 0 TO 6 %}{%recommended%}{%ENDFOR%}
 				</div>
 			</div>
 	</div>

@@ -132,19 +132,23 @@ void HttpResponse::SetContentType(ContentType type) {
 void HttpResponse::SetData(const std::string &url) {
     SetContentType(GetContentType(url));
     std::string path("../static" + url);
-    if (url == "/")
+    if (url == "/") 
         path += "IndexTemplate.html";  // "index.html"
 
     std::ifstream source(path, std::ios::binary);
-    TemplateManager TManager(source);
+    TemplateManager TManager(url);
     std::queue<std::string> parameters = TManager.GetParameterNames();
-    std::queue<std::string> temp = TManager.GetTemplateNames();
+    std::queue<std::string> temp; // = TManager.GetTemplateNames();
     DatabaseManager DManager;
 
     std::queue<std::string> parameters_new = DManager.GetParameters(parameters);
     std::queue<std::string> temp_new = DManager.GetTemplates(temp);
-
-    std::vector<char> result = TManager.GetHtml(parameters_new, temp_new);
+    std::map<std::string, std::string> params; 
+    params["movietittle"] = "MOV";
+    params["moviedescription"] = "about";
+    params["movierating"] = "2";
+    params["RAND"] = "6";
+    std::vector<char> result = TManager.GetHtmlFixed(params, url);
 
     // char buffer[BUF_SIZE] = {0};
     // while (source.read(buffer, BUF_SIZE)) {
