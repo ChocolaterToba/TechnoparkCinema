@@ -27,6 +27,7 @@ public:
                  std::vector<char> body);
     HttpResponse() = default;
     std::string GetHTTPVersion() const;
+    std::string GetHeader() const;
     std::vector<char> GetData() const;
 
     static ContentType GetContentType(const std::string& url);
@@ -37,11 +38,12 @@ private:
     std::string keep_alive;
 
     std::vector<char> response_body;
-
     std::map<std::string, std::string> headers;
+    std::string response_header;
     std::vector<char> response;
 
     void SetResponseBody(const std::vector<char>& body);
     void SetContentType(ContentType type);
+    void FormResponseHeader();
     void FormResponseData();
 };

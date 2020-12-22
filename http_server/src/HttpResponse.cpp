@@ -16,8 +16,11 @@ std::string HttpResponse::GetHTTPVersion() const {
     return http_version;
 }
 
+std::string HttpResponse::GetHeader() const {
+    return response_header;
+}
 std::vector<char> HttpResponse::GetData() const {
-    return std::move(response);
+    return response;
 }
     // std::string GetURL() const;
     // std::string GetHTTPVersion() const;
@@ -55,26 +58,8 @@ HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
             return_code = "501 Not Implemented";
     }
 
+    FormResponseHeader();
     FormResponseData();
-}
-
-
-void HttpResponse::FormResponseData() {
-    std::string response_header("");
-    response_header.append("HTTP/").append(http_version).append(" ");
-    response_header.append(return_code).append(CRLF);
-    if (http_version == "1.0" && keep_alive == "Keep-Alive") {
-        response_header.append("Connection: Keep-Alive");
-    }
-    for (auto& header_pair : headers) {
-        if (!header_pair.second.empty()) {
-            response_header.append(header_pair.first).append(": ").append(header_pair.second).append(CRLF);
-        }
-    }
-    response_header.append(CRLF);
-
-    response.assign(response_header.begin(), response_header.end());
-    response.insert(response.end(), response_body.begin(), response_body.end());
 }
 
 ContentType HttpResponse::GetContentType(const std::string& url) {
@@ -99,6 +84,12 @@ ContentType HttpResponse::GetContentType(const std::string& url) {
         return VID_MP4;
     else
         return UNDEF;
+}
+
+void HttpResponse::SetResponseBody(const std::vector<char>& body) {
+    response_body.clear();
+    response_body.insert(response_body.end(), body.begin(), body.end());
+    FormResponseData();
 }
 
 void HttpResponse::SetContentType(ContentType type) {
@@ -131,21 +122,26 @@ void HttpResponse::SetContentType(ContentType type) {
     }
 
     headers.insert(c_t_header);
+    FormResponseHeader();
+    FormResponseData();
 }
 
+void HttpResponse::FormResponseHeader() {
+    response_header.clear();
+    response_header.append("HTTP/").append(http_version).append(" ");
+    response_header.append(return_code).append(CRLF);
+    if (http_version == "1.0" && keep_alive == "Keep-Alive") {
+        response_header.append("Connection: Keep-Alive");
+    }
+    for (auto& header_pair : headers) {
+        if (!header_pair.second.empty()) {
+            response_header.append(header_pair.first).append(": ").append(header_pair.second).append(CRLF);
+        }
+    }
+    response_header.append(CRLF);
+}
 
-void HttpResponse::SetResponseBody(const std::vector<char>& body) {
-    response_body.insert(response_body.end(), body.begin(), body.end());
-    // OLD
-    // SetContentType(GetContentType(url));
-    // std::string path("../static" + url);
-    // if (url == "/")
-    //     path += "index.html";
-
-    // std::ifstream source(path, std::ios::binary);
-    // char buffer[BUF_SIZE] = {0};
-    // while (source.read(buffer, BUF_SIZE)) {
-    //     response_body.insert(response_body.end(), buffer, buffer + BUF_SIZE);
-    // }
-    // response_body.insert(response_body.end(), buffer, buffer + source.gcount());
+void HttpResponse::FormResponseData() {
+    response.assign(response_header.begin(), response_header.end());
+    response.insert(response.end(), response_body.begin(), response_body.end());
 }
