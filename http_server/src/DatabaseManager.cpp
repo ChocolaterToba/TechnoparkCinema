@@ -7,30 +7,32 @@
 #include <random>
 #include "DatabaseManager.hpp"
 #include <chrono>
+#include <set>
 // not started yet
 DatabaseManager::DatabaseManager() {
 
 }
 
-std::queue<std::string> DatabaseManager::GetParameters(std::queue<std::string> names) {
-    std::queue<std::string> temp;
-    temp.push("Titanic");
-    temp.push("Subscribe Woosh.com to watch more kittens.");
-    temp.push("images/Leo.jpeg");
-    temp.push("Leonardo Dicaprio");
-    temp.push("images/img1.jpg");
-    temp.push("Titanic");
-    temp.push("lorem_ipsum.mp4");
+std::set<std::string> DatabaseManager::GetParameters(std::set<std::string> names) {
+    std::set<std::string> temp;
+    temp.insert("Titanic");
+    temp.insert("Subscribe Woosh.com to watch more kittens.");
+    temp.insert("images/Leo.jpeg");
+    temp.insert("Leonardo Dicaprio");
+    temp.insert("images/img1.jpg");
+    temp.insert("Titanic");
+    temp.insert("lorem_ipsum.mp4");
     return temp;
 }
 
 std::queue<std::string> DatabaseManager::GetTemplates(std::queue<std::string> names) {
     std::queue<std::string> temp;
+    temp.push("<img src =\"images/cat.png\" title = \"WooshStar\">");
+    temp.push("<img src =\"images/cat.png\" title = \"WooshStar\">");
+    temp.push("<img src =\"images/cat.png\" title = \"WooshStar\">");
+    temp.push("<img src =\"images/cat.png\" title = \"WooshStar\">");
+
     std::vector<std::string> vect;
-    temp.push("<img src =\"images/cat.png\" title = \"WooshStar\">");
-    temp.push("<img src =\"images/cat.png\" title = \"WooshStar\">");
-    temp.push("<img src =\"images/cat.png\" title = \"WooshStar\">");
-    temp.push("<img src =\"images/cat.png\" title = \"WooshStar\">");
     vect.push_back("<div class = \"col-md-2\"><img src = \"images/img1.jpg\"></div>");
     vect.push_back("<div class = \"col-md-2\"><img src = \"images/img2.jpg\"></div>");
     vect.push_back("<div class = \"col-md-2\"><img src = \"images/img3.jpg\"></div>");

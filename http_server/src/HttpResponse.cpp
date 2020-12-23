@@ -6,6 +6,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+#include <set>
+#include <random>
+#include <chrono>
+
 
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
@@ -130,30 +134,38 @@ void HttpResponse::SetContentType(ContentType type) {
 
 
 void HttpResponse::SetData(const std::string &url) {
+    std::vector<std::string> vect;
+    vect.push_back("images/img6.jpg");
+    vect.push_back("images/img5.jpg");
+    vect.push_back("images/img4.jpg");
+    vect.push_back("images/img3.jpg");
+    vect.push_back("images/img2.jpg");
+    vect.push_back("images/img1.jpg");
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::shuffle(std::begin(vect), std::end(vect), std::default_random_engine(seed));
+
+
     SetContentType(GetContentType(url));
     std::string path("../static" + url);
     if (url == "/") 
         path += "IndexTemplate.html";  // "index.html"
 
-    std::ifstream source(path, std::ios::binary);
+
     TemplateManager TManager(url);
-    std::queue<std::string> parameters = TManager.GetParameterNames();
-    std::queue<std::string> temp; // = TManager.GetTemplateNames();
-    DatabaseManager DManager;
 
-    std::queue<std::string> parameters_new = DManager.GetParameters(parameters);
-    std::queue<std::string> temp_new = DManager.GetTemplates(temp);
     std::map<std::string, std::string> params; 
-    params["movietittle"] = "MOV";
-    params["moviedescription"] = "about";
-    params["movierating"] = "2";
-    params["RAND"] = "6";
-    std::vector<char> result = TManager.GetHtmlFixed(params, url);
+    params["movietittle"] = "Titanic";
+    params["moviedescription"] = "Subscribe Woosh.com to watch more kittens.";
+    params["starphoto"] = "images/Leo.jpeg";
+    params["starname"] = "Leonardo Dicaprio";
+    params["movielogo"] = "images/img1.jpg";
+    params["moviename"] = "Titanic";
+    params["videolink"] = "lorem_ipsum.mp4";
+    params["movierating"] = "3";
+    params["recommended"] = std::to_string(vect.size());
+    for (size_t i = 0; i < vect.size(); i++)
+        params["recommended" + std::to_string(i)] = vect[i];
 
-    // char buffer[BUF_SIZE] = {0};
-    // while (source.read(buffer, BUF_SIZE)) {
-    //     data.insert(data.end(), buffer, buffer + BUF_SIZE);
-    // }
-    // data.insert(data.end(), buffer, buffer + source.gcount());
+    std::vector<char> result = TManager.GetHtmlFinal(params);
     data.insert(data.end(), result.begin(), result.end());
 }
