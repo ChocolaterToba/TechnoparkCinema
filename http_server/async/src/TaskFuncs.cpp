@@ -27,13 +27,15 @@ MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector
 
     if (input.getPort() == 6666) {
         return MainProcessDBReceived;
+    } else if (input.getPort() == 7777) {
+        return MainProcessDBServer;
     }
 
     return MainProcessBasic;
 }
 
 void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<char>& body,
-                      std::map<int, HTTPClient&>& pendingDBResponse,
+                      std::map<int, HTTPClient>& pendingDBResponse,
                       std::shared_ptr<std::mutex> pendingDBResponseMutex,
                       HTTPClient& input, HTTPClient& output) {
     ContentType type = HttpResponse::GetContentType(headers["url"]);
@@ -42,24 +44,19 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
         // If no db access is required, then
         // output = std::move(input);
         // else
-        // output = HTTPClient(7777, 1);
-        // pendingDBResponseMutex.lock();
-        // pendingDBResponse.insert(std::pair<int, HTTPClient&>(input.getSD(), input));
-        // pendingDBResponseMutex.unlock();
-        // headers and body have to be made anew, basically
+        pendingDBResponseMutex->lock();
+        pendingDBResponse.insert(std::pair<int, HTTPClient&>(input.getSd(), input));
+        pendingDBResponseMutex->unlock();
+
+        headers["Connection"] = "close";  // maybe make headers from scratch???
+
+        std::queue<std::string> bodyParams;
+        bodyParams.push(std::to_string(input.getSd()));
+        // add other parameters to bodyParams here
+        body = HTTPClient::mergeQueueToVector(bodyParams);
+
+        output = HTTPClient("localhost", 7777);
         
-
-        // This has to be deleted
-        if (headers["url"] == "/")
-            headers["url"] = "/index.html";
-        std::ifstream source("../static" + headers["url"], std::ios::binary);
-        char buffer[BUF_SIZE] = {0};
-        while (source.read(buffer, BUF_SIZE)) {
-            body.insert(body.end(), buffer, buffer + BUF_SIZE);
-        }
-        body.insert(body.end(), buffer, buffer + source.gcount());
-
-        output = std::move(input);
     } else {
         std::ifstream source("../static" + headers["url"], std::ios::binary);
         char buffer[BUF_SIZE] = {0};
@@ -71,31 +68,45 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
         output = std::move(input);
     }
 }
+
+void MainProcessDBServer(std::map<std::string, std::string>& headers, std::vector<char>& body,
+                         std::map<int, HTTPClient>& pendingDBResponse,
+                         std::shared_ptr<std::mutex> pendingDBResponseMutex,
+                         HTTPClient& input, HTTPClient& output) {
+    // Replace this with actual body parameter handling
+    body.push_back('|');
+
+    std::ifstream source("../static/index.html", std::ios::binary);
+    char buffer[BUF_SIZE] = {0};
+    while (source.read(buffer, BUF_SIZE)) {
+        body.insert(body.end(), buffer, buffer + BUF_SIZE);
+    }
+    body.insert(body.end(), buffer, buffer + source.gcount());
+
+    output = HTTPClient("localhost", 6666);
+}
 void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vector<char>& body,
-                           std::map<int, HTTPClient&>& pendingDBResponse,
+                           std::map<int, HTTPClient>& pendingDBResponse,
                            std::shared_ptr<std::mutex> pendingDBResponseMutex,
                            HTTPClient& input, HTTPClient& output) {
-    // get sd from body
-    // output = pendingDBResponse.at(sd);
-    // pendingDBResponseMutex.lock();
-    // pendingDBResponse.erase(sd);
-    // pendingDBResponseMutex.unlock();
+    std::queue<std::string> bodyParams = HTTPClient::splitVectorToQueue(body);
+    int sd = std::stoi(bodyParams.front());
+    bodyParams.pop();
+    output = pendingDBResponse.at(sd);  //  thread-safe
+    pendingDBResponseMutex->lock();
+    pendingDBResponse.erase(sd);
+    pendingDBResponseMutex->unlock();
     // Template postprocesing goes here
-    // headers are made anew as if no DB accessing happened
+    // headers are taken from pending client as if no DB accessing happened
     // body is resulting document
+
+    // delete this later
+    body = HTTPClient::mergeQueueToVector(bodyParams);
 }
 void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& output) {
     HttpResponse response(headers["http_version"],
                           HttpRequest::StringToRequestMethod(headers["method"]),
                           headers["url"], headers["Connection"], body);
-    
-    // Just for testing, delete later
-    // std::queue<std::string> testingQueue;
-    // testingQueue.push("thisisfortest");
-    // testingQueue.push("this is for test too");
-    // testingQueue.push("this is for test three!!!");
-    // output.setBody(testingQueue, std::string("Delim"));
-    // testingQueue = std::move(output.getBodyQueue("Delim"));
 
     if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
         output.send(response.GetData());

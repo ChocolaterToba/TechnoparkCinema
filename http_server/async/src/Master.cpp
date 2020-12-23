@@ -25,6 +25,7 @@ Master::Master(std::map<std::string, int>& ports, size_t workersAmount):
         haveData(),
         haveDataMutex(std::make_shared<std::mutex>()),
         controller(haveNoData, haveNoDataMutex, haveData, haveDataMutex),
+        pendingDBResponseMutex(std::make_shared<std::mutex>()),
         stop(true) {
             if (!workersAmount) {
                 throw std::runtime_error(std::string(

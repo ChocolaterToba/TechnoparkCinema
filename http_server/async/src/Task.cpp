@@ -8,7 +8,10 @@
 Task::Task() :
       preFunc(PreProcess),
       mainFunc(MainProcessBasic),
-      postFunc(PostProcess) {}
+      postFunc(PostProcess) {
+    this->input = std::make_shared<HTTPClient>();
+    this->output = std::make_shared<HTTPClient>();
+}
 
 Task::Task(HTTPClient& input) : Task() {
     this->input = std::make_shared<HTTPClient>(input);

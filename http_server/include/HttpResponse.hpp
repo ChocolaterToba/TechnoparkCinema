@@ -35,6 +35,7 @@ public:
 private:
     std::string http_version;
     std::string return_code;
+    std::string url;
     std::string keep_alive;
 
     std::vector<char> response_body;
