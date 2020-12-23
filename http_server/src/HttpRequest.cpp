@@ -54,7 +54,7 @@ HttpRequest::HttpRequest(const std::string &message) {
             search++;
         }
         std::string value = message.substr(pos, search-pos);
-        headers.insert (std::pair<std::string, std::string>(key,value));
+        headers.insert (std::pair<std::string, std::string>(key, value));
         search += 2;  // \r\n 2 symbols
     }
 }

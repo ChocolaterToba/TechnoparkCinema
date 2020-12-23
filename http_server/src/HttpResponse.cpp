@@ -6,9 +6,15 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+#include <set>
+#include <random>
+#include <chrono>
+
 
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
+#include "DatabaseManager.hpp"
+#include "TemplateManager.hpp"
 #include "exceptions.hpp"
 
 

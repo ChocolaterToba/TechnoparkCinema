@@ -21,10 +21,12 @@ typedef enum {
 } ContentType;
 
 class HttpResponse {
+
 public:
     HttpResponse(std::string HTTPVersion, RequestMethod reqType,
                  std::string url, std::string keepAlive,
                  std::vector<char> body);
+
     HttpResponse() = default;
     std::string GetHTTPVersion() const;
     std::string GetHeader() const;
