@@ -62,6 +62,22 @@ void set_non_blocked_impl(int sd, bool opt) {
 
 }    // namespace
 
+// Move semantics
+Socket::Socket(Socket&& other) :
+    port(other.port),
+    queue_size(other.queue_size) {
+    other.close();
+    createServerSocket(port, queue_size);
+}
+Socket& Socket::operator=(Socket&& other) {
+    close();
+    port = other.port;
+    queue_size = other.queue_size;
+    other.close();
+    createServerSocket(port, queue_size);
+    return *this;
+}
+
 void Socket::setNonBlocked(bool opt) {
     set_non_blocked_impl(m_Sd, opt);
 }
@@ -172,27 +188,8 @@ void Socket::send(const std::vector<char>& str) {
     }
 }
 
-std::string Socket::recv(size_t bytes) {
-    char* buf = new char[bytes];
-    size_t r = 0;
-    while (r != bytes) {
-        ssize_t rc = ::recv(m_Sd, buf + r, bytes - r, 0);
-        std::cerr << "recv_ex: " << rc << " bytes\n";
-
-        if (rc == -1 || rc == 0) {
-            delete[] buf;
-            throw std::runtime_error("read failed: " +
-                                     std::string(strerror(errno)));
-        }
-        r += rc;
-    }
-    std::string ret(buf, buf + bytes);
-    delete[] buf;
-    return ret;
-}
-
 std::string Socket::recv() {
-    char buf[128];
+    char buf[256];
 #ifdef __APPLE__
     // mac os x don't defines MSG_NOSIGNAL
     int n = ::recv(m_Sd, buf, sizeof(buf), 0);
@@ -200,7 +197,7 @@ std::string Socket::recv() {
     int n = ::recv(m_Sd, buf, sizeof(buf), MSG_NOSIGNAL);
 #endif
 
-    std::cerr << "errno is " << errno << std::endl;
+    // std::cerr << "errno is " << errno << std::endl;
 
     if (-1 == n && errno != EAGAIN) {
         throw std::runtime_error("read failed: " +
@@ -221,7 +218,26 @@ std::string Socket::recv() {
     return ret;
 }
 
-std::string Socket::recv_loop() {
+std::string Socket::recv(size_t bytes) {
+    char* buf = new char[bytes];
+    size_t r = 0;
+    while (r != bytes) {
+        ssize_t rc = ::recv(m_Sd, buf + r, bytes - r, 0);
+        // std::cerr << "recv_ex: " << rc << " bytes\n";
+
+        if (rc == -1 || rc == 0) {
+            delete[] buf;
+            throw std::runtime_error("read failed: " +
+                                     std::string(strerror(errno)));
+        }
+        r += rc;
+    }
+    std::string ret(buf, buf + bytes);
+    delete[] buf;
+    return ret;
+}
+
+std::string Socket::recvLoop() {
     char buf[256];
     std::string ret;
     while (true) {
@@ -257,7 +273,96 @@ std::string Socket::recvTimed(int timeout) {
         throw std::runtime_error("read timeout");
     }
 
-    return recv();
+    return std::move(recv());
+}
+
+std::vector<char> Socket::recvVector() {
+    char buf[256];
+#ifdef __APPLE__
+    // mac os x don't defines MSG_NOSIGNAL
+    int n = ::recv(m_Sd, buf, sizeof(buf), 0);
+#else
+    int n = ::recv(m_Sd, buf, sizeof(buf), MSG_NOSIGNAL);
+#endif
+
+    // std::cerr << "errno is " << errno << std::endl;
+
+    if (-1 == n && errno != EAGAIN) {
+        throw std::runtime_error("read failed: " +
+                                 std::string(strerror(errno)));
+    }
+    if (0 == n) {
+        throw std::runtime_error("client: " + std::to_string(m_Sd) +
+                                 " disconnected");
+    }
+    if (-1 == n && errno == EAGAIN) {  // or non-blocking socket
+        throw std::runtime_error("client: " +
+                                 std::to_string(m_Sd) + " timeouted");
+    }
+
+    std::vector<char> ret(buf, buf + n);
+    std::cerr << "client: " << m_Sd << ", recv: \n"
+              << "[may be binary file, cannot be displayed]"
+              << " [" << n << " bytes]" << std::endl;
+    return ret;
+}
+
+std::vector<char> Socket::recvVector(size_t bytes) {
+    char* buf = new char[bytes];
+    size_t r = 0;
+    while (r != bytes) {
+        ssize_t rc = ::recv(m_Sd, buf + r, bytes - r, 0);
+        // std::cerr << "recv_ex: " << rc << " bytes\n";
+
+        if (rc == -1 || rc == 0) {
+            delete[] buf;
+            throw std::runtime_error("read failed: " +
+                                     std::string(strerror(errno)));
+        }
+        r += rc;
+    }
+    std::vector<char> ret(buf, buf + bytes);
+    delete[] buf;
+    return ret;
+}
+
+std::vector<char> Socket::recvVectorTimed(int timeout) {
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(m_Sd, &read_fds);
+    struct timeval tm;
+    tm.tv_sec = timeout;
+    tm.tv_usec = 0;
+    int sel = select(m_Sd + 1, /*read*/ &read_fds, /*write*/ NULL,
+                                     /*exceptions*/ NULL, &tm);
+    if (sel != 1) {
+        throw std::runtime_error("read timeout");
+    }
+
+    return std::move(recvVector());
+}
+
+std::vector<char> Socket::recvVectorLoop() {
+    char buf[256];
+    std::vector<char> ret;
+    while (true) {
+#ifdef __APPLE__
+        // mac os x don't defines MSG_NOSIGNAL
+        int n = ::recv(m_Sd, buf, sizeof(buf), 0);
+#else
+        int n = ::recv(m_Sd, buf, sizeof(buf), MSG_NOSIGNAL);
+#endif
+        if (-1 == n && errno != EAGAIN) {
+            throw std::runtime_error("read failed: " +
+                                     std::string(strerror(errno)));
+        }
+
+        if (0 == n || -1 == n) {    // -1 - timeout
+            break;
+        }
+        ret.insert(ret.end(), buf, buf + n);
+    }
+    return ret;
 }
 
 bool Socket::hasData() {
@@ -293,6 +398,8 @@ void Socket::createServerSocket(uint32_t port,
 
     listen(sd, listen_queue_size);
     m_Sd = sd;
+    this->port = port;
+    this->queue_size = listen_queue_size;
 }
 
 std::shared_ptr<Socket> Socket::accept() {
@@ -300,7 +407,7 @@ std::shared_ptr<Socket> Socket::accept() {
     memset(&client, 0, sizeof(client));
     socklen_t cli_len = sizeof(client);
 
-    std::cerr << "ready for accept new clients: " << std::endl;
+    std::cerr << "ready to accept new clients: " << std::endl;
     int cli_sd = ::accept(m_Sd, (struct sockaddr*)&client, &cli_len);
     if (-1 == cli_sd) {
         return std::shared_ptr<Socket>();
@@ -309,13 +416,13 @@ std::shared_ptr<Socket> Socket::accept() {
     std::cerr << "new client: " << cli_sd
               << ", from: " << int2ipv4(client.sin_addr.s_addr) << std::endl;
 
-    return std::make_shared<Socket>(cli_sd);
+    return std::make_shared<Socket>(cli_sd, this->port);
 }
 
 void Socket::httpQuery(const std::string& query,
                        std::function<void(const std::string& s)> cb) {
     send(query);
-    std::string res = recv_loop();
+    std::string res = recvLoop();
     std::cerr << "client: " << m_Sd << ", recv: \n" << res << std::endl;
     cb(res);
 }

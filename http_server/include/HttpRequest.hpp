@@ -31,9 +31,16 @@ class HttpRequest {
     explicit HttpRequest(const std::string &message);
 
     std::string GetHeader(std::basic_string<char> header_name) const;
+    ~HttpRequest() {};
     std::string GetURL() const;
     std::string GetHTTPVersion() const;
     RequestMethod GetRequestMethod() const;
+    std::string GetRequestMethodString() const;
+    std::map<std::string, std::string> GetAllHeaders() const;
+    int GetContentLength();
+
+    static std::string RequestMethodToString(RequestMethod method);
+    static RequestMethod StringToRequestMethod(const std::string& methodString);
 
  private:
     RequestMethod request_method;
@@ -41,5 +48,5 @@ class HttpRequest {
     std::string http_version;
     std::map<std::string, std::string> headers;
 
-    void CheckRequestMethod(const std::string &method_name);
+    void SetRequestMethod(const std::string &method_name);
 };

@@ -22,17 +22,24 @@ std::string HttpResponse::GetHTTPVersion() const {
     return http_version;
 }
 
-std::vector<char> HttpResponse::GetData() const {
-    return std::move(response_data);
+std::string HttpResponse::GetHeader() const {
+    return response_header;
 }
-
-HttpResponse::HttpResponse(const HttpRequest &request): http_version("1.1") {
-    if (request.GetHTTPVersion().empty()) {
+std::vector<char> HttpResponse::GetData() const {
+    return response;
+}
+    // std::string GetURL() const;
+    // std::string GetHTTPVersion() const;
+    // RequestMethod GetRequestMethod() const;
+HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
+                           std::string url, std::string keepAlive,
+                           std::vector<char> body): http_version(HTTPVersion), url(url), keep_alive(keepAlive) {
+    if (HTTPVersion.empty()) {
         http_version = "0.9";
-        if (request.GetRequestMethod() == GET) {
+        if (reqType == GET) {
             try {
-                SetData(request.GetURL());
-                std::copy(response_data.begin(), response_data.end(), data.begin());
+                SetResponseBody(body);
+                std::copy(response.begin(), response.end(), response_body.begin());
                 return;
             }
             catch (FileNotFoundException &) {
@@ -43,10 +50,10 @@ HttpResponse::HttpResponse(const HttpRequest &request): http_version("1.1") {
         }
     }
 
-    switch (request.GetRequestMethod()) {
+    switch (reqType) {
         case GET:
             try {
-                SetData(request.GetURL());
+                SetResponseBody(body);
                 return_code = "200 OK";
             }
             catch (HTTPResponseException&) {
@@ -57,26 +64,11 @@ HttpResponse::HttpResponse(const HttpRequest &request): http_version("1.1") {
             return_code = "501 Not Implemented";
     }
 
+    FormResponseHeader();
     FormResponseData();
 }
 
-
-void HttpResponse::FormResponseData() {
-    std::string answer("");
-    answer.append("HTTP/").append(http_version).append(" ");
-    answer.append(return_code).append(CRLF);
-    for (auto &header : headers) {
-        if (!header.second.empty()) {
-            answer.append(header.first).append(": ").append(header.second).append(CRLF);
-        }
-    }
-    answer.append(CRLF);
-
-    response_data.assign(answer.begin(), answer.end());
-    response_data.insert(response_data.end(), data.begin(), data.end());
-}
-
-ContentType HttpResponse::GetContentType(const std::string &url) const {
+ContentType HttpResponse::GetContentType(const std::string& url) {
     std::string ext(url.c_str() + url.rfind('.') + 1);
     if (ext == "/") {
         return TXT_HTML;
@@ -98,6 +90,12 @@ ContentType HttpResponse::GetContentType(const std::string &url) const {
         return VID_MP4;
     else
         return UNDEF;
+}
+
+void HttpResponse::SetResponseBody(const std::vector<char>& body) {
+    response_body.clear();
+    response_body.insert(response_body.end(), body.begin(), body.end());
+    FormResponseData();
 }
 
 void HttpResponse::SetContentType(ContentType type) {
@@ -130,42 +128,29 @@ void HttpResponse::SetContentType(ContentType type) {
     }
 
     headers.insert(c_t_header);
+    FormResponseHeader();
+    FormResponseData();
 }
 
+void HttpResponse::FormResponseHeader() {
+    response_header.clear();
+    response_header.append("HTTP/").append(http_version).append(" ");
+    response_header.append(return_code).append(CRLF);
+    if (http_version == "1.0" && keep_alive == "Keep-Alive") {
+        response_header.append("Connection: Keep-Alive").append(CRLF);
+    }
+    if (!response_body.empty()) {
+        response_header.append("Content-Length: ").append(std::to_string(response_body.size())).append(CRLF);
+    }
+    for (auto& header_pair : headers) {
+        if (!header_pair.second.empty()) {
+            response_header.append(header_pair.first).append(": ").append(header_pair.second).append(CRLF);
+        }
+    }
+    response_header.append(CRLF);
+}
 
-void HttpResponse::SetData(const std::string &url) {
-    std::vector<std::string> vect;
-    vect.push_back("images/img6.jpg");
-    vect.push_back("images/img5.jpg");
-    vect.push_back("images/img4.jpg");
-    vect.push_back("images/img3.jpg");
-    vect.push_back("images/img2.jpg");
-    vect.push_back("images/img1.jpg");
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::shuffle(std::begin(vect), std::end(vect), std::default_random_engine(seed));
-
-
-    SetContentType(GetContentType(url));
-    std::string path("../static" + url);
-    if (url == "/") 
-        path += "IndexTemplate.html";  // "index.html"
-
-
-    TemplateManager TManager(url);
-
-    std::map<std::string, std::string> params; 
-    params["movietittle"] = "Titanic";
-    params["moviedescription"] = "Subscribe Woosh.com to watch more kittens.";
-    params["starphoto"] = "images/Leo.jpeg";
-    params["starname"] = "Leonardo Dicaprio";
-    params["movielogo"] = "images/img1.jpg";
-    params["moviename"] = "Titanic";
-    params["videolink"] = "lorem_ipsum.mp4";
-    params["movierating"] = "3";
-    params["recommended"] = std::to_string(vect.size());
-    for (size_t i = 0; i < vect.size(); i++)
-        params["recommended" + std::to_string(i)] = vect[i];
-
-    std::vector<char> result = TManager.GetHtmlFinal(params);
-    data.insert(data.end(), result.begin(), result.end());
+void HttpResponse::FormResponseData() {
+    response.assign(response_header.begin(), response_header.end());
+    response.insert(response.end(), response_body.begin(), response_body.end());
 }

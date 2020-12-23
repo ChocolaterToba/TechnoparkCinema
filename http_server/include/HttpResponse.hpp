@@ -21,23 +21,32 @@ typedef enum {
 } ContentType;
 
 class HttpResponse {
- public:
-    explicit HttpResponse(const HttpRequest &request);
+
+public:
+    HttpResponse(std::string HTTPVersion, RequestMethod reqType,
+                 std::string url, std::string keepAlive,
+                 std::vector<char> body);
+
     HttpResponse() = default;
     std::string GetHTTPVersion() const;
+    std::string GetHeader() const;
     std::vector<char> GetData() const;
 
- private:
+    static ContentType GetContentType(const std::string& url);
+
+private:
     std::string http_version;
-    std::vector<char> response_data;
     std::string return_code;
+    std::string url;
+    std::string keep_alive;
 
-    std::vector<char> data;
-
+    std::vector<char> response_body;
     std::map<std::string, std::string> headers;
+    std::string response_header;
+    std::vector<char> response;
 
-    void SetData(const std::string &url);
-    ContentType GetContentType(const std::string &url) const;
+    void SetResponseBody(const std::vector<char>& body);
     void SetContentType(ContentType type);
+    void FormResponseHeader();
     void FormResponseData();
 };

@@ -9,9 +9,10 @@ HttpRequest::HttpRequest(const std::string &message) {
     size_t pos = 0;
     size_t search = message.find(' ');
     std::string method = message.substr(pos, search);
-    CheckRequestMethod(method);
+    SetRequestMethod(method);
     if (request_method == UNKNOWN) {
-        throw BadFormatException();
+        // throw BadFormatException();  // temprorary
+        SetRequestMethod("GET");
     }
     // find URL
     search++;
@@ -23,18 +24,25 @@ HttpRequest::HttpRequest(const std::string &message) {
         throw BadFormatException();
     }
     url = message.substr(pos, search-pos);
+    if (url.rfind("/", 0) != 0) {  // temporary
+        url = "/";
+        search = 0;
+    }
     // find HTTP version
     search++;
     pos = 0;
     if ((pos = message.find("HTTP/", search - 1, 5)) != std::string::npos) {
         pos = pos+5;
         search = pos;
-        while (message[search] != '\r') {
+        while (message[search] != '\r' && message[search] != ' ') {
             search++;
         }
         http_version = message.substr(pos, search-pos);
     } else {
         http_version = std::string("");   // check
+    }
+    while (message[search] != '\r') {  //  temporary, skipping response code
+        search++;
     }
     search+=2;   // \r\n 2 symbols
     // get headers
@@ -60,25 +68,8 @@ std::string HttpRequest::GetHeader(std::basic_string<char> string) const {
     }
 }
 
-void HttpRequest::CheckRequestMethod(const std::string &method_name) {
-    if (method_name == "GET")
-        request_method = GET;
-    else if (method_name == "POST")
-        request_method = POST;
-    else if (method_name == "OPTIONS")
-        request_method = OPTIONS;
-    else if (method_name == "HEAD")
-        request_method = HEAD;
-    else if (method_name == "PUT")
-        request_method = PUT;
-    else if (method_name == "PATCH")
-        request_method = PATCH;
-    else if (method_name == "DELETE")
-        request_method = DELETE;
-    else if (method_name == "CONNECT")
-        request_method = CONNECT;
-    else
-        request_method = UNKNOWN;
+void HttpRequest::SetRequestMethod(const std::string& method_name) {
+    request_method = StringToRequestMethod(method_name);
 }
 
 std::string HttpRequest::GetURL() const {
@@ -91,4 +82,69 @@ std::string HttpRequest::GetHTTPVersion() const {
 
 RequestMethod HttpRequest::GetRequestMethod() const {
     return request_method;
+}
+
+std::string HttpRequest::GetRequestMethodString() const {
+    return RequestMethodToString(request_method);
+}
+
+std::map<std::string, std::string> HttpRequest::GetAllHeaders() const {
+    return headers;
+}
+
+int HttpRequest::GetContentLength() {
+    int result;
+    try {
+        result = std::stoi(headers["Content-Length"]);
+    }
+    catch (std::invalid_argument &e) {
+        result = -1;
+    }
+    return result;
+}
+
+std::string HttpRequest::RequestMethodToString(RequestMethod method) {
+    switch (method) {
+        case GET:
+            return "GET";
+        case POST:
+            return "POST";
+        case OPTIONS:
+            return "OPTIONS";
+        case HEAD:
+            return "HEAD";
+        case PUT:
+            return "PUT";
+        case PATCH:
+            return "PATCH";
+        case DELETE:
+            return "DELETE";
+        case CONNECT:
+            return "CONNECT";
+        default:
+            return "UNKNOWN";
+    }
+}
+
+RequestMethod HttpRequest::StringToRequestMethod(const std::string& methodString) {
+    RequestMethod method;
+    if (methodString == "GET")
+        method = GET;
+    else if (methodString == "POST")
+        method = POST;
+    else if (methodString == "OPTIONS")
+        method = OPTIONS;
+    else if (methodString == "HEAD")
+        method = HEAD;
+    else if (methodString == "PUT")
+        method = PUT;
+    else if (methodString == "PATCH")
+        method = PATCH;
+    else if (methodString == "DELETE")
+        method = DELETE;
+    else if (methodString == "CONNECT")
+        method = CONNECT;
+    else
+        method = UNKNOWN;
+    return method;
 }

@@ -9,23 +9,21 @@
 
 class TasksController {
  protected:
-    std::vector<Task> haveNoData;
+    std::vector<Task>& haveNoData;
     std::shared_ptr<std::mutex> haveNoDataMutex;
-    std::queue<std::unique_ptr<Task>> haveData;
+    std::queue<Task>& haveData;
     std::shared_ptr<std::mutex> haveDataMutex;
 
     std::thread tasksControllerThread;
-    virtual void TasksControllerLoop();
+    virtual void Loop();
     bool stop;
 
  public:
-    TasksController();
+    TasksController(std::vector<Task>& haveNoData,
+                    std::shared_ptr<std::mutex> haveNoDataMutex,
+                    std::queue<Task>& haveData,
+                    std::shared_ptr<std::mutex> haveDataMutex);
     virtual ~TasksController();
-
-    virtual std::vector<Task>& GetHaveNoData();
-    virtual std::shared_ptr<std::mutex> GetHaveNoDataMutex();
-    virtual std::queue<std::unique_ptr<Task>>& GetHaveData();
-    virtual std::shared_ptr<std::mutex> GetHaveDataMutex();
 
     virtual void Start();
     virtual void Stop();
