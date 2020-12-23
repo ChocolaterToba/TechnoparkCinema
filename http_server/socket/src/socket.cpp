@@ -416,7 +416,7 @@ std::shared_ptr<Socket> Socket::accept() {
     std::cerr << "new client: " << cli_sd
               << ", from: " << int2ipv4(client.sin_addr.s_addr) << std::endl;
 
-    return std::make_shared<Socket>(cli_sd);
+    return std::make_shared<Socket>(cli_sd, this->port);
 }
 
 void Socket::httpQuery(const std::string& query,

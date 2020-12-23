@@ -11,10 +11,18 @@ HTTPClient::HTTPClient(std::shared_ptr<Socket> socket) : socket(socket) {
 }
 
 HTTPClient::HTTPClient(int port, int queueSize) {
-    // TODO:: add "only for sending" option
     socket = std::make_shared<Socket>();
     socket->createServerSocket(port, queueSize);
     socket->setRcvTimeout(/*sec*/ 120, /*microsec*/ 0);
+}
+
+HTTPClient::HTTPClient(const std::string& host, int port) {
+    socket = std::make_shared<Socket>();
+    socket->connect(host, port);
+}
+
+HTTPClient::HTTPClient() {
+    socket = std::make_shared<Socket>();
 }
 
 std::vector<char>::iterator HTTPClient::parseBuffer(std::vector<char>& buffer, std::string& target) {
@@ -41,7 +49,11 @@ void HTTPClient::setBody(std::queue<std::string>& bodyQueue, const std::string& 
 }
 
 std::queue<std::string> HTTPClient::getBodyQueue(const std::string& separator) const {
-    std::string bodyString(body.begin(), body.end());
+    return splitVectorToQueue(body, separator);
+}
+
+std::queue<std::string> HTTPClient::splitVectorToQueue(const std::vector<char>& origin, const std::string& separator) {
+    std::string bodyString(origin.begin(), origin.end());
     std::queue<std::string> result;
 
     std::size_t start = 0, end = 0;
@@ -50,6 +62,21 @@ std::queue<std::string> HTTPClient::getBodyQueue(const std::string& separator) c
         start = end + separator.length();
     }
     result.push(bodyString.substr(start));
+
+    return std::move(result);
+}
+
+std::vector<char> HTTPClient::mergeQueueToVector(std::queue<std::string>& origin, const std::string& separator) {
+    std::vector<char> result;
+    for (size_t i = 0; i < origin.size() - 1; ++i) {
+        result.insert(result.end(), origin.front().begin(), origin.front().end());
+        origin.push(origin.front());
+        origin.pop();
+        result.insert(result.end(), separator.begin(), separator.end());
+    }
+    result.insert(result.end(), origin.front().begin(), origin.front().end());
+    origin.push(origin.front());
+    origin.pop();
 
     return std::move(result);
 }
@@ -97,7 +124,7 @@ void HTTPClient::recvHeader() {
 void HTTPClient::recvBody(size_t contentLength) {
     contentLength -= body.size();
     std::vector<char> receivedBody = std::move(socket->recvVector(contentLength));
-    body.insert(body.begin(), receivedBody.begin(), receivedBody.end());
+    body.insert(body.end(), receivedBody.begin(), receivedBody.end());
     std::cerr << "Successfully received body, size: " << body.size() << " bytes" << std::endl;
 }
 
