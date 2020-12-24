@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <queue>
+#include <set>
+#include <map>
 #include <memory>
 #include "socket.hpp"
 
@@ -24,8 +26,19 @@ class HTTPClient {
     std::string getHeader() const { return header; }
     std::vector<char> getBody() const { return body; }
     std::queue<std::string> getBodyQueue(const std::string& separator = "|") const;
+
     static std::queue<std::string> splitVectorToQueue(const std::vector<char>& origin, const std::string& separator = "|");
     static std::vector<char> mergeQueueToVector(std::queue<std::string>& origin, const std::string& separator = "|");
+
+    static std::set<std::string> splitVectorToSet(const std::vector<char>& origin, const std::string& separator = "|");
+    static std::vector<char> mergeSetToVector(std::set<std::string>& origin, const std::string& separator = "|");
+
+    static std::map<std::string, std::string> splitVectorToMap(const std::vector<char>& origin,
+                                                               const std::string& separator = "|",
+                                                               const std::string& pairSeparator = ": ");
+    static std::vector<char> mergeMapToVector(std::map<std::string, std::string>& origin,
+                                              const std::string& separator = "|",
+                                              const std::string& pairSeparator = ": ");
 
     void setHeader(std::string header) { this->header = std::move(header); }
     void setBody(std::vector<char> body) { this->body = std::move(body); }

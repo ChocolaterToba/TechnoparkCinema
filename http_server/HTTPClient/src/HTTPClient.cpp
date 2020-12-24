@@ -1,7 +1,10 @@
 #include "HTTPClient.hpp"
-#include <iostream>
 #include <string>
-#include <algorithm>
+#include <vector>
+#include <queue>
+#include <set>
+#include <map>
+#include <memory>
 
 int BUFFER_SIZE = 256;
 
@@ -77,6 +80,64 @@ std::vector<char> HTTPClient::mergeQueueToVector(std::queue<std::string>& origin
     result.insert(result.end(), origin.front().begin(), origin.front().end());
     origin.push(origin.front());
     origin.pop();
+
+    return std::move(result);
+}
+
+std::set<std::string> splitVectorToSet(const std::vector<char>& origin, const std::string& separator = "|") {
+    std::string bodyString(origin.begin(), origin.end());
+    std::set<std::string> result;
+
+    std::size_t start = 0, end = 0;
+    while ((end = bodyString.find(separator, start)) != std::string::npos) {
+        result.insert(bodyString.substr(start, end - start));
+        start = end + separator.length();
+    }
+    if (start != std::string::npos) {  // Avoiding cases when origin ends in separator
+        result.insert(bodyString.substr(start));
+    }
+
+    return std::move(result);
+}
+
+std::vector<char> mergeSetToVector(std::set<std::string>& origin, const std::string& separator = "|") {
+    std::vector<char> result;
+    for (auto& param : origin) {
+        result.insert(result.end(), param.begin(), param.end());
+        result.insert(result.end(), separator.begin(), separator.end());
+    }
+
+    return std::move(result);
+}
+
+std::map<std::string, std::string> splitVectorToMap(const std::vector<char>& origin, const std::string& separator, const std::string& pairSeparator) {
+    std::string bodyString(origin.begin(), origin.end());
+    std::map<std::string, std::string> result;
+
+    std::size_t start = 0, end = 0;
+    while ((end = bodyString.find(separator, start)) != std::string::npos) {
+        std::string paramPair = std::move(bodyString.substr(start, end - start));
+        std::size_t splitPos = paramPair.find(pairSeparator);
+        result.insert(std::pair<std::string, std::string>(paramPair.substr(0, splitPos), paramPair.substr(splitPos + 2)));
+        start = end + separator.length();
+    }
+    if (start != std::string::npos) {  // Avoiding cases when origin ends in separator
+        std::string paramPair = std::move(bodyString.substr(start, end - start));
+        std::size_t splitPos = paramPair.find(": ");
+        result.insert(std::pair<std::string, std::string>(paramPair.substr(0, splitPos), paramPair.substr(splitPos + 2)));
+    }
+
+    return std::move(result);
+}
+
+std::vector<char> mergeMapToVector(std::map<std::string, std::string>& origin, const std::string& separator, const std::string& pairSeparator) {
+    std::vector<char> result;
+    for (auto& paramPair : origin) {
+        result.insert(result.end(), paramPair.first.begin(), paramPair.first.end());
+        result.insert(result.end(), pairSeparator.begin(), pairSeparator.end());
+        result.insert(result.end(), paramPair.second.begin(), paramPair.second.end());
+        result.insert(result.end(), separator.begin(), separator.end());
+    }
 
     return std::move(result);
 }
