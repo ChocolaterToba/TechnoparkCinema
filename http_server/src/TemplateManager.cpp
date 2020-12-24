@@ -28,7 +28,7 @@ void TemplateManager::ExtractParameters() {
     while ((begin = HTML.find("{[")) != string::npos) {
         size_t end = HTML.find("]}", begin);
 
-        string parameters = HTML.substr(begin, end - begin);
+        string parameters = HTML.substr(begin + 2, end - begin - 2);
         HTML.erase(begin - 2, end - begin + 2);
 
         begin = 0;
@@ -93,10 +93,14 @@ void TemplateManager::InsertTemplates() {
 TemplateManager::TemplateManager(const string &url) {
     string path("../static");
 
-    if (url.find("video") != string::npos)
-        path = "../static/templates/Video.html";
+    if (url.find("watch") != string::npos) {
+        path = "../static/watch.html";
+        if (url.find('?') != std::string::npos) {
+            ID = url.substr(url.find('?')+1);
+        }
+    }
     else if (url == "/")
-        path  += url  +  "IndexTemplate.html";
+        path  += url  +  "Index.html";
     else
         path += url;
 

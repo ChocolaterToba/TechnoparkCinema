@@ -13,7 +13,9 @@
 #include "TemplateManager.hpp"
 
 MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& input) {
-    input.recvHeader();
+    if (input.getHeader().empty()) {
+        input.recvHeader();
+    }
     HttpRequest request(input.getHeader());
     int bodySize = request.GetContentLength();
 
@@ -25,8 +27,11 @@ MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector
 
     body.clear();
     if (bodySize > 0) {
-        input.recvBody(bodySize); // is not necessary right now
-        body = input.getBody();
+        if (input.getHeader().empty()) {
+            input.recvBody(bodySize); // is not necessary right now
+        }
+            body = input.getBody();
+
     }
 
     if (input.getPort() == 6666) {
@@ -46,7 +51,7 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
     if (type == TXT_HTML) {
         TemplateManager templateManager(headers["url"]);
         std::set<std::string> params = std::move(templateManager.GetParameterNames());
-        if (!params.empty()) {
+        if (params.empty()) {
             body = templateManager.GetHtmlFinal(std::map<std::string, std::string>());
 
             output = std::move(input);
@@ -64,6 +69,7 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
             body.insert(body.end(), paramsPart.begin(), paramsPart.end());
 
             output = HTTPClient("localhost", 7777);
+            headers["flag"] = "value";
         }
         
     } else {
@@ -110,6 +116,7 @@ void MainProcessDBServer(std::map<std::string, std::string>& headers, std::vecto
     params["videolink"] = "lorem_ipsum.mp4";
     params["movierating"] = "3";
     params["recommended"] = std::to_string(vect.size());
+    
     // this cycle adds shuffled parameters, where vector above you can add multiple linked paramets, number has to be same
     // i.e. vector<string> for href and tittle of recommended movies 
     for (size_t i = 0; i < vect.size(); i++)
@@ -120,6 +127,8 @@ void MainProcessDBServer(std::map<std::string, std::string>& headers, std::vecto
     body = std::move(HTTPClient::mergeMapToVector(params));
 
     output = HTTPClient("localhost", 6666);
+
+    
 }
 
 void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vector<char>& body,
@@ -141,9 +150,13 @@ void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vec
 }
 
 void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& output) {
+    bool flag = false;
+    if (headers["flag"] == "value") {
+        flag = true;
+    }
     HttpResponse response(headers["http_version"],
                           HttpRequest::StringToRequestMethod(headers["method"]),
-                          headers["url"], headers["Connection"], body);
+                          headers["url"], headers["Connection"], body, flag);
 
     if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
         output.send(response.GetData());

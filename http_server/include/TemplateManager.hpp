@@ -24,6 +24,7 @@ class TemplateManager {
     vector<char> GetHtmlFinal(const std::map<string, string> &parameters);
 private:
     string HTML;
+    std::string ID;
     std::set<string> html_parameters;
 
     void ExtractParameters();

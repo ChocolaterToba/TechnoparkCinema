@@ -33,7 +33,7 @@ std::vector<char> HttpResponse::GetData() const {
     // RequestMethod GetRequestMethod() const;
 HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
                            std::string url, std::string keepAlive,
-                           std::vector<char> body): http_version(HTTPVersion), url(url), keep_alive(keepAlive) {
+                           std::vector<char> body, bool flag): http_version(HTTPVersion), url(url), keep_alive(keepAlive) {
     if (HTTPVersion.empty()) {
         http_version = "0.9";
         if (reqType == GET) {
@@ -54,7 +54,11 @@ HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
         case GET:
             try {
                 SetResponseBody(body);
-                return_code = "200 OK";
+                if (flag == false) {
+                    return_code = "200 OK";
+                } else { 
+                    return_code = url;
+                }
             }
             catch (HTTPResponseException&) {
                 return_code = "404 Not Found";
@@ -71,6 +75,9 @@ HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
 ContentType HttpResponse::GetContentType(const std::string& url) {
     std::string ext(url.c_str() + url.rfind('.') + 1);
     if (ext == "/") {
+        return TXT_HTML;
+    }
+    if (ext.find("watch") != std::string::npos) {
         return TXT_HTML;
     }
     if (ext == "jpg" || ext == "jpeg" ||
