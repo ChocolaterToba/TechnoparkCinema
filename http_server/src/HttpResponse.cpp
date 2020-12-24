@@ -33,7 +33,7 @@ std::vector<char> HttpResponse::GetData() const {
     // RequestMethod GetRequestMethod() const;
 HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
                            std::string url, std::string keepAlive,
-                           std::vector<char> body, bool flag): http_version(HTTPVersion), url(url), keep_alive(keepAlive) {
+                           std::vector<char> body, bool proxy): http_version(HTTPVersion), url(url), keep_alive(keepAlive) {
     if (HTTPVersion.empty()) {
         http_version = "0.9";
         if (reqType == GET) {
@@ -53,7 +53,7 @@ HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
     switch (reqType) {
         case GET:
             try {
-                if (flag == false) {
+                if (!proxy) {
                     return_code = "200 OK";
                 } else { 
                     return_code = "GET " + url;

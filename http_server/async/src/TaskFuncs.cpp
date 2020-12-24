@@ -65,7 +65,7 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
             body.insert(body.end(), paramsPart.begin(), paramsPart.end());
 
             output = HTTPClient("localhost", 7777);
-            headers["flag"] = "value";
+            headers["proxy"] = "true";
         }
         
     } else {
@@ -144,13 +144,13 @@ void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vec
 }
 
 void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& output) {
-    bool flag = false;
-    if (headers["flag"] == "value") {
-        flag = true;
+    bool proxy = false;
+    if (headers["proxy"] == "true") {  // Meaning, we need to call another server
+        proxy = true;
     }
     HttpResponse response(headers["http_version"],
                           HttpRequest::StringToRequestMethod(headers["method"]),
-                          headers["url"], headers["Connection"], body, flag);
+                          headers["url"], headers["Connection"], body, proxy);
 
     if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
         output.send(response.GetData());

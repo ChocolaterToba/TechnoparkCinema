@@ -25,7 +25,7 @@ class HttpResponse {
 public:
     HttpResponse(std::string HTTPVersion, RequestMethod reqType,
                  std::string url, std::string keepAlive,
-                 std::vector<char> body, bool flag = false);
+                 std::vector<char> body, bool proxy = false);
 
     HttpResponse() = default;
     std::string GetHTTPVersion() const;
