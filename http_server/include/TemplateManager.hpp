@@ -19,7 +19,7 @@ using std::set;
 class TemplateManager {
  public:
     explicit TemplateManager(const string &url);
-    ~TemplateManager() {}
+    ~TemplateManager() = default;
     std::set<string> GetParameterNames();
     vector<char> GetHtmlFinal(const std::map<string, string> &parameters);
 private:

@@ -64,22 +64,21 @@ std::queue<std::string> HTTPClient::splitVectorToQueue(const std::vector<char>& 
         result.push(bodyString.substr(start, end - start));
         start = end + separator.length();
     }
-    result.push(bodyString.substr(start));
+    if (start != std::string::npos) {  // Avoiding cases when origin ends in separator
+        result.push(bodyString.substr(start));
+    }
 
     return std::move(result);
 }
 
 std::vector<char> HTTPClient::mergeQueueToVector(std::queue<std::string>& origin, const std::string& separator) {
     std::vector<char> result;
-    for (size_t i = 0; i < origin.size() - 1; ++i) {
+    for (size_t i = 0; i < origin.size(); ++i) {
         result.insert(result.end(), origin.front().begin(), origin.front().end());
         origin.push(origin.front());
         origin.pop();
         result.insert(result.end(), separator.begin(), separator.end());
     }
-    result.insert(result.end(), origin.front().begin(), origin.front().end());
-    origin.push(origin.front());
-    origin.pop();
 
     return std::move(result);
 }

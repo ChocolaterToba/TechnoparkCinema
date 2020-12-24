@@ -2,11 +2,13 @@
 #include <map>
 #include <string>
 #include <fstream>
+#include <algorithm>
 
 #include "TaskFuncs.hpp"
 #include "HTTPClient.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "TemplateManager.hpp"
 
 MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& input) {
     input.recvHeader();
@@ -40,22 +42,27 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
                       HTTPClient& input, HTTPClient& output) {
     ContentType type = HttpResponse::GetContentType(headers["url"]);
     if (type == TXT_HTML) {
-        // Template stuff goes here
-        // If no db access is required, then
-        // output = std::move(input);
-        // else
-        pendingDBResponseMutex->lock();
-        pendingDBResponse.insert(std::pair<int, HTTPClient&>(input.getSd(), input));
-        pendingDBResponseMutex->unlock();
+        TemplateManager templateManager(headers["url"]);
+        std::set<std::string> params = std::move(templateManager.GetParameterNames());
+        if (!params.empty()) {
+            body = templateManager.GetHtmlFinal(std::map<std::string, std::string>());
 
-        headers["Connection"] = "close";  // maybe make headers from scratch???
+            output = std::move(input);
+        } else {
+            pendingDBResponseMutex->lock();
+            pendingDBResponse.insert(std::pair<int, HTTPClient&>(input.getSd(), input));
+            pendingDBResponseMutex->unlock();
 
-        std::queue<std::string> bodyParams;
-        bodyParams.push(std::to_string(input.getSd()));
-        // add other parameters to bodyParams here
-        body = HTTPClient::mergeQueueToVector(bodyParams);
+            headers["Connection"] = "close";  // maybe make headers from scratch???
 
-        output = HTTPClient("localhost", 7777);
+            body.clear();
+            std::string sdString = std::to_string(input.getSd());
+            body.insert(body.end(), sdString.begin(), sdString.end());
+            std::vector<char> paramsPart = HTTPClient::mergeSetToVector(params);
+            body.insert(body.end(), paramsPart.begin(), paramsPart.end());
+
+            output = HTTPClient("localhost", 7777);
+        }
         
     } else {
         std::ifstream source("../static" + headers["url"], std::ios::binary);
@@ -73,6 +80,10 @@ void MainProcessDBServer(std::map<std::string, std::string>& headers, std::vecto
                          std::map<int, HTTPClient>& pendingDBResponse,
                          std::shared_ptr<std::mutex> pendingDBResponseMutex,
                          HTTPClient& input, HTTPClient& output) {
+    auto firstSepPos = std::find(body.begin(), body.end(), '|');
+    TemplateManager templateManager(headers["url"]);
+
+    body.erase(firstSepPos + 1, body.end());  // erasing everything after sd
     // Replace this with actual body parameter handling
     body.push_back('|');
 
