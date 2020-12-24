@@ -178,8 +178,8 @@ void TemplateManager::EvaluateParameters(const std::map<string, string> &paramet
         size_t end_pos = begin_pos;
         while (!std::isspace(HTML[end_pos]) && HTML[end_pos] != '}')
             ++end_pos;
-
-        string replacement = parameters.at(HTML.substr(begin_pos, end_pos - begin_pos));
+        std::string substr = HTML.substr(begin_pos, end_pos - begin_pos);
+        string replacement = parameters.at(substr);
         size_t end = HTML.find("}}", begin);
 
         HTML.erase(begin, end - begin + 2);
