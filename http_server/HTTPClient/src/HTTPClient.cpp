@@ -68,7 +68,7 @@ std::queue<std::string> HTTPClient::splitVectorToQueue(const std::vector<char>& 
         result.push(bodyString.substr(start));
     }
 
-    return std::move(result);
+    return result;
 }
 
 std::vector<char> HTTPClient::mergeQueueToVector(std::queue<std::string>& origin, const std::string& separator) {
@@ -80,7 +80,7 @@ std::vector<char> HTTPClient::mergeQueueToVector(std::queue<std::string>& origin
         result.insert(result.end(), separator.begin(), separator.end());
     }
 
-    return std::move(result);
+    return result;
 }
 
 std::set<std::string> splitVectorToSet(const std::vector<char>& origin, const std::string& separator = "|") {
@@ -96,7 +96,7 @@ std::set<std::string> splitVectorToSet(const std::vector<char>& origin, const st
         result.insert(bodyString.substr(start));
     }
 
-    return std::move(result);
+    return result;
 }
 
 std::vector<char> mergeSetToVector(std::set<std::string>& origin, const std::string& separator = "|") {
@@ -106,7 +106,7 @@ std::vector<char> mergeSetToVector(std::set<std::string>& origin, const std::str
         result.insert(result.end(), separator.begin(), separator.end());
     }
 
-    return std::move(result);
+    return result;
 }
 
 std::map<std::string, std::string> splitVectorToMap(const std::vector<char>& origin, const std::string& separator, const std::string& pairSeparator) {
@@ -126,7 +126,7 @@ std::map<std::string, std::string> splitVectorToMap(const std::vector<char>& ori
         result.insert(std::pair<std::string, std::string>(paramPair.substr(0, splitPos), paramPair.substr(splitPos + 2)));
     }
 
-    return std::move(result);
+    return result;
 }
 
 std::vector<char> mergeMapToVector(std::map<std::string, std::string>& origin, const std::string& separator, const std::string& pairSeparator) {
@@ -138,7 +138,7 @@ std::vector<char> mergeMapToVector(std::map<std::string, std::string>& origin, c
         result.insert(result.end(), separator.begin(), separator.end());
     }
 
-    return std::move(result);
+    return result;
 }
 
 void HTTPClient::recvHeader() {

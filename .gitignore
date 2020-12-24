@@ -3,3 +3,5 @@ output
 lib
 .vscode/
 .idea
+/.idea
+/idea

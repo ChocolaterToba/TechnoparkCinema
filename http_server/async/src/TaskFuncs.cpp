@@ -3,6 +3,8 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include <chrono>
+#include <random>
 
 #include "TaskFuncs.hpp"
 #include "HTTPClient.hpp"
@@ -95,6 +97,33 @@ void MainProcessDBServer(std::map<std::string, std::string>& headers, std::vecto
     body.insert(body.end(), buffer, buffer + source.gcount());
 
     output = HTTPClient("localhost", 6666);
+
+    // vector for randomizing movies (before actual recommendations, based on movie watching experience
+    std::vector<std::string> vect;
+        vect.push_back("images/img6.jpg");
+        vect.push_back("images/img5.jpg");
+        vect.push_back("images/img4.jpg");
+        vect.push_back("images/img3.jpg");
+        vect.push_back("images/img2.jpg");
+        vect.push_back("images/img1.jpg");
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+        std::shuffle(std::begin(vect), std::end(vect), std::default_random_engine(seed));
+
+    // map of actual parameters
+        std::map<std::string, std::string> params; 
+        params["movietittle"] = "Titanic";
+        params["moviedescription"] = "Subscribe Woosh.com to watch more kittens.";
+        params["starphoto"] = "images/Leo.jpeg";
+        params["starname"] = "Leonardo Dicaprio";
+        params["movielogo"] = "images/img1.jpg";
+        params["moviename"] = "Titanic";
+        params["videolink"] = "lorem_ipsum.mp4";
+        params["movierating"] = "3";
+        params["recommended"] = std::to_string(vect.size());
+    // this cycle adds shuffled parameters, where vector above you can add multiple linked paramets, number has to be same
+    // i.e. vector<string> for href and tittle of recommended movies 
+    for (size_t i = 0; i < vect.size(); i++)
+            params["recommended" + std::to_string(i)] = vect[i];
 }
 void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vector<char>& body,
                            std::map<int, HTTPClient>& pendingDBResponse,
