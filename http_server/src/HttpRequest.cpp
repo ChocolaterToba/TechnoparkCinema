@@ -11,7 +11,8 @@ HttpRequest::HttpRequest(const std::string &message) {
     std::string method = message.substr(pos, search);
     SetRequestMethod(method);
     if (request_method == UNKNOWN) {
-        throw BadFormatException();
+        // throw BadFormatException();  // temprorary
+        SetRequestMethod("GET");
     }
     // find URL
     search++;
@@ -23,18 +24,25 @@ HttpRequest::HttpRequest(const std::string &message) {
         throw BadFormatException();
     }
     url = message.substr(pos, search-pos);
+    if (url.rfind("/", 0) != 0) {  // temporary
+        url = "/";
+        search = 0;
+    }
     // find HTTP version
     search++;
     pos = 0;
     if ((pos = message.find("HTTP/", search - 1, 5)) != std::string::npos) {
         pos = pos+5;
         search = pos;
-        while (message[search] != '\r') {
+        while (message[search] != '\r' && message[search] != ' ') {
             search++;
         }
         http_version = message.substr(pos, search-pos);
     } else {
         http_version = std::string("");   // check
+    }
+    while (message[search] != '\r') {  //  temporary, skipping response code
+        search++;
     }
     search+=2;   // \r\n 2 symbols
     // get headers
@@ -46,7 +54,7 @@ HttpRequest::HttpRequest(const std::string &message) {
             search++;
         }
         std::string value = message.substr(pos, search-pos);
-        headers.insert (std::pair<std::string, std::string>(key,value));
+        headers.insert (std::pair<std::string, std::string>(key, value));
         search += 2;  // \r\n 2 symbols
     }
 }

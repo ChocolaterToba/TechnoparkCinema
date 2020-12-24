@@ -11,7 +11,7 @@
 
 Worker::Worker(std::queue<Task>& tasks,
                std::shared_ptr<std::mutex> tasksMutex,
-               std::map<int, HTTPClient&>& pendingDBResponse,
+               std::map<int, HTTPClient>& pendingDBResponse,
                std::shared_ptr<std::mutex> pendingDBResponseMutex) :
         tasks(tasks),
         tasksMutex(tasksMutex),
@@ -66,9 +66,10 @@ void Worker::TakeNewTask() {
 void Worker::RunPreFunc() {
     if (state == TaskRecieved) {
         state = PreFuncRunning;
-        currentTask.SetMainFunc(
-            currentTask.GetPreFunc()(headers, data,
-                                     currentTask.GetInput()));
+        auto func1 = currentTask.GetPreFunc();
+        func1 = currentTask.GetPreFunc();
+        auto func = currentTask.GetPreFunc()(headers, data, currentTask.GetInput());
+        currentTask.SetMainFunc(func);
         state = PreFuncRan;
     } else {
         throw std::runtime_error(std::string(
@@ -112,8 +113,7 @@ void Worker::Loop() {
     while (!stop) {
         TakeNewTask();
         RunPreFunc();
-        currentTask.SetOutput(currentTask.GetInput());  // TODO: remove this when satisfying next TODO
-        RunMainFunc();   // TODO: async clients logic
+        RunMainFunc();
         RunPostFunc();
     }
 }

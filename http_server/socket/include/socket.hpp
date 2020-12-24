@@ -13,7 +13,7 @@ std::string int2ipv4(uint32_t ip);
 class Socket {
  public:
     Socket() : m_Sd(-1) {}
-    explicit Socket(int sd) : m_Sd(sd), port(0), queue_size(0) {}
+    explicit Socket(int sd, int port = 0) : m_Sd(sd), port(port), queue_size(0) {}
 
     Socket(const Socket& other) = delete;
     Socket(Socket&& other);

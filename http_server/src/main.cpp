@@ -37,7 +37,8 @@ int main(int argc, char* argv[]) {
     try {
         std::map<std::string, int> ports;
         ports["external"] = 5555;
-        ports["database"] = 6666;
+        ports["from_database"] = 6666;
+        ports["to_database"] = 7777;
         Master master(ports, 1);
         master.Start();
         sleep(300);  // replace with graceful shutdown.

@@ -2,11 +2,15 @@
 #include <map>
 #include <string>
 #include <fstream>
+#include <algorithm>
+#include <chrono>
+#include <random>
 
 #include "TaskFuncs.hpp"
 #include "HTTPClient.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "TemplateManager.hpp"
 
 MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& input) {
     input.recvHeader();
@@ -27,39 +31,41 @@ MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector
 
     if (input.getPort() == 6666) {
         return MainProcessDBReceived;
+    } else if (input.getPort() == 7777) {
+        return MainProcessDBServer;
     }
 
     return MainProcessBasic;
 }
 
 void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<char>& body,
-                      std::map<int, HTTPClient&>& pendingDBResponse,
+                      std::map<int, HTTPClient>& pendingDBResponse,
                       std::shared_ptr<std::mutex> pendingDBResponseMutex,
                       HTTPClient& input, HTTPClient& output) {
     ContentType type = HttpResponse::GetContentType(headers["url"]);
     if (type == TXT_HTML) {
-        // Template stuff goes here
-        // If no db access is required, then
-        // output = std::move(input);
-        // else
-        // output = HTTPClient(7777, 1);
-        // pendingDBResponseMutex.lock();
-        // pendingDBResponse.insert(std::pair<int, HTTPClient&>(input.getSD(), input));
-        // pendingDBResponseMutex.unlock();
-        // headers and body have to be made anew, basically
-        
+        TemplateManager templateManager(headers["url"]);
+        std::set<std::string> params = std::move(templateManager.GetParameterNames());
+        if (!params.empty()) {
+            body = templateManager.GetHtmlFinal(std::map<std::string, std::string>());
 
-        // This has to be deleted
-        if (headers["url"] == "/")
-            headers["url"] = "/index.html";
-        std::ifstream source("../static" + headers["url"], std::ios::binary);
-        char buffer[BUF_SIZE] = {0};
-        while (source.read(buffer, BUF_SIZE)) {
-            body.insert(body.end(), buffer, buffer + BUF_SIZE);
+            output = std::move(input);
+        } else {
+            pendingDBResponseMutex->lock();
+            pendingDBResponse.insert(std::pair<int, HTTPClient&>(input.getSd(), input));
+            pendingDBResponseMutex->unlock();
+
+            headers["Connection"] = "close";  // maybe make headers from scratch???
+
+            body.clear();
+            std::string sdString = std::to_string(input.getSd());
+            body.insert(body.end(), sdString.begin(), sdString.end());
+            std::vector<char> paramsPart = std::move(HTTPClient::mergeSetToVector(params));
+            body.insert(body.end(), paramsPart.begin(), paramsPart.end());
+
+            output = HTTPClient("localhost", 7777);
         }
-        body.insert(body.end(), buffer, buffer + source.gcount());
-
-        output = std::move(input);
+        
     } else {
         std::ifstream source("../static" + headers["url"], std::ios::binary);
         char buffer[BUF_SIZE] = {0};
@@ -71,31 +77,73 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
         output = std::move(input);
     }
 }
+
+void MainProcessDBServer(std::map<std::string, std::string>& headers, std::vector<char>& body,
+                         std::map<int, HTTPClient>& pendingDBResponse,
+                         std::shared_ptr<std::mutex> pendingDBResponseMutex,
+                         HTTPClient& input, HTTPClient& output) {
+    auto firstSepPos = std::find(body.begin(), body.end(), '|');
+    if (firstSepPos > body.end()) {
+        firstSepPos = body.end();
+    }
+    TemplateManager templateManager(headers["url"]);
+
+    // vector for randomizing movies (before actual recommendations, based on movie watching experience
+    std::vector<std::string> vect;
+    vect.push_back("images/img6.jpg");
+    vect.push_back("images/img5.jpg");
+    vect.push_back("images/img4.jpg");
+    vect.push_back("images/img3.jpg");
+    vect.push_back("images/img2.jpg");
+    vect.push_back("images/img1.jpg");
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::shuffle(std::begin(vect), std::end(vect), std::default_random_engine(seed));
+
+    // map of actual parameters
+    std::map<std::string, std::string> params; 
+    params["movietittle"] = "Titanic";
+    params["moviedescription"] = "Subscribe Woosh.com to watch more kittens.";
+    params["starphoto"] = "images/Leo.jpeg";
+    params["starname"] = "Leonardo Dicaprio";
+    params["movielogo"] = "images/img1.jpg";
+    params["moviename"] = "Titanic";
+    params["videolink"] = "lorem_ipsum.mp4";
+    params["movierating"] = "3";
+    params["recommended"] = std::to_string(vect.size());
+    // this cycle adds shuffled parameters, where vector above you can add multiple linked paramets, number has to be same
+    // i.e. vector<string> for href and tittle of recommended movies 
+    for (size_t i = 0; i < vect.size(); i++)
+        params["recommended" + std::to_string(i)] = vect[i];
+    
+    params["sd"] = std::string(body.begin(), firstSepPos);
+
+    body = std::move(HTTPClient::mergeMapToVector(params));
+
+    output = HTTPClient("localhost", 6666);
+}
+
 void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vector<char>& body,
-                           std::map<int, HTTPClient&>& pendingDBResponse,
+                           std::map<int, HTTPClient>& pendingDBResponse,
                            std::shared_ptr<std::mutex> pendingDBResponseMutex,
                            HTTPClient& input, HTTPClient& output) {
-    // get sd from body
-    // output = pendingDBResponse.at(sd);
-    // pendingDBResponseMutex.lock();
-    // pendingDBResponse.erase(sd);
-    // pendingDBResponseMutex.unlock();
-    // Template postprocesing goes here
-    // headers are made anew as if no DB accessing happened
-    // body is resulting document
+    std::map<std::string, std::string> bodyParams = std::move(HTTPClient::splitVectorToMap(body));
+
+    int sd = std::stoi(bodyParams.at("sd"));
+    bodyParams.erase("sd");
+
+    TemplateManager templateManager(headers["url"]);
+    body = std::move(templateManager.GetHtmlFinal(bodyParams));
+
+    output = pendingDBResponse.at(sd);  //  thread-safe
+    pendingDBResponseMutex->lock();
+    pendingDBResponse.erase(sd);
+    pendingDBResponseMutex->unlock();
 }
+
 void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& output) {
     HttpResponse response(headers["http_version"],
                           HttpRequest::StringToRequestMethod(headers["method"]),
                           headers["url"], headers["Connection"], body);
-    
-    // Just for testing, delete later
-    // std::queue<std::string> testingQueue;
-    // testingQueue.push("thisisfortest");
-    // testingQueue.push("this is for test too");
-    // testingQueue.push("this is for test three!!!");
-    // output.setBody(testingQueue, std::string("Delim"));
-    // testingQueue = std::move(output.getBodyQueue("Delim"));
 
     if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
         output.send(response.GetData());

@@ -6,9 +6,15 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+#include <set>
+#include <random>
+#include <chrono>
+
 
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
+#include "DatabaseManager.hpp"
+#include "TemplateManager.hpp"
 #include "exceptions.hpp"
 
 
@@ -27,7 +33,7 @@ std::vector<char> HttpResponse::GetData() const {
     // RequestMethod GetRequestMethod() const;
 HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
                            std::string url, std::string keepAlive,
-                           std::vector<char> body): http_version(HTTPVersion), keep_alive(keepAlive) {
+                           std::vector<char> body): http_version(HTTPVersion), url(url), keep_alive(keepAlive) {
     if (HTTPVersion.empty()) {
         http_version = "0.9";
         if (reqType == GET) {
@@ -131,7 +137,10 @@ void HttpResponse::FormResponseHeader() {
     response_header.append("HTTP/").append(http_version).append(" ");
     response_header.append(return_code).append(CRLF);
     if (http_version == "1.0" && keep_alive == "Keep-Alive") {
-        response_header.append("Connection: Keep-Alive");
+        response_header.append("Connection: Keep-Alive").append(CRLF);
+    }
+    if (!response_body.empty()) {
+        response_header.append("Content-Length: ").append(std::to_string(response_body.size())).append(CRLF);
     }
     for (auto& header_pair : headers) {
         if (!header_pair.second.empty()) {
