@@ -13,9 +13,7 @@
 #include "TemplateManager.hpp"
 
 MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& input) {
-    if (input.getHeader().empty()) {
-        input.recvHeader();
-    }
+    input.recvHeader();
     HttpRequest request(input.getHeader());
     int bodySize = request.GetContentLength();
 
@@ -27,11 +25,8 @@ MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector
 
     body.clear();
     if (bodySize > 0) {
-        if (input.getHeader().empty()) {
-            input.recvBody(bodySize); // is not necessary right now
-        }
-            body = input.getBody();
-
+        input.recvBody(bodySize);
+        body = input.getBody();
     }
 
     if (input.getPort() == 6666) {
@@ -65,6 +60,7 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
             body.clear();
             std::string sdString = std::to_string(input.getSd());
             body.insert(body.end(), sdString.begin(), sdString.end());
+            body.push_back('|');
             std::vector<char> paramsPart = std::move(HTTPClient::mergeSetToVector(params));
             body.insert(body.end(), paramsPart.begin(), paramsPart.end());
 
@@ -127,8 +123,6 @@ void MainProcessDBServer(std::map<std::string, std::string>& headers, std::vecto
     body = std::move(HTTPClient::mergeMapToVector(params));
 
     output = HTTPClient("localhost", 6666);
-
-    
 }
 
 void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vector<char>& body,

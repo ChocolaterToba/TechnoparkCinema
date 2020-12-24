@@ -53,12 +53,12 @@ HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
     switch (reqType) {
         case GET:
             try {
-                SetResponseBody(body);
                 if (flag == false) {
                     return_code = "200 OK";
                 } else { 
-                    return_code = url;
+                    return_code = "GET " + url;
                 }
+                SetResponseBody(body);
             }
             catch (HTTPResponseException&) {
                 return_code = "404 Not Found";
@@ -141,8 +141,15 @@ void HttpResponse::SetContentType(ContentType type) {
 
 void HttpResponse::FormResponseHeader() {
     response_header.clear();
-    response_header.append("HTTP/").append(http_version).append(" ");
-    response_header.append(return_code).append(CRLF);
+    if (return_code != "GET " + url) {
+        response_header.append("HTTP/").append(http_version).append(" ");
+        response_header.append(return_code).append(CRLF);
+    } else {
+        response_header.append(return_code + " ");
+        response_header.append("HTTP/").append(http_version).append(" ").append(CRLF);
+        
+    }
+    
     if (http_version == "1.0" && keep_alive == "Keep-Alive") {
         response_header.append("Connection: Keep-Alive").append(CRLF);
     }
