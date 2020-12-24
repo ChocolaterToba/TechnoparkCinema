@@ -134,8 +134,8 @@ void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vec
     TemplateManager templateManager(headers["url"]);
     body = std::move(templateManager.GetHtmlFinal(bodyParams));
 
-    output = pendingDBResponse.at(sd);  //  thread-safe
     pendingDBResponseMutex->lock();
+    output = pendingDBResponse.at(sd);
     pendingDBResponse.erase(sd);
     pendingDBResponseMutex->unlock();
 }

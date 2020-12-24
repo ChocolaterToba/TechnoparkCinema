@@ -407,7 +407,7 @@ std::shared_ptr<Socket> Socket::accept() {
     memset(&client, 0, sizeof(client));
     socklen_t cli_len = sizeof(client);
 
-    std::cerr << "ready to accept new clients: " << std::endl;
+    std::cerr << "ready to accept new clients, port: " << this->port << std::endl;
     int cli_sd = ::accept(m_Sd, (struct sockaddr*)&client, &cli_len);
     if (-1 == cli_sd) {
         return std::shared_ptr<Socket>();

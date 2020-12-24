@@ -21,7 +21,6 @@ class Socket {
     Socket& operator=(const Socket& other) = delete;
     Socket& operator=(Socket&& other);
     ~Socket() {
-        std::cout << "Socket destructor called" << std::endl;
         if (m_Sd > 0) {
            ::close(m_Sd);
         }
