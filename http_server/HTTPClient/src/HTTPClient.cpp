@@ -64,7 +64,7 @@ std::queue<std::string> HTTPClient::splitVectorToQueue(const std::vector<char>& 
         result.push(bodyString.substr(start, end - start));
         start = end + separator.length();
     }
-    if (start != std::string::npos) {  // Avoiding cases when origin ends in separator
+    if (start < bodyString.size()) {  // Avoiding cases when origin ends in separator
         result.push(bodyString.substr(start));
     }
 
@@ -83,7 +83,7 @@ std::vector<char> HTTPClient::mergeQueueToVector(std::queue<std::string>& origin
     return result;
 }
 
-std::set<std::string> splitVectorToSet(const std::vector<char>& origin, const std::string& separator = "|") {
+std::set<std::string> HTTPClient::splitVectorToSet(const std::vector<char>& origin, const std::string& separator) {
     std::string bodyString(origin.begin(), origin.end());
     std::set<std::string> result;
 
@@ -92,14 +92,14 @@ std::set<std::string> splitVectorToSet(const std::vector<char>& origin, const st
         result.insert(bodyString.substr(start, end - start));
         start = end + separator.length();
     }
-    if (start != std::string::npos) {  // Avoiding cases when origin ends in separator
+    if (start < bodyString.size()) {  // Avoiding cases when origin ends in separator
         result.insert(bodyString.substr(start));
     }
 
     return result;
 }
 
-std::vector<char> mergeSetToVector(std::set<std::string>& origin, const std::string& separator = "|") {
+std::vector<char> HTTPClient::mergeSetToVector(std::set<std::string>& origin, const std::string& separator) {
     std::vector<char> result;
     for (auto& param : origin) {
         result.insert(result.end(), param.begin(), param.end());
@@ -109,7 +109,7 @@ std::vector<char> mergeSetToVector(std::set<std::string>& origin, const std::str
     return result;
 }
 
-std::map<std::string, std::string> splitVectorToMap(const std::vector<char>& origin, const std::string& separator, const std::string& pairSeparator) {
+std::map<std::string, std::string> HTTPClient::splitVectorToMap(const std::vector<char>& origin, const std::string& separator, const std::string& pairSeparator) {
     std::string bodyString(origin.begin(), origin.end());
     std::map<std::string, std::string> result;
 
@@ -120,8 +120,8 @@ std::map<std::string, std::string> splitVectorToMap(const std::vector<char>& ori
         result.insert(std::pair<std::string, std::string>(paramPair.substr(0, splitPos), paramPair.substr(splitPos + 2)));
         start = end + separator.length();
     }
-    if (start != std::string::npos) {  // Avoiding cases when origin ends in separator
-        std::string paramPair = std::move(bodyString.substr(start, end - start));
+    if (start < bodyString.size()) {  // Avoiding cases when origin ends in separator
+        std::string paramPair = std::move(bodyString.substr(start));
         std::size_t splitPos = paramPair.find(": ");
         result.insert(std::pair<std::string, std::string>(paramPair.substr(0, splitPos), paramPair.substr(splitPos + 2)));
     }
@@ -129,7 +129,7 @@ std::map<std::string, std::string> splitVectorToMap(const std::vector<char>& ori
     return result;
 }
 
-std::vector<char> mergeMapToVector(std::map<std::string, std::string>& origin, const std::string& separator, const std::string& pairSeparator) {
+std::vector<char> HTTPClient::mergeMapToVector(std::map<std::string, std::string>& origin, const std::string& separator, const std::string& pairSeparator) {
     std::vector<char> result;
     for (auto& paramPair : origin) {
         result.insert(result.end(), paramPair.first.begin(), paramPair.first.end());
