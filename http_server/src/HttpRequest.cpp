@@ -17,7 +17,8 @@ HttpRequest::HttpRequest(const string &message) {
     ++search;
     pos = search;
     while ((message[search] != ' ') && (message[search] != '\r'))
-        search++;
+        ++search;
+
 
     if (search == pos)
         throw BadFormatException();
@@ -55,7 +56,8 @@ HttpRequest::HttpRequest(const string &message) {
             ++search;
 
         string value = message.substr(pos, search-pos);
-        headers.insert (std::pair<string, string>(key, value));
+
+        headers.insert(std::pair<string, string>(key, value));
         search += 2;  // \r\n 2 symbols
     }
 }
