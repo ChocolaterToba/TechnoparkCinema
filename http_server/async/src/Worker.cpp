@@ -48,7 +48,7 @@ void Worker::TakeNewTask() {
                     currentTask = std::move(tasks.front());
                     tasks.pop();
                     tasksMutex->unlock();
-                    state = TaskRecieved;
+                    state = TaskReceived;
                     break;
                 } else {
                     msleep(30);
@@ -64,7 +64,7 @@ void Worker::TakeNewTask() {
 }
 
 void Worker::RunPreFunc() {
-    if (state == TaskRecieved) {
+    if (state == TaskReceived) {
         state = PreFuncRunning;
         auto func1 = currentTask.GetPreFunc();
         func1 = currentTask.GetPreFunc();

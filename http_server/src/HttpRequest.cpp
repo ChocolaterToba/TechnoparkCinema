@@ -4,79 +4,79 @@
 #include "exceptions.hpp"
 #include "HttpRequest.hpp"
 
-HttpRequest::HttpRequest(const std::string &message) {
+HttpRequest::HttpRequest(const string &message) {
     // find Method
     size_t pos = 0;
     size_t search = message.find(' ');
-    std::string method = message.substr(pos, search);
+    string method = message.substr(pos, search);
     SetRequestMethod(method);
-    if (request_method == UNKNOWN) {
-        // throw BadFormatException();  // temprorary
+    if (request_method == UNKNOWN)  // throw BadFormatException();  // temporary
         SetRequestMethod("GET");
-    }
+
     // find URL
-    search++;
+    ++search;
     pos = search;
-    while ((message[search] != ' ') && (message[search] != '\r')) {
+    while ((message[search] != ' ') && (message[search] != '\r'))
         search++;
-    }
-    if (search == pos) {
+
+    if (search == pos)
         throw BadFormatException();
-    }
+
     url = message.substr(pos, search-pos);
-    if (url.rfind("/", 0) != 0) {  // temporary
+    if (url.rfind('/', 0) != 0) {  // temporary
         url = "/";
         search = 0;
     }
+
     // find HTTP version
-    search++;
+    ++search;
     pos = 0;
-    if ((pos = message.find("HTTP/", search - 1, 5)) != std::string::npos) {
+    if ((pos = message.find("HTTP/", search - 1, 5)) != string::npos) {
         pos = pos+5;
         search = pos;
-        while (message[search] != '\r' && message[search] != ' ') {
-            search++;
-        }
+        while (message[search] != '\r' && message[search] != ' ')
+            ++search;
+
         http_version = message.substr(pos, search-pos);
     } else {
-        http_version = std::string("");   // check
+        http_version = string("");   // check
     }
-    while (message[search] != '\r') {  //  temporary, skipping response code
-        search++;
-    }
-    search+=2;   // \r\n 2 symbols
+
+    while (message[search] != '\r')  //  temporary, skipping response code
+        ++search;
+
+    search += 2;   // \r\n 2 symbols
     // get headers
-    while ((pos = message.find(": ", search)) != std::string::npos) {
-        std::string key = message.substr(search, pos-search);
-        pos+=2;
+    while ((pos = message.find(": ", search)) != string::npos) {
+        string key = message.substr(search, pos-search);
+        pos += 2;
         search = pos;
-        while (message[search] != '\r') {
-            search++;
-        }
-        std::string value = message.substr(pos, search-pos);
-        headers.insert (std::pair<std::string, std::string>(key, value));
+        while (message[search] != '\r')
+            ++search;
+
+        string value = message.substr(pos, search-pos);
+        headers.insert (std::pair<string, string>(key, value));
         search += 2;  // \r\n 2 symbols
     }
 }
 
-std::string HttpRequest::GetHeader(std::basic_string<char> string) const {
-    auto iter = headers.find(string);
-    if (iter == headers.end()) {
-        return std::string();
-    } else {
+string HttpRequest::GetHeader(const std::basic_string<char> &header_name) const {
+    auto iter = headers.find(header_name);
+    if (iter == headers.end())
+        return string();
+    else
         return iter->second;
-    }
 }
 
-void HttpRequest::SetRequestMethod(const std::string& method_name) {
+void HttpRequest::SetRequestMethod(const string& method_name) {
     request_method = StringToRequestMethod(method_name);
 }
 
-std::string HttpRequest::GetURL() const {
+string HttpRequest::GetURL() const {
     return url;
 }
 
-std::string HttpRequest::GetHTTPVersion() const {
+string HttpRequest::GetHTTPVersion() const {
     return http_version;
 }
 
@@ -84,11 +84,11 @@ RequestMethod HttpRequest::GetRequestMethod() const {
     return request_method;
 }
 
-std::string HttpRequest::GetRequestMethodString() const {
+string HttpRequest::GetRequestMethodString() const {
     return RequestMethodToString(request_method);
 }
 
-std::map<std::string, std::string> HttpRequest::GetAllHeaders() const {
+map<string, string> HttpRequest::GetAllHeaders() const {
     return headers;
 }
 
@@ -103,7 +103,7 @@ int HttpRequest::GetContentLength() {
     return result;
 }
 
-std::string HttpRequest::RequestMethodToString(RequestMethod method) {
+string HttpRequest::RequestMethodToString(RequestMethod method) {
     switch (method) {
         case GET:
             return "GET";
@@ -126,7 +126,7 @@ std::string HttpRequest::RequestMethodToString(RequestMethod method) {
     }
 }
 
-RequestMethod HttpRequest::StringToRequestMethod(const std::string& methodString) {
+RequestMethod HttpRequest::StringToRequestMethod(const string& methodString) {
     RequestMethod method;
     if (methodString == "GET")
         method = GET;

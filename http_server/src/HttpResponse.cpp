@@ -16,20 +16,21 @@
 #include "exceptions.hpp"
 
 
-std::string HttpResponse::GetHTTPVersion() const {
+string HttpResponse::GetHTTPVersion() const {
     return http_version;
 }
 
-std::string HttpResponse::GetHeader() const {
+string HttpResponse::GetHeader() const {
     return response_header;
 }
-std::vector<char> HttpResponse::GetData() const {
+vector<char> HttpResponse::GetData() const {
     return response;
 }
 
-HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
-                           std::string url, bool keepAlive,
-                           const std::vector<char>& body): http_version(HTTPVersion), url(url), keep_alive(keepAlive) {
+HttpResponse::HttpResponse(const string &HTTPVersion,
+                           RequestMethod reqType,
+                           bool keepAlive,
+                           const vector<char> &body) : http_version(HTTPVersion), keep_alive(keepAlive) {
     if (HTTPVersion.empty()) {
         http_version = "0.9";
         if (reqType == GET) {
@@ -64,11 +65,11 @@ HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
     FormResponseData();
 }
 
-ContentType HttpResponse::GetContentType(const std::string& url) {
-    std::string ext(url.c_str() + url.rfind('.') + 1);
-    if (ext.rfind("/") == 0) {
+ContentType HttpResponse::GetContentType(const string& url) {
+    string ext(url.c_str() + url.rfind('.') + 1);
+    if (ext.rfind("/") == 0)  // temporary
         return TXT_HTML;
-    }
+
     if (ext == "jpg" || ext == "jpeg" ||
         ext == "JPG" || ext == "JPEG")
         return IMG_JPG;
@@ -88,14 +89,14 @@ ContentType HttpResponse::GetContentType(const std::string& url) {
         return UNDEF;
 }
 
-void HttpResponse::SetResponseBody(const std::vector<char>& body) {
+void HttpResponse::SetResponseBody(const vector<char>& body) {
     response_body.clear();
     response_body.insert(response_body.end(), body.begin(), body.end());
     FormResponseData();
 }
 
 void HttpResponse::SetContentType(ContentType type) {
-    std::pair<std::string, std::string> c_t_header;
+    std::pair<string, string> c_t_header;
     c_t_header.first = "Content-type";
     switch (type) {
         case TXT_HTML:
@@ -133,17 +134,16 @@ void HttpResponse::FormResponseHeader() {
     response_header.append("HTTP/").append(http_version).append(" ");
     response_header.append(return_code).append(" ").append(CRLF);
     
-    if (http_version == "1.0" && keep_alive) {
-        headers.insert(std::pair<std::string, std::string>("Connection", "Keep-Alive"));
-    }
-    if (!response_body.empty()) {
-        headers.insert(std::pair<std::string, std::string>("Content-Length", std::to_string(response_body.size())));
-    }
-    for (auto& header_pair : headers) {
-        if (!header_pair.second.empty()) {
+    if (http_version == "1.0" && keep_alive)
+        headers.insert(std::pair<string, string>("Connection", "Keep-Alive"));
+
+    if (!response_body.empty())
+        headers.insert(std::pair<string, string>("Content-Length", std::to_string(response_body.size())));
+
+    for (auto& header_pair : headers)
+        if (!header_pair.second.empty())
             response_header.append(header_pair.first).append(": ").append(header_pair.second).append(CRLF);
-        }
-    }
+
     response_header.append(CRLF);
 }
 

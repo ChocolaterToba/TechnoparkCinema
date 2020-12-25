@@ -1,6 +1,5 @@
 #include <string>
 #include <map>
-#include <fstream>
 #include <streambuf>
 #include <queue>
 #include <iostream>
@@ -9,12 +8,6 @@
 
 #include "exceptions.hpp"
 #include "TemplateManager.hpp"
-
-using std::string;
-using std::vector;
-using std::queue;
-using std::set;
-
 
 typedef enum {
     FREE,
@@ -95,9 +88,8 @@ TemplateManager::TemplateManager(const string &url) {
 
     if (url.find("watch") != string::npos) {
         path = "../static/watch.html";
-        if (url.find('?') != std::string::npos) {
+        if (url.find('?') != string::npos)
             ID = url.substr(url.find('?')+1);
-        }
     }
     else if (url == "/")
         path  += url  +  "Index.html";
@@ -111,7 +103,7 @@ TemplateManager::TemplateManager(const string &url) {
     ExtractParameters();
 }
 
-void TemplateManager::EvaluateCycles(const std::map<string, string> &parameters) {
+void TemplateManager::EvaluateCycles(const map<string, string> &parameters) {
     state_t state = FREE;
     size_t pos = 0;
     size_t endfor_pos;
@@ -136,7 +128,7 @@ void TemplateManager::EvaluateCycles(const std::map<string, string> &parameters)
                 string total_cycle_replacement;
 
                 size_t cycle_counter = std::stoi(parameters.at(parameter_name));
-                size_t body_begin = HTML.find("}", pos) + 1;
+                size_t body_begin = HTML.find('}', pos) + 1;
                 size_t body_end = endfor_pos - 1;
                 for (size_t i = 0; i < cycle_counter; ++i) {
                     string cycle_body = HTML.substr(body_begin, body_end - body_begin);
@@ -169,7 +161,7 @@ void TemplateManager::EvaluateCycles(const std::map<string, string> &parameters)
     }
 }
 
-void TemplateManager::EvaluateParameters(const std::map<string, string> &parameters) {
+void TemplateManager::EvaluateParameters(const map<string, string> &parameters) {
     size_t begin = 0;
     while ((begin = HTML.find("{{", begin)) != string::npos) {
         size_t begin_pos = begin + 1;
@@ -178,8 +170,8 @@ void TemplateManager::EvaluateParameters(const std::map<string, string> &paramet
         size_t end_pos = begin_pos;
         while (!std::isspace(HTML[end_pos]) && HTML[end_pos] != '}')
             ++end_pos;
-        std::string substr = HTML.substr(begin_pos, end_pos - begin_pos);
-        string replacement = parameters.at(substr);
+        string substr = HTML.substr(begin_pos, end_pos - begin_pos);
+        const string &replacement = parameters.at(substr);
         size_t end = HTML.find("}}", begin);
 
         HTML.erase(begin, end - begin + 2);
@@ -187,7 +179,7 @@ void TemplateManager::EvaluateParameters(const std::map<string, string> &paramet
     }
 }
 
-vector<char> TemplateManager::GetHtmlFinal(const std::map<string, string> &parameters) {
+vector<char> TemplateManager::GetHtmlFinal(const map<string, string> &parameters) {
     EvaluateCycles(parameters);
     EvaluateParameters(parameters);
 

@@ -10,33 +10,32 @@
 #define CRLF "\r\n"
 #define BUF_SIZE 256
 
+using std::vector;
+using std::string;
 
 
 class HttpResponse {
  public:
-    HttpResponse(std::string HTTPVersion, RequestMethod reqType,
-                 std::string url, bool keepAlive,
-                 const std::vector<char>& body);
+    HttpResponse(const string &HTTPVersion, RequestMethod reqType, bool keepAlive, const vector<char> &body);
 
     HttpResponse() = delete;
-    std::string GetHTTPVersion() const;
-    std::string GetHeader() const;
-    std::vector<char> GetData() const;
+    string GetHTTPVersion() const;
+    string GetHeader() const;
+    vector<char> GetData() const;
 
-    static ContentType GetContentType(const std::string& url);
+    static ContentType GetContentType(const string& url);
 
  private:
-    std::string http_version;
-    std::string return_code;
-    std::string url;
+    string http_version;
+    string return_code;
     bool keep_alive;
 
-    std::vector<char> response_body;
-    std::map<std::string, std::string> headers;
-    std::string response_header;
-    std::vector<char> response;
+    vector<char> response_body;
+    std::map<string, string> headers;
+    string response_header;
+    vector<char> response;
 
-    void SetResponseBody(const std::vector<char>& body);
+    void SetResponseBody(const vector<char>& body);
     void SetContentType(ContentType type);
     void FormResponseHeader();
     void FormResponseData();

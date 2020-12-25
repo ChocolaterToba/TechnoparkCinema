@@ -4,6 +4,8 @@
 #include <thread>
 #include <fstream>
 
+#include "ports.hpp"
+
 #include "socket.hpp"
 #include "HTTPClient.hpp"
 #include "HttpResponse.hpp"
@@ -14,9 +16,9 @@
 int main(int argc, char* argv[]) {
     try {
         std::map<std::string, int> ports;
-        ports["external"] = 5555;
-        ports["from_database"] = 6666;
-        ports["to_database"] = 7777;
+        ports["external"] = EXTERNAL_PORT;
+        ports["from_database"] = FROM_DB_PORT;
+        ports["to_database"] = TO_DB_PORT;
         Master master(ports, 4);
         master.Start();
         sleep(300);  // replace with graceful shutdown.

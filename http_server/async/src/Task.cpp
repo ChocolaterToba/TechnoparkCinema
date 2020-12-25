@@ -27,14 +27,14 @@ PostFuncType Task::GetPostFunc() {
     return postFunc;
 }
 
-void Task::SetPreFunc(PreFuncType preFunc) {
-    this->preFunc = preFunc;
+void Task::SetPreFunc(PreFuncType _preFunc) {
+    this->preFunc = _preFunc;
 }
-void Task::SetMainFunc(MainFuncType mainFunc) {
-    this->mainFunc = mainFunc;
+void Task::SetMainFunc(MainFuncType _mainFunc) {
+    this->mainFunc = _mainFunc;
 }
-void Task::SetPostFunc(PostFuncType postFunc) {
-    this->postFunc = postFunc;
+void Task::SetPostFunc(PostFuncType _postFunc) {
+    this->postFunc = _postFunc;
 }
 
 HTTPClient& Task::GetInput() {
@@ -44,11 +44,11 @@ HTTPClient& Task::GetOutput() {
     return *output;
 }
 
-void Task::SetInput(HTTPClient& input) {
-    this->input = std::make_shared<HTTPClient>(input);
+void Task::SetInput(HTTPClient& _input) {
+    this->input = std::make_shared<HTTPClient>(_input);
 }
-void Task::SetOutput(HTTPClient& output) {
-    this->output = std::make_shared<HTTPClient>(output);
+void Task::SetOutput(HTTPClient& _output) {
+    this->output = std::make_shared<HTTPClient>(_output);
 }
 
 bool Task::HasData() {

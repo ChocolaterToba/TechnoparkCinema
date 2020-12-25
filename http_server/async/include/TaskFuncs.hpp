@@ -7,27 +7,36 @@
 #include <mutex>
 #include "HTTPClient.hpp"
 
-typedef std::function<void(std::map<std::string, std::string>&, std::vector<char>&,
-                           std::map<int, HTTPClient>&, std::shared_ptr<std::mutex>,
+using std::vector;
+using std::string;
+using std::map;
+
+typedef std::function<void(map<string, string>&, vector<char>&,
+                           map<int, HTTPClient>&, std::shared_ptr<std::mutex>,
                            HTTPClient&, HTTPClient&)> MainFuncType;
-MainFuncType PreProcess(std::map<std::string, std::string>& headers,
-                        std::vector<char>& data,
+
+MainFuncType PreProcess(map<string, string>& headers,
+                        vector<char>& data,
                         HTTPClient& input);
-void MainProcessBasic(std::map<std::string, std::string>& headers,
-                      std::vector<char>& body,
-                      std::map<int, HTTPClient>& pendingDBResponse,
+
+void MainProcessBasic(map<string, string>& headers,
+                      vector<char>& body,
+                      map<int, HTTPClient>& pendingDBResponse,
                       std::shared_ptr<std::mutex> pendingDBResponseMutex,
                       HTTPClient& input, HTTPClient& output);
-void MainProcessDBServer(std::map<std::string, std::string>& headers,
-                         std::vector<char>& body,
-                         std::map<int, HTTPClient>& pendingDBResponse,
+
+void MainProcessDBServer(map<string, string>& headers,
+                         vector<char>& body,
+                         map<int, HTTPClient>& pendingDBResponse,
                          std::shared_ptr<std::mutex> pendingDBResponseMutex,
                          HTTPClient& input, HTTPClient& output);
-void MainProcessDBReceived(std::map<std::string, std::string>& headers,
-                           std::vector<char>& body,
-                           std::map<int, HTTPClient>& pendingDBResponse,
+
+void MainProcessDBReceived(map<string, string>& headers,
+                           vector<char>& body,
+                           map<int, HTTPClient>& pendingDBResponse,
                            std::shared_ptr<std::mutex> pendingDBResponseMutex,
                            HTTPClient& input, HTTPClient& output);
-void PostProcess(std::map<std::string, std::string>& headers,
-                 std::vector<char>& body,
+
+void PostProcess(map<string, string>& headers,
+                 vector<char>& body,
                  HTTPClient& output);

@@ -11,7 +11,7 @@
 
 typedef enum {
     NoTask,
-    TaskRecieved,
+    TaskReceived,
     PreFuncRunning,
     PreFuncRan,
     MainFuncRunning,
@@ -55,8 +55,6 @@ class Worker {
     Worker& operator=(Worker&& other);
 
     virtual ~Worker();
-
-    
 
     virtual void Start();
     virtual void Stop();
