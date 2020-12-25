@@ -242,7 +242,7 @@ static std::map<std::string, std::string> ProcessTemplatesInDB(std::set<std::str
     // this cycle adds shuffled parameters, where vector above you can add multiple linked paramets, number has to be same
     // i.e. vector<string> for href and tittle of recommended movies
     for (size_t i = 0; i < 14; i++) {
-        size_t k = i % 10;
+        size_t k = i % titles.size(); // size + 1, в вектора 1 фильм (0) - лишний
         if (i != ID) {
             result_map["recommended" + std::to_string(i)] = std::to_string(nums[k]);
             result_map["tittles" + std::to_string(i)] = titles[k];
