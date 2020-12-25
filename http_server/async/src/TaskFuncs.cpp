@@ -158,12 +158,6 @@ void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>&
 //  {[movietittle,moviedescription,starphoto,starname,movielogo,moviename,videolink,recommended,tittles]}
 static std::map<std::string, std::string> ProcessTemplatesInDB(std::set<std::string> params, size_t ID) {
     std::map<std::string, std::string> result_map;
-    // vector for randomizing movies (before actual recommendations, based on movie watching experience
-    std::vector<size_t> nums;
-    for (size_t i=0; i < 10; i++)
-        nums.push_back(i);
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::shuffle(std::begin(nums), std::end(nums), std::default_random_engine(seed));
 
     std::vector<std::string> titles;
     std::vector<std::string> stars;
@@ -226,6 +220,12 @@ static std::map<std::string, std::string> ProcessTemplatesInDB(std::set<std::str
     description.push_back("Season one is best series ever. Fight me.");
     rating.push_back("6");
 
+    // vector for randomizing movies (before actual recommendations, based on movie watching experience
+    std::vector<size_t> nums;
+    for (size_t i=0; i < titles.size(); i++)
+        nums.push_back(i);
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::shuffle(std::begin(nums), std::end(nums), std::default_random_engine(seed));
 
     // map to actual movie
     result_map["movietittle"] = titles[ID];
@@ -254,3 +254,5 @@ static std::map<std::string, std::string> ProcessTemplatesInDB(std::set<std::str
 
     return result_map;
 }
+
+
