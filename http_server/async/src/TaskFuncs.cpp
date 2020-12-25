@@ -128,10 +128,12 @@ void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>&
                           headers["url"], headers["Connection"], body, proxy);
 
     if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
-        output.send(response.GetData());
+        std::cout << "keep-alive" << std::endl;
+        output.send(response.GetData(), true);
     } else {
         output.send(response.GetData(), true);
     }
+    std::cout << "done" << std::endl;
 }
 
 //  {[movietittle,moviedescription,starphoto,starname,movielogo,moviename,videolink,recommended,tittles]}
