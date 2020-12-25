@@ -3,17 +3,7 @@
 #include <map>
 #include <string>
 
-typedef enum {
-    UNKNOWN = -1,
-    GET,
-    POST,
-    OPTIONS,
-    HEAD,
-    PUT,
-    PATCH,
-    DELETE,
-    CONNECT,
-} RequestMethod;
+#include "request_methods.hpp"
 
 // string default value ""
 

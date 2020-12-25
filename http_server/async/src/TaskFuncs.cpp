@@ -10,6 +10,7 @@
 #include "HTTPClient.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "HttpRequestCreator.hpp"
 #include "TemplateManager.hpp"
 
 MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& input) {
@@ -119,21 +120,29 @@ void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vec
 }
 
 void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& output) {
-    bool proxy = false;
     if (headers["proxy"] == "true") {  // Meaning, we need to call another server
-        proxy = true;
-    }
-    HttpResponse response(headers["http_version"],
-                          HttpRequest::StringToRequestMethod(headers["method"]),
-                          headers["url"], headers["Connection"], body, proxy);
-
-    if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
-        std::cout << "keep-alive" << std::endl;
-        output.send(response.GetData(), true);
+        HttpRequestCreator request(headers["http_version"],
+                                   HttpRequestCreator::StringToRequestMethod(headers["method"]),
+                                   headers["url"],
+                                   (headers["Connection"] == "Keep-Alive"),
+                                   body);
+        if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
+            output.send(request.GetRequest(), true);  // will fix later
+        } else {
+            output.send(request.GetRequest(), true);
+        }
     } else {
-        output.send(response.GetData(), true);
+        HttpResponse response(headers["http_version"],
+                              HttpRequest::StringToRequestMethod(headers["method"]),
+                              headers["url"],
+                              (headers["Connection"] == "Keep-Alive"),
+                              body);
+        if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
+            output.send(response.GetData(), true);  // will fix later
+        } else {
+            output.send(response.GetData(), true);
+        }
     }
-    std::cout << "done" << std::endl;
 }
 
 //  {[movietittle,moviedescription,starphoto,starname,movielogo,moviename,videolink,recommended,tittles]}

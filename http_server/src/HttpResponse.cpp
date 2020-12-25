@@ -13,8 +13,6 @@
 
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
-#include "DatabaseManager.hpp"
-#include "TemplateManager.hpp"
 #include "exceptions.hpp"
 
 
@@ -28,18 +26,16 @@ std::string HttpResponse::GetHeader() const {
 std::vector<char> HttpResponse::GetData() const {
     return response;
 }
-    // std::string GetURL() const;
-    // std::string GetHTTPVersion() const;
-    // RequestMethod GetRequestMethod() const;
+
 HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
-                           std::string url, std::string keepAlive,
-                           std::vector<char> body, bool proxy): http_version(HTTPVersion), url(url), keep_alive(keepAlive) {
+                           std::string url, bool keepAlive,
+                           const std::vector<char>& body): http_version(HTTPVersion), url(url), keep_alive(keepAlive) {
     if (HTTPVersion.empty()) {
         http_version = "0.9";
         if (reqType == GET) {
             try {
                 SetResponseBody(body);
-                std::copy(response.begin(), response.end(), response_body.begin());
+                response.insert(response.begin(), response_body.begin(), response_body.end());
                 return;
             }
             catch (FileNotFoundException &) {
@@ -53,11 +49,7 @@ HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
     switch (reqType) {
         case GET:
             try {
-                if (!proxy) {
-                    return_code = "200 OK";
-                } else { 
-                    return_code = "GET " + url;
-                }
+                return_code = "200 OK";
                 SetResponseBody(body);
             }
             catch (HTTPResponseException&) {
@@ -72,12 +64,28 @@ HttpResponse::HttpResponse(std::string HTTPVersion, RequestMethod reqType,
     FormResponseData();
 }
 
+void HttpResponse::FormResponseHeader() {
+    response_header.clear();
+    response_header.append("HTTP/").append(http_version).append(" ");
+    response_header.append(return_code).append(" ").append(CRLF);
+    
+    if (http_version == "1.0" && keep_alive) {
+        headers.insert(std::pair<std::string, std::string>("Connection", "Keep-Alive"));
+    }
+    if (!response_body.empty()) {
+        headers.insert(std::pair<std::string, std::string>("Content-Length", std::to_string(response_body.size())));
+    }
+    for (auto& header_pair : headers) {
+        if (!header_pair.second.empty()) {
+            response_header.append(header_pair.first).append(": ").append(header_pair.second).append(CRLF);
+        }
+    }
+    response_header.append(CRLF);
+}
+
 ContentType HttpResponse::GetContentType(const std::string& url) {
     std::string ext(url.c_str() + url.rfind('.') + 1);
     if (ext == "/") {
-        return TXT_HTML;
-    }
-    if (ext.find("watch") != std::string::npos) {
         return TXT_HTML;
     }
     if (ext == "jpg" || ext == "jpeg" ||
@@ -139,30 +147,23 @@ void HttpResponse::SetContentType(ContentType type) {
     FormResponseData();
 }
 
-void HttpResponse::FormResponseHeader() {
-    response_header.clear();
-    if (return_code != "GET " + url) {
-        response_header.append("HTTP/").append(http_version).append(" ");
-        response_header.append(return_code).append(CRLF);
-    } else {
-        response_header.append(return_code + " ");
-        response_header.append("HTTP/").append(http_version).append(" ").append(CRLF);
-        
-    }
-    
-    if (http_version == "1.0" && keep_alive == "Keep-Alive") {
-        response_header.append("Connection: Keep-Alive").append(CRLF);
-    }
-    if (!response_body.empty()) {
-        response_header.append("Content-Length: ").append(std::to_string(response_body.size())).append(CRLF);
-    }
-    for (auto& header_pair : headers) {
-        if (!header_pair.second.empty()) {
-            response_header.append(header_pair.first).append(": ").append(header_pair.second).append(CRLF);
-        }
-    }
-    response_header.append(CRLF);
-}
+// void HttpResponse::FormResponseHeader() {
+//     response_header.clear();
+//     response_header.append("HTTP/").append(http_version).append(" ");
+//     response_header.append(return_code).append(CRLF);
+//     if (http_version == "1.0" && keep_alive == "Keep-Alive") {
+//         response_header.append("Connection: Keep-Alive").append(CRLF);
+//     }
+//     if (!response_body.empty()) {
+//         response_header.append("Content-Length: ").append(std::to_string(response_body.size())).append(CRLF);
+//     }
+//     for (auto& header_pair : headers) {
+//         if (!header_pair.second.empty()) {
+//             response_header.append(header_pair.first).append(": ").append(header_pair.second).append(CRLF);
+//         }
+//     }
+//     response_header.append(CRLF);
+// }
 
 void HttpResponse::FormResponseData() {
     response.assign(response_header.begin(), response_header.end());
