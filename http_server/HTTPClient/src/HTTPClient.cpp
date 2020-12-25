@@ -218,3 +218,8 @@ int HTTPClient::getSd() const {
     }
     return -1;
 }
+
+void HTTPClient::clear() {
+    header.clear();
+    body.clear();
+}

@@ -22,8 +22,9 @@ HttpRequestCreator::HttpRequestCreator(std::string HTTPVersion, RequestMethod re
     if (HTTPVersion.empty()) {
         http_version = "0.9";
         if (reqType == GET) {
-            SetRequestBody(body);
-            request.insert(request.begin(), requestBody.begin(), requestBody.end());
+            requestHeader = "GET " + url + CRLF;
+            request.insert(request.begin(), requestHeader.begin(), requestHeader.end());
+            return;
         } else {
             throw OldVersionException();
         }

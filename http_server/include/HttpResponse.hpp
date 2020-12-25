@@ -13,8 +13,7 @@
 
 
 class HttpResponse {
-
-public:
+ public:
     HttpResponse(std::string HTTPVersion, RequestMethod reqType,
                  std::string url, bool keepAlive,
                  const std::vector<char>& body);
@@ -26,7 +25,7 @@ public:
 
     static ContentType GetContentType(const std::string& url);
 
-private:
+ private:
     std::string http_version;
     std::string return_code;
     std::string url;

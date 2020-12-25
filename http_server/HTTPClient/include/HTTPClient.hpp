@@ -54,4 +54,6 @@ class HTTPClient {
 
     int getPort() const;
     int getSd() const;
+
+    void clear();
 };
