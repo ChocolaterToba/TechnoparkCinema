@@ -57,7 +57,7 @@ file(GLOB ASYNC_SRC ${PROJECT_SOURCE_DIR}/http_server/async/src/Task.cpp
 add_library(asyncServer STATIC ${ASYNC_SRC})
 target_include_directories(asyncServer PUBLIC
                            ${PROJECT_SOURCE_DIR}/http_server/async/include)
-target_link_libraries(asyncServer client pthread http_message)
+target_link_libraries(asyncServer client pthread http_message pqxx)
 ######################
 
 ################################

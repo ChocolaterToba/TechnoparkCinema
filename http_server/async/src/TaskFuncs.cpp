@@ -2,10 +2,7 @@
 #include <map>
 #include <string>
 #include <fstream>
-#include <algorithm>
-#include <chrono>
-#include <random>
-
+#include <pqxx/pqxx>
 #include "ports.hpp"
 
 #include "TaskFuncs.hpp"
@@ -161,98 +158,41 @@ void PostProcess(map<string, string>& headers, vector<char>& body, HTTPClient& o
 static map<string, string> ProcessTemplatesInDB(const set<string> &params, size_t ID) {
     map<string, string> result_map;
 
-    vector<string> titles;
-    vector<string> stars;
-    vector<string> description;
-    vector<string> rating;
-    vector<string> starphoto;  // not added
-    //added double for 0 element skip // fix it later
-    titles.push_back("The Boondock Saints");
-    stars.push_back("Norman Ridus");
-    description.push_back("As saint as the pope!");
-    rating.push_back("4");
+    std::string connection_string("host=localhost port=5432 dbname=db_woosh user=vk password=123");
 
-    titles.push_back("The Boondock Saints");
-    stars.push_back("Norman Ridus");
-    description.push_back("As saint as the pope!");
-    rating.push_back("4");
+    pqxx::connection con(connection_string.c_str());
 
-    titles.push_back("Fight club");
-    stars.push_back("Edward Norton");
-    description.push_back("You are your biggest enemy.");
-    rating.push_back("5");
+    pqxx::work wrk(con);
+    //pqxx::result res = wrk.exec("SELECT m_id,title,description,rating FROM MOVIES WHERE (m_id between "+std::to_string(ID)+" and "+std::to_string(ID+1)+")");
 
-    titles.push_back("Firefly");
-    stars.push_back("Nathan Fillion");
-    description.push_back("Season 2 comming never :(");
-    rating.push_back("7");
-
-    titles.push_back("Knives out");
-    stars.push_back("Daniel Craig");
-    description.push_back("Added to watch list");
-    rating.push_back("3");
-
-    titles.push_back("Matrix");
-    stars.push_back("Keanu Reeves");
-    description.push_back("Don't forget to watch it before matrix 4");
-    rating.push_back("4");
-
-    titles.push_back("Pirates of the Caribbean");
-    stars.push_back("Johny Depp");
-    description.push_back("He made it cool to dress up as slutty pirate for halloween");
-    rating.push_back("3");
-
-    titles.push_back("Pulp fiction");
-    stars.push_back("John Travolta");
-    description.push_back("Need to watch it again -.-");
-    rating.push_back("5");
-
-    titles.push_back("Radioactive");
-    stars.push_back("Imagine Dragons");
-    description.push_back("if you don't dance you are no friend of mine");
-    rating.push_back("5");
-
-    titles.push_back("Titanic");
-    stars.push_back("Leonardo Di Caprio");
-    description.push_back("There was enough place for two!");
-    rating.push_back("4");
-
-    titles.push_back("True detective");
-    stars.push_back("Matthey McConaughey");
-    description.push_back("Season one is best series ever. Fight me.");
-    rating.push_back("6");
-
-    // vector for randomizing movies (before actual recommendations, based on movie watching experience
-    vector<size_t> nums;
-    for (size_t i=0; i < titles.size(); i++)
-        nums.push_back(i);
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::shuffle(std::begin(nums), std::end(nums), std::default_random_engine(seed));
-
-    // map to actual movie
-    result_map["movietittle"] = titles[ID];
-    result_map["moviedescription"] = description[ID];
-    result_map["starphoto"] = "images/Leo.jpeg";  // replace
-    result_map["starname"] = stars[ID];
-    result_map["movielogo"] = "/posters/poster_" + std::to_string(ID) + ".jpg";
-    result_map["moviename"] = titles[ID];
-    result_map["videolink"] = "/video/movie_" + std::to_string(ID) + ".mp4";
-    result_map["movierating"] = rating[ID];
+    result_map.clear();
+    // SELECT for movies-data
+    pqxx::result res = wrk.exec("SELECT m_id,title,description,rating,poster,video_link FROM MOVIES WHERE (m_id = "+std::to_string(ID)+")");
+    result_map["movietittle"] = res[0][1].as<std::string>();
+    result_map["moviename"] = res[0][1].as<std::string>();   // redundant
+    result_map["moviedescription"] = res[0][2].as<std::string>();
+    result_map["movierating"] = res[0][3].as<std::string>();
+    result_map["movielogo"] = res[0][4].as<std::string>();
+    result_map["videolink"] = res[0][5].as<std::string>();
+    // SELECT for actors
+    // Need to figure many to many request for finding actors with m_id == ID from table actors-movies.
+    res = wrk.exec("SELECT a_id,name FROM ACTORS WHERE (a_id = "+std::to_string(ID)+")");
     result_map["recommended"] = "6";  // change it in for cycle too
-
-    // map to recommended
-    // this cycle adds shuffled parameters, where vector above you can add multiple linked paramets, number has to be same
-    // i.e. vector<string> for href and tittle of recommended movies
-    for (size_t i = 0; i < 14; i++) {
-        size_t k = i % titles.size(); // size + 1, в вектора 1 фильм (0) - лишний
-        if (i != ID) {
-            result_map["recommended" + std::to_string(i)] = std::to_string(nums[k]);
-            result_map["tittles" + std::to_string(i)] = titles[k];
-        } else {
-            result_map["recommended" + std::to_string(i)] = std::to_string(ID % 10 + 1);
-            result_map["tittles" + std::to_string(i)] = titles[ID % 10 + 1];
-        }
+    result_map["starphoto"] = "images/Leo.jpeg";  // replace
+    result_map["starname"] = res[0][1].as<std::string>();
+    // SELECT for recommended      // crutch (see ID+6) and for +3
+    res = wrk.exec("SELECT m_id,title,description,rating FROM MOVIES WHERE (m_id != "+std::to_string(ID)+") ORDER BY RANDOM() LIMIT 10");
+    for (size_t i = 0; i < 9; i++) {
+        result_map["recommended" + std::to_string(i)] =  res[i][0].as<std::string>();
     }
-
+    res = wrk.exec("SELECT title FROM MOVIES");
+    for (size_t i = 0; i < 10; i++) {
+        result_map["title" + std::to_string(i)] =  res[i][0].as<std::string>();
+    }
     return result_map;
 }
+
+/*
+
+
+*/
