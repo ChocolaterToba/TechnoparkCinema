@@ -15,14 +15,24 @@
 
 MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& input) {
     input.recvHeader();
-    HttpRequest request(input.getHeader());
-    int bodySize = request.GetContentLength();
 
+    int bodySize = 0;
     headers.clear();
-    headers = request.GetAllHeaders();
-    headers["url"] = request.GetURL();
-    headers["method"] = request.GetRequestMethodString();
-    headers["http_version"] = request.GetHTTPVersion();
+    if (input.getPort() == 6666) {  // port 6666 is reserved for db's responses
+        HttpRequest request(input.getHeader()); // TODO: replace with HttpResponseReader.
+        headers = request.GetAllHeaders();
+        headers["url"] = request.GetURL();
+        headers["method"] = request.GetRequestMethodString();
+        headers["http_version"] = request.GetHTTPVersion();
+        bodySize = request.GetContentLength();
+    } else {
+        HttpRequest request(input.getHeader());
+        headers = request.GetAllHeaders();
+        headers["url"] = request.GetURL();
+        headers["method"] = request.GetRequestMethodString();
+        headers["http_version"] = request.GetHTTPVersion();
+        bodySize = request.GetContentLength();
+    }
 
     body.clear();
     if (bodySize > 0) {
