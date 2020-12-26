@@ -3,9 +3,10 @@
 #include <queue>
 #include <mutex>
 
+#include "msleep.hpp"
+
 #include "Task.hpp"
 #include "TaskBuilder.hpp"
-#include "msleep.hpp"
 
 TaskBuilder::TaskBuilder(std::queue<HTTPClient>& unprocessedClients,
                          std::shared_ptr<std::mutex> unprocessedClientsMutex,

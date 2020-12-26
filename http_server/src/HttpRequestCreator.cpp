@@ -15,10 +15,15 @@
 #include "exceptions.hpp"
 
 
-HttpRequestCreator::HttpRequestCreator(const string &HTTPVersion, RequestMethod reqType,
-                                       const string &url, bool keepAlive,
-                                       const vector<char>& body):
-                   http_version(HTTPVersion), reqType(reqType), url(url), keep_alive(keepAlive) {
+HttpRequestCreator::HttpRequestCreator(const std::string& HTTPVersion,
+                                       RequestMethod reqType,
+                                       const std::string& url,
+                                       bool keepAlive,
+                                       const std::vector<char>& body) :
+                   http_version(HTTPVersion),
+                   reqType(reqType),
+                   url(url),
+                   keep_alive(keepAlive) {
     if (HTTPVersion.empty()) {
         http_version = "0.9";
         if (reqType == GET) {
@@ -35,14 +40,14 @@ HttpRequestCreator::HttpRequestCreator(const string &HTTPVersion, RequestMethod 
     FormRequestData();
 }
 
-string HttpRequestCreator::GetHTTPVersion() const {
+std::string HttpRequestCreator::GetHTTPVersion() const {
     return http_version;
 }
 
-string HttpRequestCreator::GetHeader() const {
+std::string HttpRequestCreator::GetHeader() const {
     return requestHeader;
 }
-vector<char> HttpRequestCreator::GetRequest() const {
+std::vector<char> HttpRequestCreator::GetRequest() const {
     return request;
 }
 
@@ -51,29 +56,31 @@ void HttpRequestCreator::FormRequestHeader() {
     requestHeader.append(RequestMethodToString(reqType)).append(" ").append(url).append(" ");
     requestHeader.append("HTTP/").append(http_version).append(" ").append(CRLF);
     
-    if (http_version == "1.0" && keep_alive)
-        headers.insert(std::pair<string, string>("Connection", "Keep-Alive"));
-
-    if (!requestBody.empty())
-        headers.insert(std::pair<string, string>("Content-Length", std::to_string(requestBody.size())));
-
-    for (auto& header_pair : headers)
-        if (!header_pair.second.empty())
+    if (http_version == "1.0" && keep_alive) {
+        headers.insert(std::pair<std::string, std::string>("Connection", "Keep-Alive"));
+    }
+    if (!requestBody.empty()) {
+        headers.insert(std::pair<std::string, std::string>("Content-Length", std::to_string(requestBody.size())));
+    }
+    for (auto& header_pair : headers) {
+        if (!header_pair.second.empty()) {
             requestHeader.append(header_pair.first).append(": ").append(header_pair.second).append(CRLF);
+        }
+    }
 }
 
-void HttpRequestCreator::SetRequestBody(const vector<char>& body) {
+void HttpRequestCreator::SetRequestBody(const std::vector<char>& body) {
     requestBody.clear();
     requestBody.insert(requestBody.end(), body.begin(), body.end());
 }
 
 void HttpRequestCreator::FormRequestData() {
     request.assign(requestHeader.begin(), requestHeader.end());
-    request.insert(request.end(), CRLF, CRLF + sizeof(CRLF) - 1);  // -1 because of \0         //  ?!?!?!
+    request.insert(request.end(), CRLF, CRLF + sizeof(CRLF) - 1);  // -1 because CRLF ends in '\0'
     request.insert(request.end(), requestBody.begin(), requestBody.end());
 }
 
-string HttpRequestCreator::RequestMethodToString(RequestMethod method) {
+std::string HttpRequestCreator::RequestMethodToString(RequestMethod method) {
     switch (method) {
         case GET:
             return "GET";
@@ -96,25 +103,26 @@ string HttpRequestCreator::RequestMethodToString(RequestMethod method) {
     }
 }
 
-RequestMethod HttpRequestCreator::StringToRequestMethod(const string& methodString) {
+RequestMethod HttpRequestCreator::StringToRequestMethod(const std::string& methodString) {
     RequestMethod method;
-    if (methodString == "GET")
+    if (methodString == "GET") {
         method = GET;
-    else if (methodString == "POST")
+    } else if (methodString == "POST") {
         method = POST;
-    else if (methodString == "OPTIONS")
+    } else if (methodString == "OPTIONS") {
         method = OPTIONS;
-    else if (methodString == "HEAD")
+    } else if (methodString == "HEAD") {
         method = HEAD;
-    else if (methodString == "PUT")
+    } else if (methodString == "PUT") {
         method = PUT;
-    else if (methodString == "PATCH")
+    } else if (methodString == "PATCH") {
         method = PATCH;
-    else if (methodString == "DELETE")
+    } else if (methodString == "DELETE") {
         method = DELETE;
-    else if (methodString == "CONNECT")
+    } else if (methodString == "CONNECT") {
         method = CONNECT;
-    else
+    } else {
         method = UNKNOWN;
+    }
     return method;
 }

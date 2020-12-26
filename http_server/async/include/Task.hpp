@@ -7,18 +7,15 @@
 #include <mutex>
 #include "HTTPClient.hpp"
 
-using std::vector;
-using std::string;
-
-typedef std::function<void(std::map<string, string>&, vector<char>&,
+typedef std::function<void(std::map<std::string, std::string>&, std::vector<char>&,
                            std::map<int, HTTPClient>&, std::shared_ptr<std::mutex>,
                            HTTPClient&, HTTPClient&)> MainFuncType;
 typedef std::function<MainFuncType
-                      (std::map<string, string>&,
-                       vector<char>&,
+                      (std::map<std::string, std::string>&,
+                       std::vector<char>&,
                        HTTPClient&)> PreFuncType;
-typedef std::function<void(std::map<string, string>&,
-                           vector<char>&,
+typedef std::function<void(std::map<std::string, std::string>&,
+                           std::vector<char>&,
                            HTTPClient&)> PostFuncType;
 
 class Task {
@@ -43,14 +40,14 @@ class Task {
     virtual MainFuncType GetMainFunc();
     virtual PostFuncType GetPostFunc();
 
-    virtual void SetPreFunc(PreFuncType _preFunc);
-    virtual void SetMainFunc(MainFuncType _mainFunc);
-    virtual void SetPostFunc(PostFuncType _postFunc);
+    virtual void SetPreFunc(PreFuncType preFunc);
+    virtual void SetMainFunc(MainFuncType mainFunc);
+    virtual void SetPostFunc(PostFuncType postFunc);
 
     virtual HTTPClient& GetInput();
     virtual HTTPClient& GetOutput();
-    virtual void SetInput(HTTPClient& _input);
-    virtual void SetOutput(HTTPClient& _output);
+    virtual void SetInput(HTTPClient& input);
+    virtual void SetOutput(HTTPClient& output);
 
     virtual bool HasData();
 };

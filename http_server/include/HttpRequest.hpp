@@ -5,9 +5,6 @@
 
 #include "request_methods.hpp"
 
-using std::string;
-using std::map;
-
 // string default value ""
 
 /* 
@@ -21,25 +18,25 @@ Connection: close
 
 class HttpRequest {
  public:
-    explicit HttpRequest(const string &message);
+    explicit HttpRequest(const std::string &message);
 
-    string GetHeader(const std::basic_string<char> &header_name) const;
+    std::string GetHeader(const std::basic_string<char>& headerName) const;
     ~HttpRequest() = default;
-    string GetURL() const;
-    string GetHTTPVersion() const;
+    std::string GetURL() const;
+    std::string GetHTTPVersion() const;
     RequestMethod GetRequestMethod() const;
-    string GetRequestMethodString() const;
-    map<string, string> GetAllHeaders() const;
+    std::string GetRequestMethodString() const;
+    std::map<std::string, std::string> GetAllHeaders() const;
     int GetContentLength();
 
-    static string RequestMethodToString(RequestMethod method);
-    static RequestMethod StringToRequestMethod(const string& methodString);
+    static std::string RequestMethodToString(RequestMethod method);
+    static RequestMethod StringToRequestMethod(const std::string& methodString);
 
  private:
     RequestMethod request_method;
-    string url;
-    string http_version;
-    map<string, string> headers;
+    std::string url;
+    std::string http_version;
+    std::map<std::string, std::string> headers;
 
-    void SetRequestMethod(const string &method_name);
+    void SetRequestMethod(const std::string &method_name);
 };

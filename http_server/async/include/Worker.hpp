@@ -56,6 +56,8 @@ class Worker {
 
     virtual ~Worker();
 
+    
+
     virtual void Start();
     virtual void Stop();
 };
