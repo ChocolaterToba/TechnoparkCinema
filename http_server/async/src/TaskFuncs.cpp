@@ -204,10 +204,23 @@ static std::map<std::string, std::string> ProcessTemplatesInDB(const std::set<st
     result_map["videolink"] = res[0][5].as<std::string>();
     // SELECT for actors
     // Need to figure many to many request for finding actors with m_id == ID from table actors-movies.
-    res = wrk.exec("SELECT a_id,name FROM ACTORS WHERE (a_id = "+std::to_string(ID)+")");
+    res = wrk.exec("SELECT a_id,name,photo FROM ACTORS WHERE (a_id = "+std::to_string(ID)+")");
     result_map["recommended"] = "6";  // change it in for cycle too
-    result_map["starphoto"] = "images/Leo.jpeg";  // replace
     result_map["starname"] = res[0][1].as<std::string>();
+    result_map["starphoto"] = res[0][2].as<std::string>();  // replace
+    // SELECT for actors (many to many)
+    res = wrk.exec("SELECT a_id,name FROM actors WHERE a_id in (Select a_id From actors_movies Where m_id =" + std::to_string(ID)+")");
+    size_t n = 0;
+    for (const auto &row: res) {
+        for (const auto &field: row) {
+        }
+        result_map["stars"+std::to_string(n)] = std::to_string(n);
+        result_map["actor"+std::to_string(n)] = row[0].as<std::string>();
+        result_map["actorname"+std::to_string(n)] = row[1].as<std::string>();
+        ++n;
+        std::cout << std::endl;
+    }
+    result_map["stars"] = std::to_string(n);
     // SELECT for recommended      // crutch (see ID+6) and for +3
     res = wrk.exec("SELECT m_id,title,description,rating FROM MOVIES WHERE (m_id != "+std::to_string(ID)+") ORDER BY RANDOM() LIMIT 10");
     for (size_t i = 0; i < 9; i++) {
