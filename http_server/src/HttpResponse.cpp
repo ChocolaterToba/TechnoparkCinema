@@ -29,40 +29,24 @@ std::vector<char> HttpResponse::GetData() const {
 
 HttpResponse::HttpResponse(const std::string& HTTPVersion,
                            RequestMethod reqType,
+                           const std::string& returnCode,
                            bool keepAlive,
                            const std::vector<char>& body) :
               http_version(HTTPVersion),
+              return_code(returnCode),
               keep_alive(keepAlive) {
     if (HTTPVersion.empty()) {
         http_version = "0.9";
         if (reqType == GET) {
-            try {
-                SetResponseBody(body);
-                response.insert(response.begin(), response_body.begin(), response_body.end());
-                return;
-            }
-            catch (FileNotFoundException &) {
-                throw OldVersionException();
-            }
+            SetResponseBody(body);
+            response.insert(response.begin(), response_body.begin(), response_body.end());
+            return;
         } else {
             throw OldVersionException();
         }
     }
 
-    switch (reqType) {
-        case GET:
-            try {
-                return_code = "200 OK";
-                SetResponseBody(body);
-            }
-            catch (HTTPResponseException&) {
-                return_code = "404 Not Found";
-            }
-            break;
-        default:
-            return_code = "501 Not Implemented";
-    }
-
+    SetResponseBody(body);
     FormResponseHeader();
     FormResponseData();
 }
@@ -95,7 +79,6 @@ ContentType HttpResponse::GetContentType(const std::string& url) {
 void HttpResponse::SetResponseBody(const std::vector<char>& body) {
     response_body.clear();
     response_body.insert(response_body.end(), body.begin(), body.end());
-    FormResponseData();
 }
 
 void HttpResponse::SetContentType(ContentType type) {
@@ -139,6 +122,8 @@ void HttpResponse::FormResponseHeader() {
     
     if (http_version == "1.0" && keep_alive) {
         headers.insert(std::pair<std::string, std::string>("Connection", "Keep-Alive"));
+    } else if (http_version == "1.1" && !keep_alive) {
+        headers.insert(std::pair<std::string, std::string>("Connection", "close"));
     }
 
     if (!response_body.empty()) {

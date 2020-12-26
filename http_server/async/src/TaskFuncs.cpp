@@ -9,6 +9,7 @@
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "HttpRequestCreator.hpp"
+#include "HttpResponseReader.hpp"
 #include "TemplateManager.hpp"
 #include "TaskFuncs.hpp"
 
@@ -18,12 +19,11 @@ MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector
     int bodySize = 0;
     headers.clear();
     if (input.getPort() == FROM_DB_PORT) {  // port FROM_DB_PORT is reserved for db's responses
-        HttpRequest request(input.getHeader()); // TODO: replace with HttpResponseReader.
-        headers = request.GetAllHeaders();
-        headers["url"] = request.GetURL();
-        headers["method"] = request.GetRequestMethodString();
-        headers["http_version"] = request.GetHTTPVersion();
-        bodySize = request.GetContentLength();
+        HttpResponseReader response(input.getHeader());
+        headers = response.GetAllHeaders();
+        headers["return_code"] = response.GetReturnCode();
+        bodySize = response.GetContentLength();
+
     } else {
         HttpRequest request(input.getHeader());
         headers = request.GetAllHeaders();
@@ -81,11 +81,17 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
 
     } else {
         std::ifstream source("../static" + headers["url"], std::ios::binary);
-        char buffer[BUF_SIZE] = {0};
-        while (source.read(buffer, BUF_SIZE)) {
-            body.insert(body.end(), buffer, buffer + BUF_SIZE);
+        if (source) {  // file was opened successfully
+            char buffer[BUF_SIZE] = {0};
+            while (source.read(buffer, BUF_SIZE)) {
+                body.insert(body.end(), buffer, buffer + BUF_SIZE);
+            }
+            body.insert(body.end(), buffer, buffer + source.gcount());
+            headers["return_code"] = "200 OK";
+        } else {
+            headers["return_code"] = "404 Not Found";
         }
-        body.insert(body.end(), buffer, buffer + source.gcount());
+        source.close();
 
         output = std::move(input);
     }
@@ -112,6 +118,9 @@ void MainProcessDBServer(std::map<std::string, std::string>& headers, std::vecto
     
     params["sd"] = std::string(body.begin(), firstSepPos);
     body = std::move(HTTPClient::mergeMapToVector(params));
+
+    headers["return_code"] = "200 OK";
+
     output = std::move(HTTPClient("localhost", FROM_DB_PORT));
 }
 
@@ -124,16 +133,21 @@ void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vec
     int sd = std::stoi(bodyParams.at("sd"));
     bodyParams.erase("sd");
 
+    input.close();
+
     pendingDBResponseMutex->lock();
     output = pendingDBResponse.at(sd);
     pendingDBResponse.erase(sd);
     pendingDBResponseMutex->unlock();
 
     HttpRequest initialRequest(output.getHeader());
-    headers = initialRequest.GetAllHeaders();
-    headers["url"] = initialRequest.GetURL();
-    headers["method"] = initialRequest.GetRequestMethodString();
-    headers["http_version"] = initialRequest.GetHTTPVersion();
+    std::map<std::string, std::string> newHeaders = initialRequest.GetAllHeaders();
+    newHeaders["url"] = initialRequest.GetURL();
+    newHeaders["method"] = initialRequest.GetRequestMethodString();
+    newHeaders["http_version"] = initialRequest.GetHTTPVersion();
+    newHeaders["return_code"] = headers["return_code"];
+
+    headers = std::move(newHeaders);
 
     TemplateManager templateManager(headers["url"]);
     body = std::move(templateManager.GetHtmlFinal(bodyParams));
@@ -156,6 +170,7 @@ void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>&
     } else {
         HttpResponse response(headers["http_version"],
                               HttpRequest::StringToRequestMethod(headers["method"]),
+                              headers["return_code"],
                               (headers["Connection"] == "Keep-Alive"),
                               body);
         if ((headers["http_version"] == "1.1" && headers["Conection"] != "close")

@@ -56,4 +56,5 @@ class HTTPClient {
     int getSd() const;
 
     void clear();
+    void close();
 };

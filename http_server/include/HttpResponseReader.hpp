@@ -2,11 +2,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
-
-using std::string;
-using std::map;
-using std::vector;
 
 //    HTTP/1.1 200 OK
 //            Date: Wed, 11 Feb 2009 11:20:59 GMT
@@ -22,24 +17,21 @@ using std::vector;
 
 class HttpResponseReader {
 public:
-    explicit HttpResponseReader(const string &message);
+    explicit HttpResponseReader(const std::string& message);
     ~HttpResponseReader() = default;
 
-    string GetHeaderValue(const string &header_name) const;
-    string GetReturnCode() const;
-    map<string, string> GetAllHeaders() const;
+    std::string GetHeaderValue(const std::string& header_name) const;
+    std::string GetReturnCode() const;
+    std::map<std::string, std::string> GetAllHeaders() const;
     size_t GetContentLength() const;
-    vector<char> GetBody() const;
 
-    //    string GetURL() const;  // ???
+    //    std::string GetURL() const;  // ???
 private:
-    map<string, string> headers;
-    string return_code;
-    vector<char> body;
+    std::map<std::string, std::string> headers;
+    std::string return_code;
 
-    string GetReturnCode(const string &message) const;
-    map<string, string> ExtractHeaders(const string &message);
-    vector<char> ExtractBody(const string &message) const;
+    std::string GetReturnCode(const std::string& message) const;
+    std::map<std::string, std::string> ExtractHeaders(const std::string& message);
 };
 
 

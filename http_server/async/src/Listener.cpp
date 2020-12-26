@@ -46,10 +46,18 @@ void Listener::Start() {
 
 void Listener::Loop() {
     while (!stop) {
-        HTTPClient client(socket.accept());
-        unprocessedClientsMutex->lock();
-        unprocessedClients.push(std::move(client));
-        unprocessedClientsMutex->unlock();
+        if (socket.getPort() == 5555) {
+            HTTPClient client(socket.accept());
+            unprocessedClientsMutex->lock();
+            unprocessedClients.push(std::move(client));
+            unprocessedClientsMutex->unlock();
+        } else {
+            HTTPClient client(socket.accept());
+            unprocessedClientsMutex->lock();
+            unprocessedClients.push(std::move(client));
+            unprocessedClientsMutex->unlock();
+        }
+        
     }
 }
 

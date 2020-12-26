@@ -18,6 +18,10 @@ int main(int argc, char* argv[]) {
         std::cout << std::endl
                   << "Starting server at http://127.0.0.1:" << EXTERNAL_PORT << "/" << std::endl
                   << "Quit the server with CONTROL-C." << std::endl << std::endl;
+
+        while (true) {  // Run indefinitely until ctrl+c (or other signal) is sent
+            sleep(10000);
+        }
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
     }

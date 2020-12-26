@@ -198,7 +198,6 @@ void HTTPClient::send(bool close) {
     socket->send(header + "\r\n\r\n");
     socket->send(body);
     if (close) {
-        std::cerr << "Closing client, port: " << socket->getPort() << std::endl;
         socket->close();
     }
 }
@@ -206,7 +205,6 @@ void HTTPClient::send(bool close) {
 void HTTPClient::send(std::vector<char> data, bool close) {
     socket->send(std::move(data));
     if (close) {
-        std::cerr << "Closing client, port: " << socket->getPort() << std::endl;
         socket.reset();
     }
 }
@@ -228,4 +226,8 @@ int HTTPClient::getSd() const {
 void HTTPClient::clear() {
     header.clear();
     body.clear();
+}
+
+void HTTPClient::close() {
+    socket.reset();
 }
