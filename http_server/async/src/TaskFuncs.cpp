@@ -168,8 +168,8 @@ void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>&
 }
 
 //  {[movietittle,moviedescription,starphoto,starname,movielogo,moviename,videolink,recommended,tittles]}
-static map<string, string> ProcessTemplatesInDB(const set<string> &params, size_t ID) {
-    map<string, string> result_map;
+static std::map<std::string, std::string> ProcessTemplatesInDB(const std::set<std::string>& params, size_t ID) {
+    std::map<std::string, std::string> result_map;
 
     std::string connection_string("host=localhost port=5432 dbname=db_woosh user=vk password=123");
 
