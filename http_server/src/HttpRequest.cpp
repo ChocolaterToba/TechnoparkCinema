@@ -4,15 +4,14 @@
 #include "exceptions.hpp"
 #include "HttpRequest.hpp"
 
-HttpRequest::HttpRequest(const std::string &message) {
-    // find Method
+HttpRequest::HttpRequest(const std::string& message) {
+    // find method
     size_t pos = 0;
     size_t search = message.find(' ');
     std::string method = message.substr(pos, search);
     SetRequestMethod(method);
     if (request_method == UNKNOWN) {
-        // throw BadFormatException();  // temprorary
-        SetRequestMethod("GET");
+        throw BadFormatException();
     }
 
     // find URL
@@ -25,10 +24,6 @@ HttpRequest::HttpRequest(const std::string &message) {
         throw BadFormatException();
     }
     url = message.substr(pos, search - pos);
-    if (url.rfind('/', 0) != 0) {  // temporary
-        url = "/";
-        search = 0;
-    }
 
     // find HTTP version
     ++search;
@@ -36,16 +31,12 @@ HttpRequest::HttpRequest(const std::string &message) {
     if ((pos = message.find("HTTP/", search - 1, 5)) != std::string::npos) {
         pos += 5;
         search = pos;
-        while (message[search] != '\r' && message[search] != ' ') {
+        while (message[search] != '\r') {
             ++search;
         }
         http_version = message.substr(pos, search - pos);
     } else {
         http_version = std::string();   // check
-    }
-
-    while (message[search] != '\r') {  //  temporary, skipping response code
-        ++search;
     }
     search += 2;   // \r\n 2 symbols
 
@@ -58,7 +49,7 @@ HttpRequest::HttpRequest(const std::string &message) {
             ++search;
         }
         std::string value = message.substr(pos, search - pos);
-        headers.insert (std::pair<std::string, std::string>(key, value));
+        headers.insert(std::pair<std::string, std::string>(key, value));
         search += 2;  // \r\n 2 symbols
     }
 }

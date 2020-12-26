@@ -118,7 +118,7 @@ void HttpResponse::SetContentType(ContentType type) {
 void HttpResponse::FormResponseHeader() {
     response_header.clear();
     response_header.append("HTTP/").append(http_version).append(" ");
-    response_header.append(return_code).append(" ").append(CRLF);
+    response_header.append(return_code).append(CRLF);
     
     if (http_version == "1.0" && keep_alive) {
         headers.insert(std::pair<std::string, std::string>("Connection", "Keep-Alive"));
