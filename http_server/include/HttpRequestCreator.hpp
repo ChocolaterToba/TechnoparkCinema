@@ -9,36 +9,34 @@
 #define CRLF "\r\n"
 #define BUF_SIZE 256
 
-using std::vector;
-using std::string;
-using std::map;
-
 class HttpRequestCreator {
  public:
-    HttpRequestCreator(const string &HTTPVersion, RequestMethod reqType,
-                       const string &url, bool keepAlive,
-                       const vector<char>& body);
+    HttpRequestCreator(const std::string& HTTPVersion,
+                       RequestMethod reqType,
+                       const std::string& url,
+                       bool keepAlive,
+                       const std::vector<char>& body);
 
     HttpRequestCreator() = delete;
-    string GetHTTPVersion() const;
-    string GetHeader() const;
-    vector<char> GetRequest() const;
+    std::string GetHTTPVersion() const;
+    std::string GetHeader() const;
+    std::vector<char> GetRequest() const;
 
-    static string RequestMethodToString(RequestMethod method);
-    static RequestMethod StringToRequestMethod(const string& methodString);
+    static std::string RequestMethodToString(RequestMethod method);
+    static RequestMethod StringToRequestMethod(const std::string& methodString);
 
  private:
-    string http_version;
+    std::string http_version;
     RequestMethod reqType;
-    string url;
+    std::string url;
     bool keep_alive;
 
-    vector<char> requestBody;
-    map<string, string> headers;
-    string requestHeader;
-    vector<char> request;
+    std::vector<char> requestBody;
+    std::map<std::string, std::string> headers;
+    std::string requestHeader;
+    std::vector<char> request;
 
     void FormRequestHeader();
-    void SetRequestBody(const vector<char>& body);
+    void SetRequestBody(const std::vector<char>& body);
     void FormRequestData();
 };

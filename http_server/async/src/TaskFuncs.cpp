@@ -5,15 +5,14 @@
 #include <pqxx/pqxx>
 #include "ports.hpp"
 
-#include "TaskFuncs.hpp"
 #include "HTTPClient.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "HttpRequestCreator.hpp"
 #include "TemplateManager.hpp"
+#include "TaskFuncs.hpp"
 
-
-MainFuncType PreProcess(map<string, string>& headers, vector<char>& body, HTTPClient& input) {
+MainFuncType PreProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& input) {
     input.recvHeader();
 
     int bodySize = 0;
@@ -40,24 +39,25 @@ MainFuncType PreProcess(map<string, string>& headers, vector<char>& body, HTTPCl
         body = input.getBody();
     }
 
-    if (input.getPort() == FROM_DB_PORT)
+    if (input.getPort() == FROM_DB_PORT) {
         return MainProcessDBReceived;
-    else if (input.getPort() == TO_DB_PORT)
+    } else if (input.getPort() == TO_DB_PORT) {
         return MainProcessDBServer;
+    }
 
     return MainProcessBasic;
 }
 
-void MainProcessBasic(map<string, string>& headers, vector<char>& body,
-                      map<int, HTTPClient>& pendingDBResponse,
+void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<char>& body,
+                      std::map<int, HTTPClient>& pendingDBResponse,
                       std::shared_ptr<std::mutex> pendingDBResponseMutex,
                       HTTPClient& input, HTTPClient& output) {
     ContentType type = HttpResponse::GetContentType(headers["url"]);
     if (type == TXT_HTML) {
         TemplateManager templateManager(headers["url"]);
-        std::set<string> params = templateManager.GetParameterNames();
+        std::set<std::string> params = std::move(templateManager.GetParameterNames());
         if (params.empty()) {
-            body = templateManager.GetHtmlFinal(map<string, string>());
+            body = templateManager.GetHtmlFinal(std::map<std::string, std::string>());
 
             output = std::move(input);
         } else {
@@ -68,10 +68,10 @@ void MainProcessBasic(map<string, string>& headers, vector<char>& body,
             headers["Connection"] = "close";  // maybe make headers from scratch???
 
             body.clear();
-            string sdString = std::to_string(input.getSd());
+            std::string sdString = std::to_string(input.getSd());
             body.insert(body.end(), sdString.begin(), sdString.end());
             body.push_back('|');
-            vector<char> paramsPart = HTTPClient::mergeSetToVector(params);
+            std::vector<char> paramsPart = std::move(HTTPClient::mergeSetToVector(params));
             body.insert(body.end(), paramsPart.begin(), paramsPart.end());
 
             output = HTTPClient("localhost", TO_DB_PORT);
@@ -80,47 +80,49 @@ void MainProcessBasic(map<string, string>& headers, vector<char>& body,
     } else {
         std::ifstream source("../static" + headers["url"], std::ios::binary);
         char buffer[BUF_SIZE] = {0};
-        while (source.read(buffer, BUF_SIZE))
+        while (source.read(buffer, BUF_SIZE)) {
             body.insert(body.end(), buffer, buffer + BUF_SIZE);
-
+        }
         body.insert(body.end(), buffer, buffer + source.gcount());
 
         output = std::move(input);
     }
 }
-static map<string, string> ProcessTemplatesInDB(const set<string> &params, size_t ID);
-void MainProcessDBServer(map<string, string>& headers, vector<char>& body,
-                         map<int, HTTPClient>& pendingDBResponse,
+
+static std::map<std::string, std::string> ProcessTemplatesInDB(const std::set<std::string>& params, size_t ID);
+
+void MainProcessDBServer(std::map<std::string, std::string>& headers, std::vector<char>& body,
+                         std::map<int, HTTPClient>& pendingDBResponse,
                          std::shared_ptr<std::mutex> pendingDBResponseMutex,
                          HTTPClient& input, HTTPClient& output) {
     auto firstSepPos = std::find(body.begin(), body.end(), '|');
-    if (firstSepPos > body.end())
+    if (firstSepPos > body.end()) {
         firstSepPos = body.end();
-
+    }
     TemplateManager templateManager(headers["url"]);
     size_t id = 0;
     size_t find = headers["url"].find("watch?");
-    if (find != string::npos)
+    if (find != std::string::npos) {
         id = std::stoi(headers["url"].substr(find+6));
-
-    map<string, string> params = ProcessTemplatesInDB (templateManager.GetParameterNames(), id);
+    }
+    std::map<std::string, std::string> params = ProcessTemplatesInDB(templateManager.GetParameterNames(), id);
     
-    params["sd"] = string(body.begin(), firstSepPos);
-    body = HTTPClient::mergeMapToVector(params);
+    params["sd"] = std::string(body.begin(), firstSepPos);
+    body = std::move(HTTPClient::mergeMapToVector(params));
     output = HTTPClient("localhost", FROM_DB_PORT);
 }
 
-void MainProcessDBReceived(map<string, string>& headers, vector<char>& body,
-                           map<int, HTTPClient>& pendingDBResponse,
+void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vector<char>& body,
+                           std::map<int, HTTPClient>& pendingDBResponse,
                            std::shared_ptr<std::mutex> pendingDBResponseMutex,
                            HTTPClient& input, HTTPClient& output) {
-    map<string, string> bodyParams = HTTPClient::splitVectorToMap(body);
+    std::map<std::string, std::string> bodyParams = std::move(HTTPClient::splitVectorToMap(body));
 
     int sd = std::stoi(bodyParams.at("sd"));
     bodyParams.erase("sd");
 
     TemplateManager templateManager(headers["url"]);
-    body = templateManager.GetHtmlFinal(bodyParams);
+    body = std::move(templateManager.GetHtmlFinal(bodyParams));
 
     pendingDBResponseMutex->lock();
     output = pendingDBResponse.at(sd);
@@ -128,33 +130,32 @@ void MainProcessDBReceived(map<string, string>& headers, vector<char>& body,
     pendingDBResponseMutex->unlock();
 }
 
-void PostProcess(map<string, string>& headers, vector<char>& body, HTTPClient& output) {
+void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& output) {
     if (headers["proxy"] == "true") {  // Meaning, we need to call another server
         HttpRequestCreator request(headers["http_version"],
                                    HttpRequestCreator::StringToRequestMethod(headers["method"]),
                                    headers["url"],
                                    (headers["Connection"] == "Keep-Alive"),
                                    body);
-
-        if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive")
+        if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
             output.send(request.GetRequest(), true);  // will fix later
-        else
+        } else {
             output.send(request.GetRequest(), true);
+        }
     } else {
         HttpResponse response(headers["http_version"],
                               HttpRequest::StringToRequestMethod(headers["method"]),
                               (headers["Connection"] == "Keep-Alive"),
                               body);
-
-        if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive")
+        if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
             output.send(response.GetData(), true);  // will fix later
-        else
+        } else {
             output.send(response.GetData(), true);
+        }
     }
 }
 
 //  {[movietittle,moviedescription,starphoto,starname,movielogo,moviename,videolink,recommended,tittles]}
-
 static map<string, string> ProcessTemplatesInDB(const set<string> &params, size_t ID) {
     map<string, string> result_map;
 
@@ -191,8 +192,3 @@ static map<string, string> ProcessTemplatesInDB(const set<string> &params, size_
     }
     return result_map;
 }
-
-/*
-
-
-*/

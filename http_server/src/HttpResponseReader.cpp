@@ -72,5 +72,3 @@ vector<char> HttpResponseReader::ExtractBody(const string &message) const {
     string body_str = message.substr(end_of_head + 2, body_size);
     return vector<char>(body_str.begin(), body_str.end());
 }
-
-

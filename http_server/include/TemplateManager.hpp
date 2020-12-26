@@ -8,29 +8,23 @@
 #include <map>
 #include <set>
 
-using std::string;
-using std::vector;
-using std::map;
-using std::queue;
-using std::set;
-
 // работа с TemplateManager, создаем экземпляр, запрашиваем parameters/templates
 // запрашиваем их у БД, после ответа передаем в GetHtml
 
 class TemplateManager {
  public:
-    explicit TemplateManager(const string &url);
+    explicit TemplateManager(const std::string &url);
     ~TemplateManager() = default;
-    std::set<string> GetParameterNames();
-    vector<char> GetHtmlFinal(const std::map<string, string> &parameters);
+    std::set<std::string> GetParameterNames();
+    std::vector<char> GetHtmlFinal(const std::map<std::string, std::string> &parameters);
 private:
-    string HTML;
+    std::string HTML;
     std::string ID;
-    std::set<string> html_parameters;
+    std::set<std::string> html_parameters;
 
     void ExtractParameters();
     void InsertTemplates();
 
-    void EvaluateCycles(const std::map<string, string> &parameters);
-    void EvaluateParameters(const std::map<string, string> &parameters);
+    void EvaluateCycles(const std::map<std::string, std::string> &parameters);
+    void EvaluateParameters(const std::map<std::string, std::string> &parameters);
 };

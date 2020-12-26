@@ -1,15 +1,9 @@
 #include <iostream>
 #include <stdexcept>
-#include <vector>
-#include <thread>
-#include <fstream>
+#include <string>
+#include <map>
 
 #include "ports.hpp"
-
-#include "socket.hpp"
-#include "HTTPClient.hpp"
-#include "HttpResponse.hpp"
-#include "HttpRequest.hpp"
 
 #include "Master.hpp"
 
@@ -19,9 +13,11 @@ int main(int argc, char* argv[]) {
         ports["external"] = EXTERNAL_PORT;
         ports["from_database"] = FROM_DB_PORT;
         ports["to_database"] = TO_DB_PORT;
-        Master master(ports, 4);
+        Master master(ports, 4);  // make dependant on cores' amount
         master.Start();
-        sleep(300);  // replace with graceful shutdown.
+        std::cout << std::endl
+                  << "Starting server at http://127.0.0.1:" << EXTERNAL_PORT << "/" << std::endl
+                  << "Quit the server with CONTROL-C." << std::endl;
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
     }

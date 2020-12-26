@@ -16,21 +16,23 @@
 #include "exceptions.hpp"
 
 
-string HttpResponse::GetHTTPVersion() const {
+std::string HttpResponse::GetHTTPVersion() const {
     return http_version;
 }
 
-string HttpResponse::GetHeader() const {
+std::string HttpResponse::GetHeader() const {
     return response_header;
 }
-vector<char> HttpResponse::GetData() const {
+std::vector<char> HttpResponse::GetData() const {
     return response;
 }
 
-HttpResponse::HttpResponse(const string &HTTPVersion,
+HttpResponse::HttpResponse(const std::string& HTTPVersion,
                            RequestMethod reqType,
                            bool keepAlive,
-                           const vector<char> &body) : http_version(HTTPVersion), keep_alive(keepAlive) {
+                           const std::vector<char>& body) :
+              http_version(HTTPVersion),
+              keep_alive(keepAlive) {
     if (HTTPVersion.empty()) {
         http_version = "0.9";
         if (reqType == GET) {
@@ -65,38 +67,39 @@ HttpResponse::HttpResponse(const string &HTTPVersion,
     FormResponseData();
 }
 
-ContentType HttpResponse::GetContentType(const string& url) {
-    string ext(url.c_str() + url.rfind('.') + 1);
-    if (ext.rfind("/") == 0)  // temporary
+ContentType HttpResponse::GetContentType(const std::string& url) {
+    std::string ext(url.c_str() + url.rfind('.') + 1);
+    if (ext.rfind("/") == 0) {  // temporary
         return TXT_HTML;
 
-    if (ext == "jpg" || ext == "jpeg" ||
-        ext == "JPG" || ext == "JPEG")
+    } else if (ext == "jpg" || ext == "jpeg" ||
+               ext == "JPG" || ext == "JPEG") {
         return IMG_JPG;
-    else if (ext == "png" || ext == "PNG")
+    } else if (ext == "png" || ext == "PNG") {
         return IMG_PNG;
-    else if (ext == "TXT" || ext == "txt")
+    } else if (ext == "TXT" || ext == "txt") {
         return TXT_PLAIN;
-    else if (ext == "html")
+    } else if (ext == "html") {
         return TXT_HTML;
-    else if (ext == "css")
+    } else if (ext == "css") {
         return TXT_CSS;
-    else if (ext == "js")
+    } else if (ext == "js") {
         return TXT_JS;
-    else if (ext == "mp4")
+    } else if (ext == "mp4") {
         return VID_MP4;
-    else
+    } else {
         return UNDEF;
+    }
 }
 
-void HttpResponse::SetResponseBody(const vector<char>& body) {
+void HttpResponse::SetResponseBody(const std::vector<char>& body) {
     response_body.clear();
     response_body.insert(response_body.end(), body.begin(), body.end());
     FormResponseData();
 }
 
 void HttpResponse::SetContentType(ContentType type) {
-    std::pair<string, string> c_t_header;
+    std::pair<std::string, std::string> c_t_header;
     c_t_header.first = "Content-type";
     switch (type) {
         case TXT_HTML:
@@ -134,15 +137,19 @@ void HttpResponse::FormResponseHeader() {
     response_header.append("HTTP/").append(http_version).append(" ");
     response_header.append(return_code).append(" ").append(CRLF);
     
-    if (http_version == "1.0" && keep_alive)
-        headers.insert(std::pair<string, string>("Connection", "Keep-Alive"));
+    if (http_version == "1.0" && keep_alive) {
+        headers.insert(std::pair<std::string, std::string>("Connection", "Keep-Alive"));
+    }
 
-    if (!response_body.empty())
-        headers.insert(std::pair<string, string>("Content-Length", std::to_string(response_body.size())));
+    if (!response_body.empty()) {
+        headers.insert(std::pair<std::string, std::string>("Content-Length", std::to_string(response_body.size())));
+    }
 
-    for (auto& header_pair : headers)
-        if (!header_pair.second.empty())
+    for (auto& header_pair : headers) {
+        if (!header_pair.second.empty()) {
             response_header.append(header_pair.first).append(": ").append(header_pair.second).append(CRLF);
+        }
+    }
 
     response_header.append(CRLF);
 }
