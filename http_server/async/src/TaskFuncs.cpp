@@ -60,9 +60,10 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
         TemplateManager templateManager(headers["url"]);
         std::set<std::string> params = std::move(templateManager.GetParameterNames());
         if (params.empty()) {
-            body = templateManager.GetHtmlFinal(std::map<std::string, std::string>());
+            body = std::move(templateManager.GetHtmlFinal(std::map<std::string, std::string>()));
 
             output = std::move(input);
+
         } else {
             pendingDBResponseMutex->lock();
             pendingDBResponse.insert(std::pair<int, HTTPClient&>(input.getSd(), input));
@@ -77,9 +78,10 @@ void MainProcessBasic(std::map<std::string, std::string>& headers, std::vector<c
             std::vector<char> paramsPart = std::move(HTTPClient::mergeSetToVector(params));
             body.insert(body.end(), paramsPart.begin(), paramsPart.end());
 
-            output = HTTPClient("localhost", TO_DB_PORT);
+            output = std::move(HTTPClient("localhost", TO_DB_PORT));
             headers["proxy"] = "true";
         }
+
     } else {
         std::ifstream source("../static" + headers["url"], std::ios::binary);
         char buffer[BUF_SIZE] = {0};
@@ -102,6 +104,7 @@ void MainProcessDBServer(std::map<std::string, std::string>& headers, std::vecto
     if (firstSepPos > body.end()) {
         firstSepPos = body.end();
     }
+
     TemplateManager templateManager(headers["url"]);
     size_t id = 0;
     size_t find = headers["url"].find("watch?");
@@ -112,7 +115,7 @@ void MainProcessDBServer(std::map<std::string, std::string>& headers, std::vecto
     
     params["sd"] = std::string(body.begin(), firstSepPos);
     body = std::move(HTTPClient::mergeMapToVector(params));
-    output = HTTPClient("localhost", FROM_DB_PORT);
+    output = std::move(HTTPClient("localhost", FROM_DB_PORT));
 }
 
 void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vector<char>& body,
@@ -124,13 +127,19 @@ void MainProcessDBReceived(std::map<std::string, std::string>& headers, std::vec
     int sd = std::stoi(bodyParams.at("sd"));
     bodyParams.erase("sd");
 
-    TemplateManager templateManager(headers["url"]);
-    body = std::move(templateManager.GetHtmlFinal(bodyParams));
-
     pendingDBResponseMutex->lock();
     output = pendingDBResponse.at(sd);
     pendingDBResponse.erase(sd);
     pendingDBResponseMutex->unlock();
+
+    HttpRequest initialRequest(output.getHeader());
+    headers = initialRequest.GetAllHeaders();
+    headers["url"] = initialRequest.GetURL();
+    headers["method"] = initialRequest.GetRequestMethodString();
+    headers["http_version"] = initialRequest.GetHTTPVersion();
+
+    TemplateManager templateManager(headers["url"]);
+    body = std::move(templateManager.GetHtmlFinal(bodyParams));
 }
 
 void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>& body, HTTPClient& output) {
@@ -140,17 +149,20 @@ void PostProcess(std::map<std::string, std::string>& headers, std::vector<char>&
                                    headers["url"],
                                    (headers["Connection"] == "Keep-Alive"),
                                    body);
-        if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
+        if ((headers["http_version"] == "1.1" && headers["Conection"] != "close")
+            || headers["Connection"] == "Keep-Alive") {
             output.send(request.GetRequest(), true);  // will fix later
         } else {
             output.send(request.GetRequest(), true);
         }
+
     } else {
         HttpResponse response(headers["http_version"],
                               HttpRequest::StringToRequestMethod(headers["method"]),
                               (headers["Connection"] == "Keep-Alive"),
                               body);
-        if (headers["http_version"] == "1.1" || headers["Connection"] == "Keep-Alive") {
+        if ((headers["http_version"] == "1.1" && headers["Conection"] != "close")
+            || headers["Connection"] == "Keep-Alive") {
             output.send(response.GetData(), true);  // will fix later
         } else {
             output.send(response.GetData(), true);

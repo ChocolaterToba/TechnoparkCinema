@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
         master.Start();
         std::cout << std::endl
                   << "Starting server at http://127.0.0.1:" << EXTERNAL_PORT << "/" << std::endl
-                  << "Quit the server with CONTROL-C." << std::endl;
+                  << "Quit the server with CONTROL-C." << std::endl << std::endl;
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
     }
