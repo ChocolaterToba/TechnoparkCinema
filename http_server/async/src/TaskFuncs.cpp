@@ -102,6 +102,7 @@ void MainProcessBasic(map<string, string>& headers, vector<char>& body,
 }
 
 static map<string, string> ProcessTemplatesInDB(const std::set<string>& params, size_t ID);
+static map<string, string> ProcessTemplatesInDBIndex(const std::set<string> &params);
 
 void MainProcessDBServer(map<string, string>& headers, vector<char>& body,
                          map<int, HTTPClient>& pendingDBResponse,
@@ -124,7 +125,11 @@ void MainProcessDBServer(map<string, string>& headers, vector<char>& body,
         }
     }
 
-    map<string, string> params = ProcessTemplatesInDB(templateManager.GetParameterNames(), id);
+    map<string, string> params;
+    if (headers["url"] == "/")
+        params = ProcessTemplatesInDBIndex(templateManager.GetParameterNames());
+    else if (headers["url"].find("watch?") != string::npos)
+        params = ProcessTemplatesInDB(templateManager.GetParameterNames(), id);
     
     params["sd"] = string(body.begin(), firstSepPos);
     body = HTTPClient::mergeMapToVector(params);
@@ -170,6 +175,7 @@ void PostProcess(map<string, string>& headers, vector<char>& body, HTTPClient& o
                                    headers["url"],
                                    (headers["Connection"] == "Keep-Alive"),
                                    body);
+
         if ((headers["http_version"] == "1.1" && headers["Conection"] != "close") || headers["Connection"] == "Keep-Alive")
             output.send(request.GetRequest(), true);  // will fix later
         else
@@ -181,8 +187,7 @@ void PostProcess(map<string, string>& headers, vector<char>& body, HTTPClient& o
                               headers["return_code"],
                               (headers["Connection"] == "Keep-Alive"),
                               body);
-        if ((headers["http_version"] == "1.1" && headers["Conection"] != "close")
-            || headers["Connection"] == "Keep-Alive")
+        if ((headers["http_version"] == "1.1" && headers["Conection"] != "close") || headers["Connection"] == "Keep-Alive")
             output.send(response.GetData(), true);  // will fix later
         else
             output.send(response.GetData(), true);
@@ -204,7 +209,8 @@ static map<string, string> ProcessTemplatesInDB(const std::set<string>& params, 
         ID = 0;
 
     // SELECT for movies-data
-    pqxx::result res = wrk.exec("SELECT m_id,title,description,rating,poster,video_link FROM MOVIES WHERE (m_id = "+std::to_string(ID)+")");
+    pqxx::result res = wrk.exec("SELECT m_id,title,description,rating,poster,video_link FROM MOVIES WHERE "
+                                "(m_id = " + std::to_string(ID) + ")");
     result_map["movietittle"] = res[0][1].as<string>();
     result_map["moviename"] = res[0][1].as<string>();   // redundant
     result_map["moviedescription"] = res[0][2].as<string>();
@@ -241,6 +247,30 @@ static map<string, string> ProcessTemplatesInDB(const std::set<string>& params, 
     res = wrk.exec("SELECT title FROM MOVIES");
     for (size_t i = 0; i < 10; ++i)
         result_map["title" + std::to_string(i)] =  res[i][0].as<string>();
+
+    return result_map;
+}
+
+static map<string, string> ProcessTemplatesInDBIndex(const std::set<string> &params) {
+    map<string, string> result_map;
+
+    string connection_string("host=localhost port=5432 dbname=db_woosh user=vk password=123");
+    pqxx::connection con(connection_string.c_str());
+
+    pqxx::work wrk(con);
+
+    pqxx::result number = wrk.exec("SELECT COUNT(m_id) FROM MOVIES");
+    size_t number_of_movies = std::stoul(number[0][0].as<string>());
+    pqxx::result res;
+
+    result_map["best"] = "10";
+    res = wrk.exec("SELECT title FROM MOVIES");
+    for (size_t i = 0; i < number_of_movies; ++i)
+        result_map["title" + std::to_string(i)] =  res[i][0].as<string>();
+
+    res = wrk.exec("SELECT m_id,title,description,rating FROM MOVIES ORDER BY RANDOM() LIMIT 10");
+    for (size_t i = 0; i < number_of_movies; ++i)
+        result_map["best" + std::to_string(i)] =  res[i][0].as<string>();
 
     return result_map;
 }
