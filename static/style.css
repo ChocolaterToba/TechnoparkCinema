@@ -16,7 +16,7 @@ body{
 	height : 10%;
 }
 .header-btn{
-	text-decoration: : none !important;
+	text-decoration: none !important;
 	border-radius: 50px;
 	padding: 7px 20px;
 	float: right;
@@ -52,7 +52,7 @@ body{
 }
 
 .left-box a {
-	text-decoration: : none !important;
+	text-decoration: none !important;
 	border-radius: 30px;
 	padding: 7px 10px;
 	margin-top: 15px;
@@ -96,6 +96,7 @@ body{
 }
 
 .player video{
+	height: 500px;
 	width: 100%;
 	max-width: 800px;
 }
