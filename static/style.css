@@ -97,6 +97,7 @@ body{
 
 .player video{
 	height: 500px;
+	/*outline: none;*/
 	width: 100%;
 	max-width: 800px;
 }

@@ -9,34 +9,40 @@
 #define CRLF "\r\n"
 #define BUF_SIZE 256
 
+using std::string;
+
 class HttpRequestCreator {
  public:
-    HttpRequestCreator(const std::string& HTTPVersion,
+    HttpRequestCreator(const string& HTTPVersion,
                        RequestMethod reqType,
-                       const std::string& url,
+                       const string& url,
                        bool keepAlive,
                        const std::vector<char>& body);
 
     HttpRequestCreator() = delete;
-    std::string GetHTTPVersion() const;
-    std::string GetHeader() const;
+    string GetHTTPVersion() const;
+    string GetHeader() const;
     std::vector<char> GetRequest() const;
+    std::map<string, string> GetQueryString() const;
+    string GetQueryParameter(const string &parameter_name) const;
 
-    static std::string RequestMethodToString(RequestMethod method);
-    static RequestMethod StringToRequestMethod(const std::string& methodString);
+    static string RequestMethodToString(RequestMethod method);
+    static RequestMethod StringToRequestMethod(const string& methodString);
 
  private:
-    std::string http_version;
+    string http_version;
     RequestMethod reqType;
-    std::string url;
+    string url;
     bool keep_alive;
 
     std::vector<char> requestBody;
-    std::map<std::string, std::string> headers;
-    std::string requestHeader;
+    std::map<string, string> headers;
+    string requestHeader;
     std::vector<char> request;
+    std::map<string, string> query;
 
     void FormRequestHeader();
     void SetRequestBody(const std::vector<char>& body);
     void FormRequestData();
+    void ProcessQueryString();
 };

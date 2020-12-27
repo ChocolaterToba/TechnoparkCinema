@@ -14,10 +14,9 @@
 #include "HttpRequestCreator.hpp"
 #include "exceptions.hpp"
 
-
-HttpRequestCreator::HttpRequestCreator(const std::string& HTTPVersion,
+HttpRequestCreator::HttpRequestCreator(const string& HTTPVersion,
                                        RequestMethod reqType,
-                                       const std::string& url,
+                                       const string& url,
                                        bool keepAlive,
                                        const std::vector<char>& body) :
                    http_version(HTTPVersion),
@@ -40,11 +39,11 @@ HttpRequestCreator::HttpRequestCreator(const std::string& HTTPVersion,
     FormRequestData();
 }
 
-std::string HttpRequestCreator::GetHTTPVersion() const {
+string HttpRequestCreator::GetHTTPVersion() const {
     return http_version;
 }
 
-std::string HttpRequestCreator::GetHeader() const {
+string HttpRequestCreator::GetHeader() const {
     return requestHeader;
 }
 std::vector<char> HttpRequestCreator::GetRequest() const {
@@ -57,10 +56,10 @@ void HttpRequestCreator::FormRequestHeader() {
     requestHeader.append("HTTP/").append(http_version).append(" ").append(CRLF);
     
     if (http_version == "1.0" && keep_alive) {
-        headers.insert(std::pair<std::string, std::string>("Connection", "Keep-Alive"));
+        headers.insert(std::pair<string, string>("Connection", "Keep-Alive"));
     }
     if (!requestBody.empty()) {
-        headers.insert(std::pair<std::string, std::string>("Content-Length", std::to_string(requestBody.size())));
+        headers.insert(std::pair<string, string>("Content-Length", std::to_string(requestBody.size())));
     }
     for (auto& header_pair : headers) {
         if (!header_pair.second.empty()) {
@@ -80,7 +79,7 @@ void HttpRequestCreator::FormRequestData() {
     request.insert(request.end(), requestBody.begin(), requestBody.end());
 }
 
-std::string HttpRequestCreator::RequestMethodToString(RequestMethod method) {
+string HttpRequestCreator::RequestMethodToString(RequestMethod method) {
     switch (method) {
         case GET:
             return "GET";
@@ -103,7 +102,7 @@ std::string HttpRequestCreator::RequestMethodToString(RequestMethod method) {
     }
 }
 
-RequestMethod HttpRequestCreator::StringToRequestMethod(const std::string& methodString) {
+RequestMethod HttpRequestCreator::StringToRequestMethod(const string& methodString) {
     RequestMethod method;
     if (methodString == "GET") {
         method = GET;
@@ -125,4 +124,36 @@ RequestMethod HttpRequestCreator::StringToRequestMethod(const std::string& metho
         method = UNKNOWN;
     }
     return method;
+}
+
+
+string HttpRequestCreator::GetQueryParameter(const string &parameter_name) const {
+    string value;
+    try {
+        value = query.at(parameter_name);
+    }
+    catch (std::exception &) {
+        value = "";
+    }
+
+    return value;
+}
+
+void HttpRequestCreator::ProcessQueryString() {
+    string key;
+    string value;
+    size_t pos = 0;
+    while ((pos = url.find('?', pos)) != string::npos) {
+        size_t end_key = url.find('=', pos);
+        key = url.substr(pos + 1, end_key - pos - 1);
+        while (url[pos] != '?' && url[pos] != '\0')
+            ++pos;
+        value = url.substr(end_key + 1, pos - end_key - 1);
+
+        query[key] = value;
+    }
+}
+
+std::map<string, string> HttpRequestCreator::GetQueryString() const {
+    return query;
 }
