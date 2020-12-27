@@ -37,8 +37,8 @@ body{
 .rating img{
 	object-fit: img;
 	height: 65px;
-	width: 65px;
-	margin-right: 10px;
+	width: auto;
+	margin-right: 5px;
 	cursor: pointer;
 	margin-bottom: 10px;
 }
