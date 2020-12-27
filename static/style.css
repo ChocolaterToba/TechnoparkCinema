@@ -36,16 +36,16 @@ body{
 
 .rating img{
 	object-fit: img;
-	height: 65px;
+	height: 55px;
 	width: auto;
-	margin-right: 5px;
+	margin-right: 3px;
 	cursor: pointer;
 	margin-bottom: 10px;
 }
 
 .casting img{
 	cursor: pointer;
-	height: 100px;
+	height: 115px;
 	width: auto;
 
 	
