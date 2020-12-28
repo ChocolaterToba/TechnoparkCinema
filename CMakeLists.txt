@@ -15,7 +15,8 @@ include_directories(${PROJECT_SOURCE_DIR}/http_server/include)
 add_library(http_message STATIC
             ${PROJECT_SOURCE_DIR}/http_server/src/HttpResponse.cpp
             ${PROJECT_SOURCE_DIR}/http_server/src/HttpRequest.cpp
-            ${PROJECT_SOURCE_DIR}/http_server/src/DatabaseManager.cpp
+            ${PROJECT_SOURCE_DIR}/http_server/src/HttpResponseReader.cpp
+            ${PROJECT_SOURCE_DIR}/http_server/src/HttpRequestCreator.cpp
             ${PROJECT_SOURCE_DIR}/http_server/src/TemplateManager.cpp)
 
 
@@ -44,18 +45,20 @@ target_link_libraries(client socket)
 ######################
 # Async Server Library
 ######################
-file(GLOB ASYNC_SRC ${PROJECT_SOURCE_DIR}/http_server/async/src/Task.cpp
-                    ${PROJECT_SOURCE_DIR}/http_server/async/src/TaskFuncs.cpp
-                    ${PROJECT_SOURCE_DIR}/http_server/async/src/Worker.cpp
-                    ${PROJECT_SOURCE_DIR}/http_server/async/src/TaskBuilder.cpp
-                    ${PROJECT_SOURCE_DIR}/http_server/async/src/TasksController.cpp
-                    ${PROJECT_SOURCE_DIR}/http_server/async/src/Listener.cpp
-                    ${PROJECT_SOURCE_DIR}/http_server/async/src/Master.cpp
-                    ${PROJECT_SOURCE_DIR}/http_server/async/src/msleep.cpp)
+file(GLOB ASYNC_SRC
+     ${PROJECT_SOURCE_DIR}/http_server/async/src/msleep.cpp
+     ${PROJECT_SOURCE_DIR}/http_server/async/src/Task.cpp
+     ${PROJECT_SOURCE_DIR}/http_server/async/src/TaskFuncs.cpp
+     ${PROJECT_SOURCE_DIR}/http_server/async/src/Worker.cpp
+     ${PROJECT_SOURCE_DIR}/http_server/async/src/TaskBuilder.cpp
+     ${PROJECT_SOURCE_DIR}/http_server/async/src/TasksController.cpp
+     ${PROJECT_SOURCE_DIR}/http_server/async/src/Listener.cpp
+     ${PROJECT_SOURCE_DIR}/http_server/async/src/Master.cpp)
+
 add_library(asyncServer STATIC ${ASYNC_SRC})
 target_include_directories(asyncServer PUBLIC
                            ${PROJECT_SOURCE_DIR}/http_server/async/include)
-target_link_libraries(asyncServer client pthread http_message)
+target_link_libraries(asyncServer client pthread http_message pqxx)
 ######################
 
 ################################

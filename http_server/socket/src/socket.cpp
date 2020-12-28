@@ -2,7 +2,7 @@
 #include <fcntl.h>
 #include <netdb.h>             // gethostbyname
 #include <netinet/in.h>    // struct sockaddr_in
-#include <string.h>
+#include <cstring>
 #include <sys/socket.h>    // socket(), AF_INET/PF_INET
 
 #include <iostream>
@@ -32,8 +32,7 @@ struct sockaddr_in resolve(const char* host, int port) {
     while (*pAddr) {
         unsigned char* ipf = reinterpret_cast<unsigned char*>(*pAddr);
         uint32_t cur_interface_ip = 0;
-        uint8_t* rimap_local_ip_ptr =
-            reinterpret_cast<uint8_t*>(&cur_interface_ip);
+        uint8_t* rimap_local_ip_ptr = reinterpret_cast<uint8_t*>(&cur_interface_ip);
         rimap_local_ip_ptr[0] = ipf[0];
         rimap_local_ip_ptr[1] = ipf[1];
         rimap_local_ip_ptr[2] = ipf[2];
@@ -55,8 +54,7 @@ void set_non_blocked_impl(int sd, bool opt) {
     int flags = fcntl(sd, F_GETFL, 0);
     int new_flags = (opt) ? (flags | O_NONBLOCK) : (flags & ~O_NONBLOCK);
     if (fcntl(sd, F_SETFL, new_flags) == -1) {
-        throw std::runtime_error("make nonblocked: " +
-                                 std::string(strerror(errno)));
+        throw std::runtime_error("make nonblocked: " + std::string(strerror(errno)));
     }
 }
 
@@ -69,6 +67,7 @@ Socket::Socket(Socket&& other) :
     other.close();
     createServerSocket(port, queue_size);
 }
+
 Socket& Socket::operator=(Socket&& other) {
     close();
     port = other.port;
@@ -88,8 +87,7 @@ void Socket::setRcvTimeout(int sec, int microsec) {
     tv.tv_usec = microsec;
 
     if (setsockopt(m_Sd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) != 0) {
-        throw std::runtime_error("set rcvtimeout: " +
-                                 std::string(strerror(errno)));
+        throw std::runtime_error("set rcvtimeout: " + std::string(strerror(errno)));
     }
 }
 
@@ -106,15 +104,13 @@ void Socket::connect(const std::string& host, int port) {
 
     int sd = socket(/*Protocol Family*/ PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sd <= 0) {
-        throw std::runtime_error("error to create socket: " +
-                                 std::string(strerror(errno)));
+        throw std::runtime_error("error to create socket: " + std::string(strerror(errno)));
     }
 
     int connected = ::connect(sd, (struct sockaddr*)&addr, sizeof(addr));
     if (connected == -1) {
         ::close(sd);
-        throw std::runtime_error("connect error: " +
-                                 std::string(strerror(errno)));
+        throw std::runtime_error("connect error: " + std::string(strerror(errno)));
     }
 
     m_Sd = sd;
@@ -125,8 +121,7 @@ void Socket::connect(const std::string& host, int port, int timeout) {
 
     int sd = socket(/*Protocol Family*/ PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sd <= 0) {
-        throw std::runtime_error("error to create socket: " +
-                                 std::string(strerror(errno)));
+        throw std::runtime_error("error to create socket: " + std::string(strerror(errno)));
     }
 
     set_non_blocked_impl(sd, true);
@@ -134,8 +129,7 @@ void Socket::connect(const std::string& host, int port, int timeout) {
     int connected = ::connect(sd, (struct sockaddr*)&addr, sizeof(addr));
     if (connected == -1 && errno != EINPROGRESS) {
         ::close(sd);
-        throw std::runtime_error("connect error: " +
-                                 std::string(strerror(errno)));
+        throw std::runtime_error("connect error: " + std::string(strerror(errno)));
     }
 
     fd_set write_fds;
@@ -164,8 +158,7 @@ void Socket::send(const std::string& str) {
     while (left > 0) {
         sent = ::send(m_Sd, str.data() + sent, str.size() - sent, flags);
         if (-1 == sent) {
-            throw std::runtime_error("write failed: " +
-                                     std::string(strerror(errno)));
+            throw std::runtime_error("write failed: " + std::string(strerror(errno)));
         }
 
         left -= sent;
@@ -180,8 +173,7 @@ void Socket::send(const std::vector<char>& str) {
     while (left > 0) {
         sent = ::send(m_Sd, str.data() + sent, str.size() - sent, flags);
         if (-1 == sent) {
-            throw std::runtime_error("write failed: " +
-                                     std::string(strerror(errno)));
+            throw std::runtime_error("write failed: " + std::string(strerror(errno)));
         }
 
         left -= sent;
@@ -200,20 +192,17 @@ std::string Socket::recv() {
     // std::cerr << "errno is " << errno << std::endl;
 
     if (-1 == n && errno != EAGAIN) {
-        throw std::runtime_error("read failed: " +
-                                 std::string(strerror(errno)));
+        throw std::runtime_error("read failed: " + std::string(strerror(errno)));
     }
     if (0 == n) {
-        throw std::runtime_error("client: " + std::to_string(m_Sd) +
-                                 " disconnected");
+        throw std::runtime_error("client: " + std::to_string(m_Sd) + " disconnected");
     }
     if (-1 == n && errno == EAGAIN) {  // or non-blocking socket
-        throw std::runtime_error("client: " +
-                                 std::to_string(m_Sd) + " timeouted");
+        throw std::runtime_error("client: " + std::to_string(m_Sd) + " timeouted");
     }
 
     std::string ret(buf, buf + n);
-    std::cerr << "client: " << m_Sd << ", recv: \n"
+    std::cerr << "client: " << m_Sd << ", recv: " << std::endl
               << ret << " [" << n << " bytes]" << std::endl;
     return ret;
 }
@@ -227,8 +216,7 @@ std::string Socket::recv(size_t bytes) {
 
         if (rc == -1 || rc == 0) {
             delete[] buf;
-            throw std::runtime_error("read failed: " +
-                                     std::string(strerror(errno)));
+            throw std::runtime_error("read failed: " + std::string(strerror(errno)));
         }
         r += rc;
     }
@@ -248,8 +236,7 @@ std::string Socket::recvLoop() {
         int n = ::recv(m_Sd, buf, sizeof(buf), MSG_NOSIGNAL);
 #endif
         if (-1 == n && errno != EAGAIN) {
-            throw std::runtime_error("read failed: " +
-                                     std::string(strerror(errno)));
+            throw std::runtime_error("read failed: " + std::string(strerror(errno)));
         }
 
         if (0 == n || -1 == n) {    // -1 - timeout
@@ -267,13 +254,12 @@ std::string Socket::recvTimed(int timeout) {
     struct timeval tm;
     tm.tv_sec = timeout;
     tm.tv_usec = 0;
-    int sel = select(m_Sd + 1, /*read*/ &read_fds, /*write*/ NULL,
-                                     /*exceptions*/ NULL, &tm);
+    int sel = select(m_Sd + 1, /*read*/ &read_fds, /*write*/ NULL, /*exceptions*/ NULL, &tm);
     if (sel != 1) {
         throw std::runtime_error("read timeout");
     }
 
-    return std::move(recv());
+    return recv();
 }
 
 std::vector<char> Socket::recvVector() {
@@ -288,20 +274,17 @@ std::vector<char> Socket::recvVector() {
     // std::cerr << "errno is " << errno << std::endl;
 
     if (-1 == n && errno != EAGAIN) {
-        throw std::runtime_error("read failed: " +
-                                 std::string(strerror(errno)));
+        throw std::runtime_error("read failed: " + std::string(strerror(errno)));
     }
     if (0 == n) {
-        throw std::runtime_error("client: " + std::to_string(m_Sd) +
-                                 " disconnected");
+        throw std::runtime_error("client: " + std::to_string(m_Sd) + " disconnected");
     }
     if (-1 == n && errno == EAGAIN) {  // or non-blocking socket
-        throw std::runtime_error("client: " +
-                                 std::to_string(m_Sd) + " timeouted");
+        throw std::runtime_error("client: " + std::to_string(m_Sd) + " timeouted");
     }
 
     std::vector<char> ret(buf, buf + n);
-    std::cerr << "client: " << m_Sd << ", recv: \n"
+    std::cerr << "client: " << m_Sd << ", recv: " << std::endl
               << "[may be binary file, cannot be displayed]"
               << " [" << n << " bytes]" << std::endl;
     return ret;
@@ -316,8 +299,7 @@ std::vector<char> Socket::recvVector(size_t bytes) {
 
         if (rc == -1 || rc == 0) {
             delete[] buf;
-            throw std::runtime_error("read failed: " +
-                                     std::string(strerror(errno)));
+            throw std::runtime_error("read failed: " + std::string(strerror(errno)));
         }
         r += rc;
     }
@@ -333,13 +315,12 @@ std::vector<char> Socket::recvVectorTimed(int timeout) {
     struct timeval tm;
     tm.tv_sec = timeout;
     tm.tv_usec = 0;
-    int sel = select(m_Sd + 1, /*read*/ &read_fds, /*write*/ NULL,
-                                     /*exceptions*/ NULL, &tm);
+    int sel = select(m_Sd + 1, /*read*/ &read_fds, /*write*/ NULL, /*exceptions*/ NULL, &tm);
     if (sel != 1) {
         throw std::runtime_error("read timeout");
     }
 
-    return std::move(recvVector());
+    return recvVector();
 }
 
 std::vector<char> Socket::recvVectorLoop() {
@@ -353,8 +334,7 @@ std::vector<char> Socket::recvVectorLoop() {
         int n = ::recv(m_Sd, buf, sizeof(buf), MSG_NOSIGNAL);
 #endif
         if (-1 == n && errno != EAGAIN) {
-            throw std::runtime_error("read failed: " +
-                                     std::string(strerror(errno)));
+            throw std::runtime_error("read failed: " + std::string(strerror(errno)));
         }
 
         if (0 == n || -1 == n) {    // -1 - timeout
@@ -368,10 +348,7 @@ std::vector<char> Socket::recvVectorLoop() {
 bool Socket::hasData() {
     char buf[1];
     int n = ::recv(m_Sd, buf, sizeof(buf), MSG_PEEK);
-    if (n > 0) {
-        return true;
-    }
-    return false;
+    return (n > 0);
 }
 
 void Socket::createServerSocket(uint32_t port,

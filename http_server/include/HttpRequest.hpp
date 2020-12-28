@@ -3,17 +3,7 @@
 #include <map>
 #include <string>
 
-typedef enum {
-    UNKNOWN = -1,
-    GET,
-    POST,
-    OPTIONS,
-    HEAD,
-    PUT,
-    PATCH,
-    DELETE,
-    CONNECT,
-} RequestMethod;
+#include "request_methods.hpp"
 
 // string default value ""
 
@@ -30,8 +20,8 @@ class HttpRequest {
  public:
     explicit HttpRequest(const std::string &message);
 
-    std::string GetHeader(std::basic_string<char> header_name) const;
-    ~HttpRequest() {};
+    std::string GetHeader(const std::basic_string<char>& headerName) const;
+    ~HttpRequest() = default;
     std::string GetURL() const;
     std::string GetHTTPVersion() const;
     RequestMethod GetRequestMethod() const;

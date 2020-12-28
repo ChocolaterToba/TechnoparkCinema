@@ -4,63 +4,58 @@
 #include "exceptions.hpp"
 #include "HttpRequest.hpp"
 
-HttpRequest::HttpRequest(const std::string &message) {
-    // find Method
+HttpRequest::HttpRequest(const std::string& message) {
+    // find method
     size_t pos = 0;
     size_t search = message.find(' ');
     std::string method = message.substr(pos, search);
     SetRequestMethod(method);
     if (request_method == UNKNOWN) {
-        // throw BadFormatException();  // temprorary
-        SetRequestMethod("GET");
+        throw BadFormatException();
     }
+
     // find URL
-    search++;
+    ++search;
     pos = search;
     while ((message[search] != ' ') && (message[search] != '\r')) {
-        search++;
+        ++search;
     }
     if (search == pos) {
         throw BadFormatException();
     }
-    url = message.substr(pos, search-pos);
-    if (url.rfind("/", 0) != 0) {  // temporary
-        url = "/";
-        search = 0;
-    }
+    url = message.substr(pos, search - pos);
+
     // find HTTP version
-    search++;
+    ++search;
     pos = 0;
     if ((pos = message.find("HTTP/", search - 1, 5)) != std::string::npos) {
-        pos = pos+5;
-        search = pos;
-        while (message[search] != '\r' && message[search] != ' ') {
-            search++;
-        }
-        http_version = message.substr(pos, search-pos);
-    } else {
-        http_version = std::string("");   // check
-    }
-    while (message[search] != '\r') {  //  temporary, skipping response code
-        search++;
-    }
-    search+=2;   // \r\n 2 symbols
-    // get headers
-    while ((pos = message.find(": ", search)) != std::string::npos) {
-        std::string key = message.substr(search, pos-search);
-        pos+=2;
+        pos += 5;
         search = pos;
         while (message[search] != '\r') {
-            search++;
+            ++search;
         }
-        std::string value = message.substr(pos, search-pos);
-        headers.insert (std::pair<std::string, std::string>(key, value));
+        http_version = message.substr(pos, search - pos);
+    } else {
+        http_version = std::string();   // check
+    }
+    search += 2;   // \r\n 2 symbols
+
+    // get headers
+    while ((pos = message.find(": ", search)) != std::string::npos) {
+        std::string key = message.substr(search, pos - search);
+        pos += 2;
+        search = pos;
+        while (message[search] != '\r') {
+            ++search;
+        }
+        std::string value = message.substr(pos, search - pos);
+        headers.insert(std::pair<std::string, std::string>(key, value));
         search += 2;  // \r\n 2 symbols
     }
 }
 
-std::string HttpRequest::GetHeader(std::basic_string<char> string) const {
-    auto iter = headers.find(string);
+std::string HttpRequest::GetHeader(const std::basic_string<char>& headerName) const {
+    auto iter = headers.find(headerName);
     if (iter == headers.end()) {
         return std::string();
     } else {
@@ -128,23 +123,24 @@ std::string HttpRequest::RequestMethodToString(RequestMethod method) {
 
 RequestMethod HttpRequest::StringToRequestMethod(const std::string& methodString) {
     RequestMethod method;
-    if (methodString == "GET")
+    if (methodString == "GET") {
         method = GET;
-    else if (methodString == "POST")
+    } else if (methodString == "POST") {
         method = POST;
-    else if (methodString == "OPTIONS")
+    } else if (methodString == "OPTIONS") {
         method = OPTIONS;
-    else if (methodString == "HEAD")
+    } else if (methodString == "HEAD") {
         method = HEAD;
-    else if (methodString == "PUT")
+    } else if (methodString == "PUT") {
         method = PUT;
-    else if (methodString == "PATCH")
+    } else if (methodString == "PATCH") {
         method = PATCH;
-    else if (methodString == "DELETE")
+    } else if (methodString == "DELETE") {
         method = DELETE;
-    else if (methodString == "CONNECT")
+    } else if (methodString == "CONNECT") {
         method = CONNECT;
-    else
+    } else {
         method = UNKNOWN;
+    }
     return method;
 }

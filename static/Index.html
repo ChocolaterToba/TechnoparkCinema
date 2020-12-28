@@ -1,55 +1,31 @@
-
 <html>
 <head>
 	<title> Movie HEY</title>
 	<link rel = "stylesheet" href = "style.css">
+	<link rel="shortcut icon" href= "/images/cat.png">
 	<link rel = "stylesheet" href = "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">	
 	<link rel = "stylesheet" href = "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">	
 	
 </head>
 <body>
-	<div class = "container header">
-		<img src = "images/Layer_1.png" class = "logo"> 
+	<div class = "container header" style="padding-left:2%; padding-right:2%">
+		<img src = "images/Layer_1.png" class = "logo">
 		<a href ="#" class = "header-btn"><i class="fa fa-user"></i>Account</a>
 	</div>
-	<div class="container movie-details left-box" style="display:contents">
-		<div class="row"  style="padding-left:15%; padding-right:15%">
-			<div class = "col-md-6">
-				<h1>{{movietittle}}</h1>
-				<p>{{moviedescription}}</p>
-				<p>Cast: </p>
-				<div class = "casting">
-					<img src ="{{starphoto}}" title = "{{starname}}">
-						{%FOR 0 TO movierating %}
-							{% rating %}
-						{%ENDFOR%}
-				</div>
-				<a href="#"><i class="fa fa-play"></i>Watch Now Alone</a>
-				<a href="#" class="watch2-btn"><i class="fa fa-play"></i>Watch Now with friends</a>
-			</div>
-			<div class = "col-md-6 text-right" >
-				<img src ="{{movielogo}}" title = "{{movietittle}}" class = "movie-img">
-			</div>
+	<div class="container movie-details left-box" style="display:block">
+		<div class="row"  style="padding-left:10%; padding-right:10%">
+				<a href="#"><i class="fa fa-play big"></i>Watch Now Alone</a>
+				<a href="#" class="watch2-btn big"><i class="fa fa-play"></i>Watch Now with friends</a>
 		</div>
 	</div>
-	<div class = "container player">
+	<div class="container series">
 		<div class="row">
-			<video class = "video" src = "{{videolink}}" controls></video>
+			{%FOR 0 TO best %}
+				{% best %}
+			{%ENDFOR%}
 		</div>
-	</div>
-	<div class = "container series">
-		<h3>Popular Movies</h3>
-		<div class="row">
-			<div class = "col-md-12">
-				<div class="row">
-					{%FOR 0 TO recommended%}
-						{% recommended %}
-					{%ENDFOR%}
-				</div>
-			</div>
-	</div>
 	</div>
 </body>
 </html>
 
-{[movietittle,moviedescription,starphoto,starname,movielogo,moviename,videolink,recommended]}
+{[best, title]}

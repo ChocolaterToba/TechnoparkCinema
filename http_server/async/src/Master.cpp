@@ -3,7 +3,7 @@
 #include <queue>
 #include <map>
 
-#include <iostream>
+#include "msleep.hpp"
 
 #include "socket.hpp"
 #include "HTTPClient.hpp"
@@ -12,7 +12,6 @@
 #include "TasksController.hpp"
 #include "Listener.hpp"
 #include "Master.hpp"
-#include "msleep.hpp"
 
 Master::Master(std::map<std::string, int>& ports, size_t workersAmount):
         ports(ports),
@@ -58,6 +57,7 @@ void Master::Start() {
 
         for (Listener& listener : listeners) {
             listener.Start();
+            msleep(1);  // listener takes some time to start.
         }
     }
 }
@@ -82,6 +82,7 @@ void Master::Stop() {  // Processes all existing connections
         while (!haveData.empty()) {
             msleep(120);
         }
+
         for (Worker& worker : workers) {
             worker.Stop();
         }

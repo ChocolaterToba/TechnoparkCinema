@@ -23,6 +23,7 @@ class TasksController {
                     std::shared_ptr<std::mutex> haveNoDataMutex,
                     std::queue<Task>& haveData,
                     std::shared_ptr<std::mutex> haveDataMutex);
+
     virtual ~TasksController();
 
     virtual void Start();

@@ -18,8 +18,8 @@ class HTTPClient {
     std::vector<char>::iterator parseBuffer(std::vector<char>& buf, std::string& result);
 
  public:
-    explicit HTTPClient(std::shared_ptr<Socket> socket);  // "We" are server
-    explicit HTTPClient(int port, int queueSize);  // "We" are server
+    explicit HTTPClient(std::shared_ptr<Socket> socket, int timeout = 120);  // "We" are server
+    explicit HTTPClient(int port, int queueSize, int timeout = 120);  // "We" are server
     explicit HTTPClient(const std::string& host, int port);  // "We" are client
     HTTPClient();
 
@@ -31,7 +31,7 @@ class HTTPClient {
     static std::vector<char> mergeQueueToVector(std::queue<std::string>& origin, const std::string& separator = "|");
 
     static std::set<std::string> splitVectorToSet(const std::vector<char>& origin, const std::string& separator = "|");
-    static std::vector<char> mergeSetToVector(std::set<std::string>& origin, const std::string& separator = "|");
+    static std::vector<char> mergeSetToVector(const std::set<std::string>& origin, const std::string& separator = "|");
 
     static std::map<std::string, std::string> splitVectorToMap(const std::vector<char>& origin,
                                                                const std::string& separator = "|",
@@ -54,4 +54,7 @@ class HTTPClient {
 
     int getPort() const;
     int getSd() const;
+
+    void clear();
+    void close();
 };

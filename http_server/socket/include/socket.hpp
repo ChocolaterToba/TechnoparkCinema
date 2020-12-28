@@ -65,7 +65,7 @@ class Socket {
     void httpQuery(const std::string& query,
                    std::function<void(const std::string& s)> cb);
 
-    std::string httpHeader();
+   //  std::string httpHeader();  TODO: not implemented yet
 
  private:
     int m_Sd;

@@ -5,9 +5,10 @@
 #include <vector>
 #include <queue>
 
+#include "msleep.hpp"
+
 #include "Worker.hpp"
 #include "Task.hpp"
-#include "msleep.hpp"
 
 Worker::Worker(std::queue<Task>& tasks,
                std::shared_ptr<std::mutex> tasksMutex,
@@ -48,7 +49,7 @@ void Worker::TakeNewTask() {
                     currentTask = std::move(tasks.front());
                     tasks.pop();
                     tasksMutex->unlock();
-                    state = TaskRecieved;
+                    state = TaskReceived;
                     break;
                 } else {
                     msleep(30);
@@ -64,7 +65,7 @@ void Worker::TakeNewTask() {
 }
 
 void Worker::RunPreFunc() {
-    if (state == TaskRecieved) {
+    if (state == TaskReceived) {
         state = PreFuncRunning;
         auto func1 = currentTask.GetPreFunc();
         func1 = currentTask.GetPreFunc();
@@ -73,7 +74,7 @@ void Worker::RunPreFunc() {
         state = PreFuncRan;
     } else {
         throw std::runtime_error(std::string(
-            "Worker: RunPreFunc: state is not TaskRecieved!"));
+            "Worker: RunPreFunc: state is not TaskReceived!"));
     }
 }
 void Worker::RunMainFunc() {

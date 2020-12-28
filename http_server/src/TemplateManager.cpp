@@ -10,12 +10,6 @@
 #include "exceptions.hpp"
 #include "TemplateManager.hpp"
 
-using std::string;
-using std::vector;
-using std::queue;
-using std::set;
-
-
 typedef enum {
     FREE,
     TEMPLATE_FOUND,
@@ -23,13 +17,15 @@ typedef enum {
     END
 } state_t;
 
+using std::string;
+
 void TemplateManager::ExtractParameters() {
-    size_t begin;
+    size_t begin = 0;
     while ((begin = HTML.find("{[")) != string::npos) {
         size_t end = HTML.find("]}", begin);
 
         string parameters = HTML.substr(begin + 2, end - begin - 2);
-        HTML.erase(begin - 2, end - begin + 2);
+        HTML.erase(begin - 2, end - begin + 4);
 
         begin = 0;
         while ((end = parameters.find(',', begin)) != string::npos) {
@@ -50,14 +46,16 @@ void TemplateManager::InsertTemplates() {
         switch (state) {
             case FREE:
                 pos = HTML.find("{%", pos);
-                if (pos == string::npos)
+                if (pos == string::npos) {
                     state = END;
-                else if (HTML.substr(pos + 2, strlen("FOR")) != "FOR" &&
-                         HTML.substr(pos + 2, strlen("ENDFOR")) != "ENDFOR")
+                } else if (HTML.substr(pos + 2, strlen("FOR")) != "FOR" &&
+                           HTML.substr(pos + 2, strlen("ENDFOR")) != "ENDFOR") {
                     state = TEMPLATE_FOUND;
-                else
+                } else {
                     ++pos;
+                }
                 break;
+
             case TEMPLATE_FOUND: {
                 size_t begin = pos;
                 size_t end = HTML.find("%}", pos);
@@ -66,8 +64,9 @@ void TemplateManager::InsertTemplates() {
                 while (std::isspace(HTML[++pos]));
 
                 size_t name_begin = pos;
-                while (!std::isspace(HTML[pos]) && pos < end - 1)
+                while (!std::isspace(HTML[pos]) && pos < end - 1) {
                     ++pos;
+                }
                 size_t name_end = pos;
 
                 string template_name = HTML.substr(name_begin, name_end - name_begin);
@@ -95,14 +94,14 @@ TemplateManager::TemplateManager(const string &url) {
 
     if (url.find("watch") != string::npos) {
         path = "../static/watch.html";
-        if (url.find('?') != std::string::npos) {
+        if (url.find('?') != string::npos) {
             ID = url.substr(url.find('?')+1);
         }
-    }
-    else if (url == "/")
+    } else if (url == "/") {
         path  += url  +  "Index.html";
-    else
+    } else {
         path += url;
+    }
 
     std::ifstream source(path, std::ios::binary);
     HTML = string((std::istreambuf_iterator<char>(source)), std::istreambuf_iterator<char>());
@@ -126,11 +125,13 @@ void TemplateManager::EvaluateCycles(const std::map<string, string> &parameters)
                     state = CYCLE_STARTED;
                 }
                 break;
+
             case CYCLE_STARTED: {
                 size_t counter_begin = HTML.find("TO ", pos) + strlen("TO ");
                 size_t counter_end = counter_begin;
-                while (!std::isspace(HTML[counter_end + 1]) && HTML[counter_end + 1] != '%')
+                while (!std::isspace(HTML[counter_end + 1]) && HTML[counter_end + 1] != '%') {
                     ++counter_end;
+                }
                 string parameter_name = HTML.substr(counter_begin, counter_end - counter_begin + 1);
 
                 string total_cycle_replacement;
@@ -176,9 +177,10 @@ void TemplateManager::EvaluateParameters(const std::map<string, string> &paramet
         while (std::isspace(HTML[++begin_pos]));
 
         size_t end_pos = begin_pos;
-        while (!std::isspace(HTML[end_pos]) && HTML[end_pos] != '}')
+        while (!std::isspace(HTML[end_pos]) && HTML[end_pos] != '}') {
             ++end_pos;
-        std::string substr = HTML.substr(begin_pos, end_pos - begin_pos);
+        }
+        string substr = HTML.substr(begin_pos, end_pos - begin_pos);
         string replacement = parameters.at(substr);
         size_t end = HTML.find("}}", begin);
 
@@ -187,13 +189,13 @@ void TemplateManager::EvaluateParameters(const std::map<string, string> &paramet
     }
 }
 
-vector<char> TemplateManager::GetHtmlFinal(const std::map<string, string> &parameters) {
+std::vector<char> TemplateManager::GetHtmlFinal(const std::map<string, string> &parameters) {
     EvaluateCycles(parameters);
     EvaluateParameters(parameters);
 
-    return vector<char>(HTML.begin(), HTML.end());
+    return std::vector<char>(HTML.begin(), HTML.end());
 }
 
-set<string> TemplateManager::GetParameterNames() {
+std::set<string> TemplateManager::GetParameterNames() {
     return  html_parameters;
 }

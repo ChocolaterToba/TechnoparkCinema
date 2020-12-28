@@ -3,9 +3,10 @@
 #include <thread>
 #include <memory>
 
+#include "msleep.hpp"
+
 #include "Task.hpp"
 #include "TasksController.hpp"
-#include "msleep.hpp"
 
 TasksController::TasksController(std::vector<Task>& haveNoData,
                                  std::shared_ptr<std::mutex> haveNoDataMutex,

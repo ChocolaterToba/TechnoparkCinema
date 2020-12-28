@@ -11,7 +11,7 @@
 
 typedef enum {
     NoTask,
-    TaskRecieved,
+    TaskReceived,
     PreFuncRunning,
     PreFuncRan,
     MainFuncRunning,

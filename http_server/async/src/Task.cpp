@@ -2,8 +2,8 @@
 #include <vector>
 
 #include "HTTPClient.hpp"
-#include "Task.hpp"
 #include "TaskFuncs.hpp"
+#include "Task.hpp"
 
 Task::Task() :
       preFunc(PreProcess),
