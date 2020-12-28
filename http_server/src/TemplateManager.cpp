@@ -25,7 +25,7 @@ void TemplateManager::ExtractParameters() {
         size_t end = HTML.find("]}", begin);
 
         string parameters = HTML.substr(begin + 2, end - begin - 2);
-        HTML.erase(begin - 2, end - begin + 2);
+        HTML.erase(begin - 2, end - begin + 4);
 
         begin = 0;
         while ((end = parameters.find(',', begin)) != string::npos) {
