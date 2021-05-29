@@ -1,0 +1,8 @@
+*build*
+output
+lib
+.vscode/
+.idea
+/.idea
+/idea
+static/video
